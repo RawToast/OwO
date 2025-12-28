@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { McpNameSchema } from "../mcp/types"
 
 /**
  * Agent names that can be configured
@@ -41,6 +42,7 @@ export const AyushOpenCodeConfigSchema = z.object({
   $schema: z.string().optional(),
   agents: AgentOverridesSchema.optional(),
   disabled_agents: z.array(AgentNameSchema).optional(),
+  disabled_mcps: z.array(McpNameSchema).optional(),
 })
 
 export type AyushOpenCodeConfig = z.infer<typeof AyushOpenCodeConfigSchema>

@@ -4,7 +4,8 @@
  * This plugin provides:
  * 1. Custom subagents: explorer, librarian, oracle, ui-planner
  * 2. Orchestration injection into Build/Plan agents for better delegation
- * 3. Optional configuration via ayush-opencode.json for model overrides
+ * 3. Auto-loaded MCP servers: exa, grep_app, sequential-thinking
+ * 4. Optional configuration via ayush-opencode.json for model/MCP overrides
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
@@ -17,11 +18,13 @@ import {
 } from "./agents"
 import { ORCHESTRATION_PROMPT } from "./orchestration/prompt"
 import { loadPluginConfig, type AgentName } from "./config"
+import { createBuiltinMcps } from "./mcp"
 
 const AyushOpenCodePlugin: Plugin = async (ctx) => {
   // Load user/project configuration
   const pluginConfig = loadPluginConfig(ctx.directory)
   const disabledAgents = new Set(pluginConfig.disabled_agents ?? [])
+  const disabledMcps = pluginConfig.disabled_mcps ?? []
 
   // Helper to apply model override from config
   const applyModelOverride = (
@@ -68,6 +71,14 @@ const AyushOpenCodePlugin: Plugin = async (ctx) => {
         const existingPrompt = config.agent.plan.prompt ?? ""
         config.agent.plan.prompt = existingPrompt + ORCHESTRATION_PROMPT
       }
+
+      // Inject MCP servers (our MCPs win over user's conflicting MCPs)
+      // User's other MCPs are preserved
+      const builtinMcps = createBuiltinMcps(disabledMcps)
+      config.mcp = {
+        ...config.mcp,    // User's existing MCPs (preserved)
+        ...builtinMcps,   // Our MCPs (overwrites conflicts)
+      }
     },
   }
 }
@@ -88,3 +99,5 @@ export type {
   AyushOpenCodeConfig,
   AgentName,
 } from "./config"
+
+export type { McpName } from "./mcp"

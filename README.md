@@ -5,6 +5,7 @@ Custom OpenCode plugin with specialized subagents and orchestration injection.
 ## Features
 
 - **4 Custom Subagents**: Explorer, Librarian, Oracle, UI-Planner
+- **Auto-Loaded MCP Servers**: exa, grep_app, sequential-thinking (no manual config needed!)
 - **Orchestration Injection**: Automatically teaches Build/Plan agents how to delegate tasks
 - **Portable**: Install on any machine via opencode.json
 
@@ -14,7 +15,7 @@ Just add to your `opencode.json` — OpenCode will auto-install the plugin:
 
 ```json
 {
-  "plugin": ["ayush-opencode@0.1.0"]
+  "plugin": ["ayush-opencode@0.2.0"]
 }
 ```
 
@@ -28,7 +29,7 @@ That's it! Restart OpenCode and the plugin is ready to use.
 
 ```json
 {
-  "plugin": ["ayush-opencode@0.1.0"]
+  "plugin": ["ayush-opencode@0.2.0"]
 }
 ```
 
@@ -40,10 +41,10 @@ Simply change the version in your config and restart OpenCode:
 
 ```jsonc
 // Change from:
-"plugin": ["ayush-opencode@0.1.0"]
+"plugin": ["ayush-opencode@0.2.0"]
 
 // To:
-"plugin": ["ayush-opencode@0.2.0"]
+"plugin": ["ayush-opencode@0.3.0"]
 ```
 
 OpenCode will detect the version mismatch and install the new version automatically.
@@ -128,7 +129,8 @@ Project config overrides user config when both exist.
     "oracle": { "model": "openai/gpt-5.2-high" },
     "ui-planner": { "model": "google/gemini-3-pro-high" }
   },
-  "disabled_agents": []
+  "disabled_agents": [],
+  "disabled_mcps": []
 }
 ```
 
@@ -157,37 +159,37 @@ To disable specific agents:
 
 Available agent names: `explorer`, `librarian`, `oracle`, `ui-planner`
 
-## MCP Tools Required
+## Auto-Loaded MCP Servers
 
-This plugin assumes you have the following MCP servers configured:
+This plugin **automatically loads** the following MCP servers — no manual configuration needed!
 
-- `exa` - For web search and code context
-- `grep_app` - For GitHub code search
-- `sequential-thinking` - For complex reasoning
+| MCP Server | Type | Description |
+|------------|------|-------------|
+| `exa` | HTTP Streamable | Web search, code context, URL crawling (no API key required) |
+| `grep_app` | Remote | GitHub code search across millions of repos |
+| `sequential-thinking` | Local | Structured reasoning for complex problems |
 
-Configure these in your `opencode.json`:
+### How It Works
+
+When you install this plugin, these MCP servers are automatically injected into OpenCode's config:
+
+- **Your other MCPs are preserved** — If you have `supabase`, `memcontext`, or any custom MCPs, they continue to work
+- **Conflicts use our config** — If you have `exa` configured differently, our version takes priority
+- **Disable if needed** — Use `disabled_mcps` config to opt-out (see below)
+
+### Disable Specific MCPs
+
+If you want to keep your own MCP config for a server we provide:
 
 ```json
 {
-  "mcp": {
-    "exa": {
-      "type": "local",
-      "command": ["npx", "-y", "mcp-remote", "https://mcp.exa.ai/mcp?tools=web_search_exa,get_code_context_exa,crawling_exa"],
-      "enabled": true
-    },
-    "grep_app": {
-      "type": "remote",
-      "url": "https://mcp.grep.app",
-      "enabled": true
-    },
-    "sequential-thinking": {
-      "type": "local",
-      "command": ["npx", "@modelcontextprotocol/server-sequential-thinking"],
-      "enabled": true
-    }
-  }
+  "disabled_mcps": ["exa"]
 }
 ```
+
+Available MCP names: `exa`, `grep_app`, `sequential-thinking`
+
+This will skip injecting our `exa` config, allowing your custom one to remain.
 
 ## Development
 
