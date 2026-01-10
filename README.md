@@ -1,192 +1,145 @@
-# zenox
+<p align="center">
+  <img src="https://res.cloudinary.com/dyetf2h9n/image/upload/v1768073623/ZENOX_e4boob.png" alt="Zenox" width="600" />
+</p>
 
-OpenCode plugin for intelligent agent orchestration with specialized subagents and parallel background tasks.
+<h1 align="center">ZENOX</h1>
 
-## Features
+<p align="center">
+  <strong>Intelligent agent orchestration for OpenCode</strong>
+</p>
 
-- **4 Specialized Subagents**: Explorer, Librarian, Oracle, UI-Planner
-- **Background Tasks**: Parallel agent execution for comprehensive research
-- **Auto-Update**: Automatic update checking with toast notifications
-- **Auto-Loaded MCP Servers**: exa, grep_app, sequential-thinking
-- **Smart Orchestration**: Automatically teaches Build/Plan agents how to delegate
-- **CLI Installer**: Easy setup with model configuration via `bunx zenox install`
+<p align="center">
+  <a href="https://www.npmjs.com/package/zenox"><img src="https://img.shields.io/npm/v/zenox.svg?style=flat-square" alt="npm version" /></a>
+  <!-- <a href="https://www.npmjs.com/package/zenox"><img src="https://img.shields.io/npm/dm/zenox.svg?style=flat-square" alt="npm downloads" /></a> -->
+  <a href="https://github.com/CYBERBOYAYUSH/zenox/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
+</p>
 
-## Installation
+---
 
-### Quick Install (Recommended)
+Zenox supercharges [OpenCode](https://opencode.ai) with specialized AI agents that handle different aspects of development. Instead of one agent doing everything, you get a team of experts — each optimized for their domain.
+
+## Why Zenox?
+
+Most AI coding assistants use a single model for everything. Zenox takes a different approach:
+
+- **Explorer** finds code fast — optimized for codebase search with a lightweight model
+- **Librarian** digs deep into docs — researches libraries, finds GitHub examples, citations included
+- **Oracle** thinks strategically — architecture decisions, debugging, technical trade-offs
+- **UI Planner** designs beautifully — CSS, animations, interfaces that don't look AI-generated
+
+The main agent automatically delegates to specialists when needed. You don't have to manage them.
+
+## Quick Start
 
 ```bash
 bunx zenox install
 ```
 
-This will:
-- Create `opencode.json` if it doesn't exist
-- Add zenox to your plugins array
-- Let you configure custom models for each agent (optional)
-- Detect models from your existing opencode.json config
-
-### Manual Install
-
-Add to your `opencode.json`:
-
-```json
-{
-  "plugins": ["zenox"]
-}
-```
-
-> **Note**: Don't pin the version (e.g., `zenox@1.0.0`) if you want automatic updates.
-
-Restart OpenCode and the plugin is ready to use.
-
-## CLI Commands
-
-```bash
-# Interactive install with model configuration
-bunx zenox install
-
-# Non-interactive mode (uses default models)
-bunx zenox install --no-tui
-
-# Reconfigure agent models later
-bunx zenox config
-bunx zenox models  # alias
-
-# Specify config path
-bunx zenox install --config ./path/to/opencode.json
-
-# Help
-bunx zenox --help
-```
-
-### Model Configuration
-
-During installation, you can choose to customize models for each agent:
-
-1. **Use recommended defaults** - No config file needed
-2. **Customize models** - Pick from:
-   - Recommended default model
-   - Models defined in your opencode.json
-   - Enter a custom model name (see [models.dev](https://models.dev))
-
-Custom models are saved to `~/.config/opencode/zenox.json`.
+That's it. Restart OpenCode and the agents are ready.
 
 ## Agents
 
-### @explorer
-Fast codebase search specialist.
-- "Where is X implemented?"
-- "Find all files containing Y"
-- Pattern matching and locating implementations
+| Agent | What it does | Default Model |
+|-------|-------------|---------------|
+| **Explorer** | Codebase search, file discovery, pattern matching | `claude-haiku-4-5` |
+| **Librarian** | Library research, docs lookup, GitHub examples | `claude-sonnet-4-5` |
+| **Oracle** | Architecture decisions, debugging strategy, code review | `gpt-5.2` |
+| **UI Planner** | Frontend design, CSS, animations, visual polish | `gemini-3-pro-high` |
 
-**Default Model**: `anthropic/claude-haiku-4-5`
+### How delegation works
 
-### @librarian
-Open-source research agent.
-- "How does library X work?"
-- "Show me implementation examples"
-- Finding official documentation
+You don't need to call agents directly. The main agent (Build/Plan) automatically delegates:
 
-**Default Model**: `anthropic/claude-sonnet-4-5`
+```
+You: "Where's the authentication logic?"
+→ Explorer searches the codebase
 
-### @oracle
-Strategic technical advisor.
-- Architecture decisions
-- Code review and debugging strategy
-- Technical trade-offs analysis
+You: "How does React Query handle caching?"
+→ Librarian fetches official docs + real examples
 
-**Default Model**: `openai/gpt-5.2`
+You: "Should I use Redux or Zustand here?"
+→ Oracle analyzes trade-offs for your codebase
 
-### @ui-planner
-Designer-turned-developer.
-- Beautiful UI/UX implementation
-- Frontend aesthetics and animations
-- Visual design without mockups
-
-**Default Model**: `google/gemini-3-pro-high`
+You: "Make this dashboard look better"
+→ UI Planner redesigns with proper aesthetics
+```
 
 ## Background Tasks
 
-For parallel research, use background tasks instead of sequential agents:
+Need comprehensive research? Fire multiple agents in parallel:
 
 ```
-// Launch parallel research (all run simultaneously)
 background_task(agent="explorer", description="Find auth code", prompt="...")
-background_task(agent="explorer", description="Find db layer", prompt="...")
-background_task(agent="librarian", description="Best practices", prompt="...")
+background_task(agent="librarian", description="JWT best practices", prompt="...")
 
-// Continue working while they run...
-// [NOTIFICATION: All background tasks complete!]
-
-// Retrieve results
-background_output(task_id="bg_abc123")
+// Both run simultaneously while you keep working
+// You're notified when all tasks complete
 ```
-
-### When to Use
-
-| Scenario | Use Background Tasks |
-|----------|---------------------|
-| Comprehensive exploration | YES - fire 3-4 agents in parallel |
-| Codebase + external docs | YES - explore + librarian in parallel |
-| Result A needed before B | NO - use sequential Task |
-
-## Auto-Update
-
-Zenox automatically checks for updates on startup:
-
-1. **Startup Toast**: Shows current version when plugin loads
-2. **Update Check**: Queries npm registry for latest version
-3. **Cache Invalidation**: If update available, clears Bun cache
-4. **Update Toast**: Notifies you to restart OpenCode
-
-To disable auto-updates, pin your version: `"zenox@1.0.0"`
 
 ## Configuration
 
-### Via CLI (Recommended)
+### Custom Models
+
+During installation, choose "Customize models" to pick your own. Or run later:
 
 ```bash
 bunx zenox config
 ```
 
-Interactive UI to select models for each agent.
-
-### Manual Configuration
-
-Create `~/.config/opencode/zenox.json`:
+Config saves to `~/.config/opencode/zenox.json`:
 
 ```json
 {
   "agents": {
-    "explorer": { "model": "anthropic/claude-sonnet-4" },
-    "oracle": { "model": "openai/gpt-4o" }
-  },
-  "disabled_agents": [],
-  "disabled_mcps": []
+    "explorer": { "model": "anthropic/claude-sonnet-4.5" },
+    "oracle": { "model": "openai/gpt-5.2" }
+  }
 }
 ```
 
-## Auto-Loaded MCP Servers
+### Disable Agents or MCPs
 
-| MCP Server | Description |
-|------------|-------------|
-| `exa` | Web search, code context, URL crawling |
-| `grep_app` | GitHub code search across millions of repos |
-| `sequential-thinking` | Structured reasoning for complex problems |
+```json
+{
+  "disabled_agents": ["ui-planner"],
+  "disabled_mcps": ["grep_app"]
+}
+```
 
-## Development
+## Included MCP Servers
+
+Zenox auto-loads these tools for agents to use:
+
+| Server | Purpose |
+|--------|---------|
+| **exa** | Web search, docs lookup, URL crawling |
+| **grep_app** | Search millions of GitHub repos instantly |
+| **sequential-thinking** | Step-by-step reasoning for complex problems |
+
+## CLI
 
 ```bash
-bun install
-bun run build
-bun run typecheck
+bunx zenox install          # Add to opencode.json + configure models
+bunx zenox install --no-tui # Non-interactive (uses defaults)
+bunx zenox config           # Reconfigure models anytime
+bunx zenox --help           # Show all commands
 ```
+
+## Auto-Update
+
+Zenox checks for updates on startup. When a new version drops:
+
+1. You see a toast notification
+2. Bun cache is invalidated
+3. Restart to get the update
+
+Pin a version to disable: `"zenox@1.0.3"` in your plugins array.
 
 ## Credits
 
-- **[OpenCode](https://opencode.ai)** — The CLI tool this plugin extends
-- **[oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode)** by YeonGyu Kim — Inspiration for orchestration patterns
+- [OpenCode](https://opencode.ai) — The CLI this extends
+- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — Inspiration for orchestration patterns
 
 ## License
 
-MIT
+[MIT](LICENSE)
