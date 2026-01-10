@@ -6,7 +6,8 @@
  * 2. Orchestration injection into Build/Plan agents for smart delegation
  * 3. Auto-loaded MCP servers: exa, grep_app, sequential-thinking
  * 4. Background task system for parallel agent execution
- * 5. Optional configuration via zenox.json for model/MCP overrides
+ * 5. Auto-update checker with startup toast notifications
+ * 6. Optional configuration via zenox.json for model/MCP overrides
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
@@ -21,6 +22,7 @@ import { ORCHESTRATION_PROMPT } from "./orchestration/prompt"
 import { loadPluginConfig, type AgentName } from "./config"
 import { createBuiltinMcps } from "./mcp"
 import { BackgroundManager, createBackgroundTools } from "./background"
+import { createAutoUpdateHook } from "./hooks"
 
 const ZenoxPlugin: Plugin = async (ctx) => {
   // Load user/project configuration
@@ -31,6 +33,9 @@ const ZenoxPlugin: Plugin = async (ctx) => {
   // Initialize background task manager
   const backgroundManager = new BackgroundManager()
   const backgroundTools = createBackgroundTools(backgroundManager, ctx.client)
+
+  // Initialize auto-update hook
+  const autoUpdateHook = createAutoUpdateHook(ctx)
 
   // Helper to apply model override from config
   const applyModelOverride = (
@@ -48,9 +53,12 @@ const ZenoxPlugin: Plugin = async (ctx) => {
     // Register background task tools
     tool: backgroundTools,
 
-    // Handle session events for background task completion detection
+    // Handle session events
     event: async (input: { event: Event }) => {
       const { event } = input
+
+      // Run auto-update hook (shows toast on startup, checks for updates)
+      await autoUpdateHook.event(input)
 
       // Track main session on creation
       if (event.type === "session.created") {

@@ -1,12 +1,15 @@
 {
   "name": "zenox",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "OpenCode plugin with specialized agents (explorer, librarian, oracle, ui-planner), background tasks for parallel execution, and smart orchestration",
   "author": "Ayush",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "zenox": "./dist/cli/index.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -17,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm && tsc --emitDeclarationOnly",
+    "build": "bun build src/index.ts --outdir dist --target bun --format esm && bun build src/cli/index.ts --outdir dist/cli --target node --format esm && tsc --emitDeclarationOnly",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run clean && bun run build",
     "typecheck": "tsc --noEmit"
@@ -35,7 +38,8 @@
     "parallel",
     "orchestration",
     "ai",
-    "llm"
+    "llm",
+    "cli"
   ],
   "repository": {
     "type": "git",
@@ -45,8 +49,11 @@
     "access": "public"
   },
   "dependencies": {
+    "@clack/prompts": "^0.11.0",
     "@opencode-ai/plugin": "^1.1.12",
     "@opencode-ai/sdk": "^1.1.12",
+    "commander": "^14.0.0",
+    "picocolors": "^1.1.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {

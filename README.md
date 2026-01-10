@@ -6,21 +6,53 @@ OpenCode plugin for intelligent agent orchestration with specialized subagents a
 
 - **4 Specialized Subagents**: Explorer, Librarian, Oracle, UI-Planner
 - **Background Tasks**: Parallel agent execution for comprehensive research
+- **Auto-Update**: Automatic update checking with toast notifications
 - **Auto-Loaded MCP Servers**: exa, grep_app, sequential-thinking
 - **Smart Orchestration**: Automatically teaches Build/Plan agents how to delegate
-- **Portable**: Install on any machine via opencode.json
+- **CLI Installer**: Easy setup via `bunx zenox install`
 
 ## Installation
+
+### Quick Install (Recommended)
+
+```bash
+bunx zenox install
+```
+
+This will:
+- Create `opencode.json` if it doesn't exist
+- Add zenox to your plugins array
+- Preserve existing configuration
+
+### Manual Install
 
 Add to your `opencode.json`:
 
 ```json
 {
-  "plugin": ["zenox@0.1.0"]
+  "plugins": ["zenox"]
 }
 ```
 
+> **Note**: Don't pin the version (e.g., `zenox@0.1.0`) if you want automatic updates.
+
 Restart OpenCode and the plugin is ready to use.
+
+## CLI Commands
+
+```bash
+# Interactive install with TUI
+bunx zenox install
+
+# Non-interactive mode (CI/scripts)
+bunx zenox install --no-tui
+
+# Specify config path
+bunx zenox install --config ./path/to/opencode.json
+
+# Help
+bunx zenox --help
+```
 
 ## Agents
 
@@ -80,6 +112,17 @@ background_output(task_id="bg_abc123")
 | Comprehensive exploration | YES - fire 3-4 agents in parallel |
 | Codebase + external docs | YES - explore + librarian in parallel |
 | Result A needed before B | NO - use sequential Task |
+
+## Auto-Update
+
+Zenox automatically checks for updates on startup:
+
+1. **Startup Toast**: Shows current version when plugin loads
+2. **Update Check**: Queries npm registry for latest version
+3. **Cache Invalidation**: If update available, clears Bun cache
+4. **Update Toast**: Notifies you to restart OpenCode
+
+To disable auto-updates, pin your version: `"zenox@0.1.0"`
 
 ## Configuration (Optional)
 
