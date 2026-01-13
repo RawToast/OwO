@@ -171,7 +171,7 @@ Zenox checks for updates on startup. When a new version drops:
 2. Bun cache is invalidated
 3. Restart to get the update
 
-Pin a version to disable: `"zenox@1.2.0"` in your plugins array.
+Pin a version to disable: `"zenox@1.2.1"` in your plugins array.
 
 ## Credits
 

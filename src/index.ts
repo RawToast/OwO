@@ -64,7 +64,7 @@ const ZenoxPlugin: Plugin = async (ctx) => {
       input: { sessionID: string; agent?: string },
       output: { parts: Array<{ type: string; text?: string }>; message: Record<string, unknown> }
     ) => {
-      await keywordDetectorHook["chat.message"]?.(input, output as never)
+      await keywordDetectorHook["chat.message"]?.(input, output)
     },
 
     // Handle session events

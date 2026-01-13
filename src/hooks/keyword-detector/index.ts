@@ -3,8 +3,7 @@
  *
  * Detects special keywords in user messages and:
  * 1. Injects mode-specific context into the message
- * 2. Sets message variant to "max" for higher precision (ultrawork only)
- * 3. Shows toast notification for user feedback
+ * 2. Shows toast notification for user feedback
  *
  * Uses the "chat.message" hook which fires when user submits a message.
  */
@@ -17,13 +16,12 @@ const TOAST_DURATION = 4000
 interface MessagePart {
   type: string
   text?: string
+  synthetic?: boolean
 }
 
 interface ChatMessageOutput {
   parts: MessagePart[]
-  message: {
-    variant?: string
-  }
+  message: Record<string, unknown>
 }
 
 function extractTextFromParts(parts: MessagePart[]): string {
@@ -71,16 +69,21 @@ export function createKeywordDetectorHook(ctx: PluginInput) {
       // Get highest priority keyword (ultrawork > deep-research > explore)
       const primaryKeyword = detectedKeywords[0]
 
-      // Set message variant to "max" for higher precision (ultrawork only)
-      if (primaryKeyword.type === "ultrawork") {
-        output.message.variant = "max"
+      // Inject context by appending to existing text part or adding new one
+      const textPartIndex = output.parts.findIndex((p) => p.type === "text" && p.text)
+      
+      if (textPartIndex >= 0) {
+        // Append context to existing text part
+        const existingPart = output.parts[textPartIndex]
+        existingPart.text = `${existingPart.text ?? ""}\n\n${primaryKeyword.context}`
+      } else {
+        // Add new text part if none exists
+        output.parts.push({
+          type: "text",
+          text: primaryKeyword.context,
+          synthetic: true,
+        })
       }
-
-      // Inject context into the message parts
-      output.parts.push({
-        type: "text",
-        text: primaryKeyword.context,
-      })
 
       // Show toast notification
       await ctx.client.tui
