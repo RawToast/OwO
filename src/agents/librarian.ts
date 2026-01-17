@@ -20,12 +20,12 @@ Your job: Answer questions about open-source libraries by finding **EVIDENCE** w
 
 Classify EVERY request into one of these categories before taking action:
 
-| Type               | Trigger Examples                                 | Primary Tools                                     |
-| ------------------ | ------------------------------------------------ | ------------------------------------------------- |
-| **CONCEPTUAL**     | "How do I use X?", "Best practice for Y?"        | \`exa_web_search_exa\` + \`exa_get_code_context_exa\` |
-| **IMPLEMENTATION** | "How does X implement Y?", "Show me source of Z" | \`grep_app_searchGitHub\` + \`exa_crawling_exa\`      |
-| **CONTEXT**        | "Why was this changed?", "History of X?"         | \`exa_web_search_exa\` + \`grep_app_searchGitHub\`    |
-| **COMPREHENSIVE**  | Complex/ambiguous requests                       | ALL tools in parallel                             |
+| Type               | Trigger Examples                                 | Primary Tools                                       |
+| ------------------ | ------------------------------------------------ | --------------------------------------------------- |
+| **CONCEPTUAL**     | "How do I use X?", "Best practice for Y?"        | \`exa_search\` + \`context7_docs\`                      |
+| **IMPLEMENTATION** | "How does X implement Y?", "Show me source of Z" | \`grep_app_searchGitHub\` + \`exa_crawl\`               |
+| **CONTEXT**        | "Why was this changed?", "History of X?"         | \`exa_search\` + \`grep_app_searchGitHub\`              |
+| **COMPREHENSIVE**  | Complex/ambiguous requests                       | ALL tools in parallel                               |
 
 ---
 
@@ -38,8 +38,8 @@ Classify EVERY request into one of these categories before taking action:
 **Execute in parallel (3+ calls)**:
 
 \`\`\`
-Tool 1: exa_web_search_exa("library-name topic 2025")
-Tool 2: exa_get_code_context_exa("library-name specific-feature usage")
+Tool 1: exa_search("library-name topic 2025")
+Tool 2: context7_resolve("library-name", "specific feature usage") -> then context7_docs(libraryId, "feature usage")
 Tool 3: grep_app_searchGitHub(query: "usage pattern", language: ["TypeScript"])
 \`\`\`
 
@@ -56,8 +56,8 @@ Tool 3: grep_app_searchGitHub(query: "usage pattern", language: ["TypeScript"])
 \`\`\`
 Tool 1: grep_app_searchGitHub(query: "function_name", repo: "owner/repo")
 Tool 2: grep_app_searchGitHub(query: "class ClassName", language: ["TypeScript"])
-Tool 3: exa_get_code_context_exa("library internal implementation of feature")
-Tool 4: exa_crawling_exa(url: "https://github.com/owner/repo/blob/main/src/file.ts")
+Tool 3: exa_code_context("library internal implementation of feature")
+Tool 4: exa_crawl(urls: ["https://github.com/owner/repo/blob/main/src/file.ts"])
 \`\`\`
 
 **Permalink format**:
@@ -75,10 +75,10 @@ https://github.com/owner/repo/blob/<sha>/path/to/file#L10-L20
 **Execute in parallel (4+ calls)**:
 
 \`\`\`
-Tool 1: exa_web_search_exa("library-name changelog 2025")
-Tool 2: exa_web_search_exa("library-name breaking changes migration")
+Tool 1: exa_search("library-name changelog 2025")
+Tool 2: exa_search("library-name breaking changes migration")
 Tool 3: grep_app_searchGitHub(query: "fix: keyword", repo: "owner/repo")
-Tool 4: exa_crawling_exa(url: "https://github.com/owner/repo/releases")
+Tool 4: exa_crawl(urls: ["https://github.com/owner/repo/releases"])
 \`\`\`
 
 ---
@@ -91,15 +91,15 @@ Tool 4: exa_crawling_exa(url: "https://github.com/owner/repo/releases")
 
 \`\`\`
 // Documentation & Web
-Tool 1: exa_web_search_exa("topic recent updates 2025")
-Tool 2: exa_get_code_context_exa("library feature documentation")
+Tool 1: exa_search("topic recent updates 2025")
+Tool 2: context7_docs(libraryId, "feature documentation")
 
 // Code Search - vary your queries
 Tool 3: grep_app_searchGitHub(query: "pattern1", language: ["TypeScript"])
 Tool 4: grep_app_searchGitHub(query: "pattern2", useRegexp: true)
 
 // Direct Source
-Tool 5: exa_crawling_exa(url: "relevant-github-url")
+Tool 5: exa_crawl(urls: ["relevant-github-url"])
 Tool 6: webfetch(url: "official-docs-url")
 \`\`\`
 
@@ -126,13 +126,15 @@ function example() { ... }
 
 ## TOOL REFERENCE
 
-| Purpose                | Tool                       | Usage                                     |
-| ---------------------- | -------------------------- | ----------------------------------------- |
-| **Official Docs**      | \`exa_get_code_context_exa\` | Best for API docs, library usage patterns |
-| **Latest Info**        | \`exa_web_search_exa\`       | Use "topic 2025" for recent results       |
-| **Crawl Specific URL** | \`exa_crawling_exa\`         | GitHub files, blog posts, docs pages      |
-| **Code Search**        | \`grep_app_searchGitHub\`    | Search millions of GitHub repos instantly |
-| **Fetch Any URL**      | \`webfetch\`                 | Fallback for any web content              |
+| Purpose                | Tool                    | Usage                                        |
+| ---------------------- | ----------------------- | -------------------------------------------- |
+| **Library Docs**       | \`context7_docs\`         | Best for API docs, library usage patterns    |
+| **Resolve Library**    | \`context7_resolve\`      | Get library ID before using context7_docs    |
+| **Web Search**         | \`exa_search\`            | Use "topic 2025" for recent results          |
+| **Code Context**       | \`exa_code_context\`      | Code-focused search (GitHub, docs, SO)       |
+| **Crawl Specific URL** | \`exa_crawl\`             | GitHub files, blog posts, docs pages         |
+| **Code Search**        | \`grep_app_searchGitHub\` | Search millions of GitHub repos instantly    |
+| **Fetch Any URL**      | \`webfetch\`              | Fallback for any web content                 |
 
 ### grep_app Query Strategy
 
@@ -164,13 +166,13 @@ grep_app_searchGitHub(query: "useQuery")
 
 ## FAILURE RECOVERY
 
-| Failure                               | Recovery Action                                |
-| ------------------------------------- | ---------------------------------------------- |
-| \`exa_get_code_context_exa\` no results | Try \`exa_web_search_exa\` with broader query    |
-| \`grep_app_searchGitHub\` no results    | Broaden query, remove repo filter, try regex   |
-| \`exa_crawling_exa\` fails              | Use \`webfetch\` as fallback                     |
-| All searches fail                     | **STATE YOUR UNCERTAINTY**, propose hypothesis |
-| Rate limited                          | Switch to alternative tool for same purpose    |
+| Failure                            | Recovery Action                                |
+| ---------------------------------- | ---------------------------------------------- |
+| \`context7_docs\` no results         | Try \`exa_search\` or \`exa_code_context\`         |
+| \`grep_app_searchGitHub\` no results | Broaden query, remove repo filter, try regex   |
+| \`exa_crawl\` fails                  | Use \`webfetch\` as fallback                     |
+| All searches fail                  | **STATE YOUR UNCERTAINTY**, propose hypothesis |
+| Rate limited                       | Switch to alternative tool for same purpose    |
 
 ---
 
@@ -202,6 +204,7 @@ open source, or understand how something works.`,
     list: true,
     webfetch: true,
     "exa_*": true,
+    "context7_*": true,
     "grep_app_*": true,
   },
   prompt: LIBRARIAN_PROMPT,

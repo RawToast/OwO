@@ -37,11 +37,7 @@ export class TaskToastManager {
     this.client = client
   }
 
-  async showLaunchToast(task: {
-    id: string
-    description: string
-    agent: string
-  }): Promise<void> {
+  async showLaunchToast(task: { id: string; description: string; agent: string }): Promise<void> {
     // Track the task
     this.tasks.set(task.id, {
       ...task,
@@ -50,9 +46,10 @@ export class TaskToastManager {
     })
 
     const runningCount = this.getRunningCount()
-    const message = runningCount > 1
-      ? `"${task.description}"\nAgent: ${task.agent}\nRunning: ${runningCount}`
-      : `"${task.description}"\nAgent: ${task.agent}`
+    const message =
+      runningCount > 1
+        ? `"${task.description}"\nAgent: ${task.agent}\nRunning: ${runningCount}`
+        : `"${task.description}"\nAgent: ${task.agent}`
 
     await this.client.tui
       .showToast({
@@ -119,7 +116,7 @@ export class TaskToastManager {
 
   private async showAllCompleteToast(): Promise<void> {
     const completedTasks = [...this.tasks.values()].filter(
-      (t) => t.status === "completed" || t.status === "failed"
+      (t) => t.status === "completed" || t.status === "failed",
     )
 
     const taskList = completedTasks

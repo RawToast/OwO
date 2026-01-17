@@ -95,6 +95,8 @@ Specify thoroughness: "quick" for basic, "medium" for moderate,
     grep: true,
     list: true,
     "grep_app_*": true,
+    Ripgrep: true,
+    lsp: true,
   },
   prompt: EXPLORER_PROMPT,
 }

@@ -23,12 +23,10 @@ export async function askConfigureMcps(): Promise<"keep_all" | "customize" | nul
   return result as "keep_all" | "customize"
 }
 
-export async function pickMcpsToEnable(
-  currentDisabled: McpName[]
-): Promise<McpName[] | null> {
+export async function pickMcpsToEnable(currentDisabled: McpName[]): Promise<McpName[] | null> {
   p.note(
     `${pc.dim("All MCPs are free and recommended for best experience.")}\n${pc.dim("Unselect only if you have specific conflicts.")}`,
-    "MCP Servers"
+    "MCP Servers",
   )
 
   const allMcpNames = MCP_SERVERS.map((m) => m.name)
@@ -67,9 +65,7 @@ export function showMcpStatus(disabledMcps: McpName[]): void {
   p.log.info("MCP Server Status:")
   for (const mcp of MCP_SERVERS) {
     const isDisabled = disabledMcps.includes(mcp.name)
-    const status = isDisabled
-      ? pc.red("✗ Disabled")
-      : pc.green("✓ Enabled")
+    const status = isDisabled ? pc.red("✗ Disabled") : pc.green("✓ Enabled")
     const rec = mcp.recommended ? pc.dim(" (Recommended)") : ""
     p.log.message(`  ${mcp.displayName}: ${status}${rec}`)
   }

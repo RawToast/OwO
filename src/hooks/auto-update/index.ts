@@ -8,10 +8,7 @@ interface AutoUpdateHookOptions {
   showStartupToast?: boolean
 }
 
-export function createAutoUpdateHook(
-  ctx: PluginInput,
-  options: AutoUpdateHookOptions = {}
-) {
+export function createAutoUpdateHook(ctx: PluginInput, options: AutoUpdateHookOptions = {}) {
   const { showStartupToast = true } = options
   let hasChecked = false
 
@@ -44,14 +41,16 @@ export function createAutoUpdateHook(
         await invalidatePackageCache()
 
         // Show update available toast
-        await ctx.client.tui.showToast({
-          body: {
-            title: `🆕 ${PACKAGE_NAME} v${updateInfo.latestVersion}`,
-            message: `Fresh update dropped! Restart to level up.`,
-            variant: "success",
-            duration: TOAST_DURATION,
-          },
-        }).catch(() => {})
+        await ctx.client.tui
+          .showToast({
+            body: {
+              title: `🆕 ${PACKAGE_NAME} v${updateInfo.latestVersion}`,
+              message: `Fresh update dropped! Restart to level up.`,
+              variant: "success",
+              duration: TOAST_DURATION,
+            },
+          })
+          .catch(() => {})
       } catch {
         // Silently ignore errors - don't break plugin startup
       }
@@ -60,14 +59,16 @@ export function createAutoUpdateHook(
 }
 
 async function showVersionToast(ctx: PluginInput, version: string) {
-  await ctx.client.tui.showToast({
-    body: {
-      title: `⚡ ${PACKAGE_NAME} v${version}`,
-      message: "Agents assembled. Let's build!",
-      variant: "success",
-      duration: TOAST_DURATION,
-    },
-  }).catch(() => {})
+  await ctx.client.tui
+    .showToast({
+      body: {
+        title: `∩(^ΦωΦ^)∩`,
+        message: "(/・ω・)/ ~Let's build!",
+        variant: "success",
+        duration: TOAST_DURATION,
+      },
+    })
+    .catch(() => {})
 }
 
 export { checkForUpdate, getCachedVersion, getLatestVersion } from "./checker"

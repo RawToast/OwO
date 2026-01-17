@@ -47,10 +47,7 @@ export function createSessionTools(client: OpencodeClient): SessionTools {
 Use when you need to see what was done before or find a specific session.
 Returns session IDs, titles, and creation dates.`,
     args: {
-      limit: tool.schema
-        .number()
-        .optional()
-        .describe("Max sessions to return (default: 10)"),
+      limit: tool.schema.number().optional().describe("Max sessions to return (default: 10)"),
     },
     async execute(args) {
       try {
@@ -69,9 +66,7 @@ Returns session IDs, titles, and creation dates.`,
         const formatted = mainSessions.map((s) => ({
           id: s.id,
           title: s.title ?? "(untitled)",
-          created: s.time?.created
-            ? new Date(s.time.created).toISOString()
-            : "unknown",
+          created: s.time?.created ? new Date(s.time.created).toISOString() : "unknown",
         }))
 
         return JSON.stringify(formatted, null, 2)
@@ -88,10 +83,7 @@ Use when looking for past implementations, solutions, or context.
 Searches the last 10 sessions for matching content.`,
     args: {
       query: tool.schema.string().describe("Search query (case-insensitive)"),
-      limit: tool.schema
-        .number()
-        .optional()
-        .describe("Max results to return (default: 20)"),
+      limit: tool.schema.number().optional().describe("Max results to return (default: 20)"),
     },
     async execute(args) {
       try {
@@ -99,9 +91,7 @@ Searches the last 10 sessions for matching content.`,
         const sessions = (sessionsResult.data ?? []) as SessionInfo[]
 
         // Filter to main sessions only, limit search scope
-        const searchSessions = sessions
-          .filter((s) => !s.parentID)
-          .slice(0, MAX_SESSIONS_TO_SEARCH)
+        const searchSessions = sessions.filter((s) => !s.parentID).slice(0, MAX_SESSIONS_TO_SEARCH)
 
         if (searchSessions.length === 0) {
           return "No sessions to search."
@@ -129,8 +119,7 @@ Searches the last 10 sessions for matching content.`,
             for (const msg of messages) {
               if (results.length >= maxResults) break
 
-              const textParts =
-                msg.parts?.filter((p) => p.type === "text" && p.text) ?? []
+              const textParts = msg.parts?.filter((p) => p.type === "text" && p.text) ?? []
 
               for (const part of textParts) {
                 if (results.length >= maxResults) break

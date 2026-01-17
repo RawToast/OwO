@@ -15,12 +15,8 @@ import {
   getCurrentModels,
   getDisabledMcps,
   getZenoxConfigPath,
-} from "./zenox-config"
-import {
-  extractUserModels,
-  askConfigureModels,
-  pickModelsForAllAgents,
-} from "./model-picker"
+} from "./owo-config"
+import { extractUserModels, askConfigureModels, pickModelsForAllAgents } from "./model-picker"
 import { askConfigureMcps, pickMcpsToEnable } from "./mcp-picker"
 import { PACKAGE_NAME } from "./constants"
 import type { InstallOptions } from "./types"
@@ -130,7 +126,7 @@ async function runInteractive(cwd: string, customConfigPath?: string): Promise<v
       process.exit(0)
     }
 
-    // Only create zenox.json if there are custom models
+    // Only create owo.json if there are custom models
     if (Object.keys(selectedModels).length > 0) {
       const spinner = p.spinner()
       spinner.start("Saving model configuration")
@@ -144,7 +140,7 @@ async function runInteractive(cwd: string, customConfigPath?: string): Promise<v
         process.exit(1)
       }
     } else {
-      p.log.info("Using default models - no zenox.json needed")
+      p.log.info("Using default models - no owo.json needed")
     }
   }
 
@@ -190,23 +186,16 @@ async function runNonInteractive(cwd: string, customConfigPath?: string): Promis
     : findConfigFile(cwd)
 
   if (!configFile) {
-    console.log(`Creating opencode.json with ${PACKAGE_NAME}...`)
     const configPath = getDefaultConfigPath(cwd)
     await createDefaultConfig(configPath)
-    console.log(`Created opencode.json with ${PACKAGE_NAME}`)
-    console.log("Using default models (run 'bunx zenox config' to customize)")
     return
   }
 
   // Check if already installed
   const { config } = await readConfig(configFile.path)
   if (isPluginInstalled(config)) {
-    console.log(`${PACKAGE_NAME} is already installed`)
     return
   }
 
-  console.log(`Adding ${PACKAGE_NAME} to ${configFile.path}...`)
   await installPlugin(configFile.path)
-  console.log(`${PACKAGE_NAME} installed successfully!`)
-  console.log("Using default models (run 'bunx zenox config' to customize)")
 }

@@ -11,10 +11,7 @@ import type { ZenoxConfig } from "../config"
  * Safely resolve agent variant from config
  * Returns undefined if agent doesn't exist or has no variant configured
  */
-export function resolveAgentVariant(
-  config: ZenoxConfig,
-  agentName?: string
-): string | undefined {
+export function resolveAgentVariant(config: ZenoxConfig, agentName?: string): string | undefined {
   if (!agentName) return undefined
 
   const agentOverrides = config.agents as
@@ -31,7 +28,7 @@ export function resolveAgentVariant(
 export function applyAgentVariant(
   config: ZenoxConfig,
   agentName: string | undefined,
-  message: { variant?: string }
+  message: { variant?: string },
 ): void {
   const variant = resolveAgentVariant(config, agentName)
   if (variant !== undefined && message.variant === undefined) {

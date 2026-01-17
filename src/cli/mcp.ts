@@ -5,7 +5,7 @@ import {
   getDisabledMcps,
   updateDisabledMcps,
   getZenoxConfigPath,
-} from "./zenox-config"
+} from "./owo-config"
 import { pickMcpsToEnable, showMcpStatus } from "./mcp-picker"
 import { PACKAGE_NAME } from "./constants"
 

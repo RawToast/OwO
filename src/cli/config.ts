@@ -6,12 +6,8 @@ import {
   updateAgentModels,
   getCurrentModels,
   getZenoxConfigPath,
-} from "./zenox-config"
-import {
-  extractUserModels,
-  selectAgentsToReconfigure,
-  pickModelForAgent,
-} from "./model-picker"
+} from "./owo-config"
+import { extractUserModels, selectAgentsToReconfigure, pickModelForAgent } from "./model-picker"
 import { PACKAGE_NAME, AGENTS, DEFAULT_MODELS } from "./constants"
 import type { AgentName } from "./constants"
 import type { UserModelInfo } from "./types"
@@ -84,14 +80,14 @@ export async function runConfig(): Promise<void> {
 
   // Merge with existing config, removing defaults
   const finalModels: Partial<Record<AgentName, string>> = {}
-  
+
   // Keep existing custom models for agents not reconfigured
   for (const [agent, model] of Object.entries(currentModels)) {
     if (!selectedAgents.includes(agent as AgentName)) {
       finalModels[agent as AgentName] = model
     }
   }
-  
+
   // Add newly configured models (only non-defaults)
   for (const [agent, model] of Object.entries(newModels)) {
     if (model !== DEFAULT_MODELS[agent as AgentName]) {

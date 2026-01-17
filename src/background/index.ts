@@ -6,9 +6,4 @@
 
 export { BackgroundManager } from "./manager"
 export { createBackgroundTools, type BackgroundTools } from "./tools"
-export type {
-  BackgroundTask,
-  TaskStatus,
-  LaunchInput,
-  CompletionNotification,
-} from "./types"
+export type { BackgroundTask, TaskStatus, LaunchInput, CompletionNotification } from "./types"

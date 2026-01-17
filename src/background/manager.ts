@@ -9,11 +9,7 @@
  */
 
 import type { OpencodeClient } from "@opencode-ai/sdk"
-import type {
-  BackgroundTask,
-  LaunchInput,
-  CompletionNotification,
-} from "./types"
+import type { BackgroundTask, LaunchInput, CompletionNotification } from "./types"
 import type { TaskToastManager } from "../features/task-toast"
 
 export class BackgroundManager {
@@ -37,10 +33,7 @@ export class BackgroundManager {
     return `bg_${crypto.randomUUID().slice(0, 8)}`
   }
 
-  async launch(
-    client: OpencodeClient,
-    input: LaunchInput
-  ): Promise<BackgroundTask> {
+  async launch(client: OpencodeClient, input: LaunchInput): Promise<BackgroundTask> {
     // Store main session ID for notifications
     if (!this.mainSessionID) {
       this.mainSessionID = input.parentSessionID
@@ -77,11 +70,13 @@ export class BackgroundManager {
 
     // Show launch toast
     if (this.toastManager) {
-      this.toastManager.showLaunchToast({
-        id: task.id,
-        description: task.description,
-        agent: task.agent,
-      }).catch(() => {})
+      this.toastManager
+        .showLaunchToast({
+          id: task.id,
+          description: task.description,
+          agent: task.agent,
+        })
+        .catch(() => {})
     }
 
     // Fire-and-forget: send prompt without awaiting result
@@ -142,10 +137,7 @@ export class BackgroundManager {
     return undefined
   }
 
-  async getOutput(
-    client: OpencodeClient,
-    taskId: string
-  ): Promise<string | undefined> {
+  async getOutput(client: OpencodeClient, taskId: string): Promise<string | undefined> {
     const task = this.tasks.get(taskId)
     if (!task) {
       return `Task ${taskId} not found`
@@ -170,8 +162,7 @@ export class BackgroundManager {
       })
 
       // Handle SDK response structure
-      const messages =
-        "data" in messagesResult ? messagesResult.data : messagesResult
+      const messages = "data" in messagesResult ? messagesResult.data : messagesResult
 
       if (!messages || !Array.isArray(messages)) {
         return `Task ${taskId} completed but could not retrieve messages`
@@ -189,7 +180,7 @@ export class BackgroundManager {
       }
 
       const assistantMessages = (messages as MessageWrapper[]).filter(
-        (m) => m.info.role === "assistant" && m.parts && m.parts.length > 0
+        (m) => m.info.role === "assistant" && m.parts && m.parts.length > 0,
       )
 
       if (assistantMessages.length === 0) {
@@ -250,9 +241,7 @@ export class BackgroundManager {
   getCompletionStatus(): CompletionNotification {
     const allTasks = [...this.tasks.values()]
     const runningTasks = allTasks.filter((t) => t.status === "running")
-    const completedTasks = allTasks.filter(
-      (t) => t.status === "completed" || t.status === "failed"
-    )
+    const completedTasks = allTasks.filter((t) => t.status === "completed" || t.status === "failed")
 
     const allComplete = runningTasks.length === 0 && completedTasks.length > 0
 

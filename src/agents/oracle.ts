@@ -73,6 +73,7 @@ design reviews, complex debugging, technical trade-offs, refactoring
 roadmaps, and strategic technical decisions.`,
   mode: "subagent",
   model: "openai/gpt-5.2",
+  variant: "high",
   temperature: 0.1,
   tools: {
     write: false,
@@ -83,6 +84,9 @@ roadmaps, and strategic technical decisions.`,
     grep: true,
     list: true,
     "sequential-thinking_*": true,
+  },
+  skills: {
+    "systematic-debugging": true,
   },
   prompt: ORACLE_PROMPT,
 }

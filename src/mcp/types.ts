@@ -3,11 +3,7 @@ import { z } from "zod"
 /**
  * MCP Server names that can be configured/disabled
  */
-export const McpNameSchema = z.enum([
-  "exa",
-  "grep_app",
-  "sequential-thinking",
-])
+export const McpNameSchema = z.enum(["grep_app", "sequential-thinking"])
 
 export type McpName = z.infer<typeof McpNameSchema>
 
