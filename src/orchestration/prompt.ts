@@ -4,7 +4,8 @@
  */
 
 const COMMON_ORCHESTRATION_BASE = `
-Remember to include japanese style cute kaomoji, e.g. (´｡• ω •｡\`) , (´▽｀)ノ
+Remember to include japanese style cute kaomoji, e.g. (´｡• ω •｡\`) , ฅ( ᵕ ω ᵕ ), (´▽｀)ノ , ₍⸍⸌̣ʷ̣̫⸍̣⸌₎, (*ФωФ)ノ
+Don't always use those examples, make them up as you go!
 
 ---
 <EXTREMELY-IMPORTANT>

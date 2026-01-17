@@ -126,7 +126,7 @@ async function runInteractive(cwd: string, customConfigPath?: string): Promise<v
       process.exit(0)
     }
 
-    // Only create zenox.json if there are custom models
+    // Only create owo.json if there are custom models
     if (Object.keys(selectedModels).length > 0) {
       const spinner = p.spinner()
       spinner.start("Saving model configuration")
@@ -140,7 +140,7 @@ async function runInteractive(cwd: string, customConfigPath?: string): Promise<v
         process.exit(1)
       }
     } else {
-      p.log.info("Using default models - no zenox.json needed")
+      p.log.info("Using default models - no owo.json needed")
     }
   }
 

@@ -7,7 +7,7 @@
  * - exa_crawl: Extract content from specific URLs
  *
  * API key can be set via:
- * 1. Config file (tools.exa.key in zenox.json)
+ * 1. Config file (tools.exa.key in owo.json)
  * 2. Environment variable (EXA_API_KEY)
  *
  * Get your API key at: https://exa.ai
@@ -87,7 +87,7 @@ function createExaFetch(configKey?: string) {
     const apiKey = configKey || process.env.EXA_API_KEY
     if (!apiKey) {
       throw new Error(
-        "Exa API key not configured. Set tools.exa.key in zenox.json or EXA_API_KEY env var. Get your key at https://exa.ai",
+        "Exa API key not configured. Set tools.exa.key in owo.json or EXA_API_KEY env var. Get your key at https://exa.ai",
       )
     }
 

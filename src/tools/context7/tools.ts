@@ -6,7 +6,7 @@
  * - context7_docs: Query documentation and code examples for a library
  *
  * API key can be set via:
- * 1. Config file (tools.context7.key in zenox.json)
+ * 1. Config file (tools.context7.key in owo.json)
  * 2. Environment variable (CONTEXT7_API_KEY)
  *
  * Get your API key at: https://context7.com/dashboard
@@ -93,7 +93,7 @@ function createContext7Fetch(configKey?: string) {
     const apiKey = configKey || process.env.CONTEXT7_API_KEY
     if (!apiKey) {
       throw new Error(
-        "Context7 API key not configured. Set tools.context7.key in zenox.json or CONTEXT7_API_KEY env var. Get your key at https://context7.com/dashboard",
+        "Context7 API key not configured. Set tools.context7.key in owo.json or CONTEXT7_API_KEY env var. Get your key at https://context7.com/dashboard",
       )
     }
 

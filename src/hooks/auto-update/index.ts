@@ -62,8 +62,8 @@ async function showVersionToast(ctx: PluginInput, version: string) {
   await ctx.client.tui
     .showToast({
       body: {
-        title: `⚡ ${PACKAGE_NAME} v${version}`,
-        message: "Agents assembled. Let's build!",
+        title: `∩(^ΦωΦ^)∩`,
+        message: "(/・ω・)/ ~Let's build!",
         variant: "success",
         duration: TOAST_DURATION,
       },
