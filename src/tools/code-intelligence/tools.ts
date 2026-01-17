@@ -43,9 +43,7 @@ const SYMBOL_KINDS: Record<number, string> = {
   26: "TypeParameter",
 }
 
-export function createCodeIntelligenceTools(
-  client: OpencodeClient
-): CodeIntelligenceTools {
+export function createCodeIntelligenceTools(client: OpencodeClient): CodeIntelligenceTools {
   const findSymbols = tool({
     description: `Search for functions, classes, variables, and other symbols by name.
 Use to find where something is defined or to understand code structure.
@@ -75,9 +73,7 @@ Returns symbol name, type (function/class/etc), file path, and location.`,
             name: s.name,
             kind: SYMBOL_KINDS[s.kind] ?? `Unknown(${s.kind})`,
             path,
-            location: s.location?.range
-              ? `line ${s.location.range.start.line + 1}`
-              : "unknown",
+            location: s.location?.range ? `line ${s.location.range.start.line + 1}` : "unknown",
           }
         })
 

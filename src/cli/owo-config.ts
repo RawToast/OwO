@@ -15,7 +15,7 @@ export interface ZenoxConfig {
 }
 
 export function getZenoxConfigPath(): string {
-  return join(homedir(), ".config", "opencode", "zenox.json")
+  return join(homedir(), ".config", "opencode", "owo.json")
 }
 
 export async function readZenoxConfig(): Promise<ZenoxConfig | null> {
@@ -42,9 +42,7 @@ export async function writeZenoxConfig(config: ZenoxConfig): Promise<void> {
   await writeFile(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
 }
 
-export async function updateAgentModels(
-  models: Partial<Record<AgentName, string>>
-): Promise<void> {
+export async function updateAgentModels(models: Partial<Record<AgentName, string>>): Promise<void> {
   const existing = (await readZenoxConfig()) ?? {}
   const configPath = getZenoxConfigPath()
 
@@ -76,9 +74,7 @@ export async function updateAgentModels(
   })
 }
 
-export function getCurrentModels(
-  config: ZenoxConfig | null
-): Partial<Record<AgentName, string>> {
+export function getCurrentModels(config: ZenoxConfig | null): Partial<Record<AgentName, string>> {
   if (!config?.agents) return {}
 
   const result: Partial<Record<AgentName, string>> = {}

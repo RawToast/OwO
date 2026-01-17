@@ -7,13 +7,13 @@ import { runMcp } from "./mcp"
 const program = new Command()
 
 program
-  .name("zenox")
-  .description("Zenox - OpenCode plugin for intelligent agent orchestration")
+  .name("OwO")
+  .description("OwO - OpenCode plugin for intelligent agent orchestration")
   .version("1.0.0")
 
 program
   .command("install")
-  .description("Add zenox to your opencode.json plugins and configure models")
+  .description("Add OwO to your opencode.json plugins and configure models")
   .option("--no-tui", "Run in non-interactive mode (uses default models)")
   .option("-c, --config <path>", "Path to opencode.json")
   .action(async (options: { tui: boolean; config?: string }) => {

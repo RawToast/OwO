@@ -41,9 +41,9 @@ function getGlobalConfigDir(): string {
  */
 export function findConfigFile(directory: string): { path: string; format: ConfigFormat } | null {
   const searchPaths = [
-    join(directory, ".opencode"),  // Project-local subdirectory
-    directory,                      // Project root
-    getGlobalConfigDir(),          // Global config
+    join(directory, ".opencode"), // Project-local subdirectory
+    directory, // Project root
+    getGlobalConfigDir(), // Global config
   ]
 
   for (const searchDir of searchPaths) {
@@ -58,7 +58,9 @@ export function findConfigFile(directory: string): { path: string; format: Confi
   return null
 }
 
-export async function readConfig(configPath: string): Promise<{ content: string; config: OpencodeConfig }> {
+export async function readConfig(
+  configPath: string,
+): Promise<{ content: string; config: OpencodeConfig }> {
   const content = await readFile(configPath, "utf-8")
   // Use proper JSONC parser that handles strings correctly
   const jsonContent = stripJsonComments(content, { trailingCommas: true })
@@ -111,11 +113,11 @@ function addPluginToJson(config: OpencodeConfig): string {
   // Preserve the key name used in original config, default to "plugin" (OpenCode standard)
   const existingKey = config.plugins ? "plugins" : config.plugin ? "plugin" : "plugin"
   const existingPlugins = config.plugins ?? config.plugin ?? []
-  
+
   const newConfig = {
     [existingKey]: [PACKAGE_NAME, ...existingPlugins],
     ...Object.fromEntries(
-      Object.entries(config).filter(([key]) => key !== "plugins" && key !== "plugin")
+      Object.entries(config).filter(([key]) => key !== "plugins" && key !== "plugin"),
     ),
   }
   return JSON.stringify(newConfig, null, 2) + "\n"

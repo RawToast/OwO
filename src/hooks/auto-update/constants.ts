@@ -1,7 +1,7 @@
 import { homedir } from "node:os"
 import { join } from "node:path"
 
-export const PACKAGE_NAME = "zenox"
+export const PACKAGE_NAME = "OwO"
 export const NPM_REGISTRY_URL = `https://registry.npmjs.org/${PACKAGE_NAME}/latest`
 
 // Bun's global cache directory for installed packages

@@ -4,12 +4,7 @@ import { McpNameSchema } from "../mcp/types"
 /**
  * Agent names that can be configured
  */
-export const AgentNameSchema = z.enum([
-  "explorer",
-  "librarian",
-  "oracle",
-  "ui-planner",
-])
+export const AgentNameSchema = z.enum(["explorer", "librarian", "oracle", "ui-planner"])
 
 export type AgentName = z.infer<typeof AgentNameSchema>
 

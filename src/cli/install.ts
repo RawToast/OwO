@@ -15,12 +15,8 @@ import {
   getCurrentModels,
   getDisabledMcps,
   getZenoxConfigPath,
-} from "./zenox-config"
-import {
-  extractUserModels,
-  askConfigureModels,
-  pickModelsForAllAgents,
-} from "./model-picker"
+} from "./owo-config"
+import { extractUserModels, askConfigureModels, pickModelsForAllAgents } from "./model-picker"
 import { askConfigureMcps, pickMcpsToEnable } from "./mcp-picker"
 import { PACKAGE_NAME } from "./constants"
 import type { InstallOptions } from "./types"

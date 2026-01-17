@@ -125,9 +125,7 @@ export function createTodoEnforcerHook(ctx: PluginInput) {
       }
 
       // Filter incomplete todos
-      const incomplete = todos.filter(
-        (t) => t.status === "pending" || t.status === "in_progress"
-      )
+      const incomplete = todos.filter((t) => t.status === "pending" || t.status === "in_progress")
 
       if (incomplete.length === 0) {
         return // All todos complete

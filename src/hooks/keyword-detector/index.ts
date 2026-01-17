@@ -54,7 +54,7 @@ export function createKeywordDetectorHook(ctx: PluginInput) {
   return {
     "chat.message": async (
       input: { sessionID: string; agent?: string },
-      output: ChatMessageOutput
+      output: ChatMessageOutput,
     ): Promise<void> => {
       const promptText = extractTextFromParts(output.parts)
       const detectedKeywords = detectKeywords(promptText)
@@ -71,7 +71,7 @@ export function createKeywordDetectorHook(ctx: PluginInput) {
 
       // Inject context by appending to existing text part or adding new one
       const textPartIndex = output.parts.findIndex((p) => p.type === "text" && p.text)
-      
+
       if (textPartIndex >= 0) {
         // Append context to existing text part
         const existingPart = output.parts[textPartIndex]

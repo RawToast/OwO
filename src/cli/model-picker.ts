@@ -49,7 +49,11 @@ export function extractUserModels(config: OpencodeConfig): UserModelInfo[] {
   }
 
   // 3. Extract from top-level "small_model"
-  if (config.small_model && typeof config.small_model === "string" && config.small_model.includes("/")) {
+  if (
+    config.small_model &&
+    typeof config.small_model === "string" &&
+    config.small_model.includes("/")
+  ) {
     const [providerName, modelId] = config.small_model.split("/")
     if (!models.has(config.small_model)) {
       models.set(config.small_model, {
@@ -72,7 +76,7 @@ interface ModelOption {
 function buildModelOptions(
   agent: AgentInfo,
   userModels: UserModelInfo[],
-  currentModel?: string
+  currentModel?: string,
 ): ModelOption[] {
   const options: ModelOption[] = []
   const userModelIds = userModels.map((m) => m.id)
@@ -97,11 +101,7 @@ function buildModelOptions(
   }
 
   // 3. Current model if not in above options
-  if (
-    currentModel &&
-    currentModel !== agent.defaultModel &&
-    !userModelIds.includes(currentModel)
-  ) {
+  if (currentModel && currentModel !== agent.defaultModel && !userModelIds.includes(currentModel)) {
     options.push({
       value: currentModel,
       label: `${currentModel} (Current)`,
@@ -122,12 +122,12 @@ function buildModelOptions(
 export async function pickModelForAgent(
   agent: AgentInfo,
   userModels: UserModelInfo[],
-  currentModel?: string
+  currentModel?: string,
 ): Promise<string | null> {
   // Show agent info clearly before selection
   p.note(
     `${pc.bold(agent.description)}\n${pc.dim(`Default: ${agent.defaultModel}`)}`,
-    agent.displayName
+    agent.displayName,
   )
 
   const options = buildModelOptions(agent, userModels, currentModel)
@@ -159,7 +159,7 @@ export async function pickModelForAgent(
 
 export async function pickModelsForAllAgents(
   userModels: UserModelInfo[],
-  currentModels: Partial<Record<AgentName, string>>
+  currentModels: Partial<Record<AgentName, string>>,
 ): Promise<Partial<Record<AgentName, string>> | null> {
   const result: Partial<Record<AgentName, string>> = {}
 
@@ -200,7 +200,7 @@ export async function askConfigureModels(): Promise<"defaults" | "customize" | n
 }
 
 export async function selectAgentsToReconfigure(
-  currentModels: Partial<Record<AgentName, string>>
+  currentModels: Partial<Record<AgentName, string>>,
 ): Promise<AgentName[] | null> {
   const options = AGENTS.map((agent) => {
     const current = currentModels[agent.name] ?? agent.defaultModel

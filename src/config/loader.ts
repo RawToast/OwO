@@ -38,10 +38,7 @@ function loadConfigFromPath(configPath: string): ZenoxConfig | null {
 /**
  * Merge two configs, with override taking priority
  */
-function mergeConfigs(
-  base: ZenoxConfig,
-  override: ZenoxConfig
-): ZenoxConfig {
+function mergeConfigs(base: ZenoxConfig, override: ZenoxConfig): ZenoxConfig {
   return {
     ...base,
     ...override,
@@ -50,10 +47,7 @@ function mergeConfigs(
       ...override.agents,
     },
     disabled_agents: [
-      ...new Set([
-        ...(base.disabled_agents ?? []),
-        ...(override.disabled_agents ?? []),
-      ]),
+      ...new Set([...(base.disabled_agents ?? []), ...(override.disabled_agents ?? [])]),
     ],
   }
 }

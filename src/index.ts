@@ -1,40 +1,30 @@
 /**
- * zenox - OpenCode Plugin for Intelligent Agent Orchestration
+ * OwO - OpenCode Plugin for Intelligent Agent Orchestration
  *
  * This plugin provides:
  * 1. Specialized subagents: explorer, librarian, oracle, ui-planner
  * 2. Orchestration injection into Build/Plan agents for smart delegation
- * 3. Auto-loaded MCP servers: exa, grep_app, sequential-thinking
- * 4. Background task system for parallel agent execution
- * 5. Auto-update checker with startup toast notifications
- * 6. Optional configuration via zenox.json for model/MCP overrides
+ * 3. API tools: exa_search, exa_code_context, exa_crawl, context7_resolve, context7_docs
+ * 4. Auto-loaded MCP servers: grep_app, sequential-thinking
+ * 5. Background task system for parallel agent execution
+ * 6. Auto-update checker with startup toast notifications
+ * 7. Optional configuration via owo.json for model/MCP overrides
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
 import type { AgentConfig, Event } from "@opencode-ai/sdk"
-import {
-  explorerAgent,
-  librarianAgent,
-  oracleAgent,
-  uiPlannerAgent,
-} from "./agents"
+import { explorerAgent, librarianAgent, oracleAgent, uiPlannerAgent } from "./agents"
 import { ORCHESTRATION_PROMPT } from "./orchestration/prompt"
 import { loadPluginConfig, type AgentName } from "./config"
 import { createBuiltinMcps } from "./mcp"
 import { BackgroundManager, createBackgroundTools } from "./background"
-import {
-  createAutoUpdateHook,
-  createKeywordDetectorHook,
-  createTodoEnforcerHook,
-} from "./hooks"
+import { createAutoUpdateHook, createKeywordDetectorHook, createTodoEnforcerHook } from "./hooks"
 import { TaskToastManager } from "./features/task-toast"
 import { createSessionTools } from "./tools/session"
 import { createCodeIntelligenceTools } from "./tools/code-intelligence"
-import {
-  resolveAgentVariant,
-  applyAgentVariant,
-  createFirstMessageVariantGate,
-} from "./shared"
+import { createExaTools } from "./tools/exa"
+import { createContext7Tools } from "./tools/context7"
+import { resolveAgentVariant, applyAgentVariant, createFirstMessageVariantGate } from "./shared"
 
 const ZenoxPlugin: Plugin = async (ctx) => {
   // Load user/project configuration
@@ -59,14 +49,15 @@ const ZenoxPlugin: Plugin = async (ctx) => {
   const sessionTools = createSessionTools(ctx.client)
   const codeIntelligenceTools = createCodeIntelligenceTools(ctx.client)
 
+  // Initialize API tools (Exa and Context7)
+  const exaTools = createExaTools()
+  const context7Tools = createContext7Tools()
+
   // Initialize variant gate for safe variant application on first message
   const firstMessageVariantGate = createFirstMessageVariantGate()
 
   // Helper to apply model override from config
-  const applyModelOverride = (
-    agentName: AgentName,
-    baseAgent: AgentConfig
-  ): AgentConfig => {
+  const applyModelOverride = (agentName: AgentName, baseAgent: AgentConfig): AgentConfig => {
     const override = pluginConfig.agents?.[agentName]
     if (override?.model) {
       return { ...baseAgent, model: override.model }
@@ -75,17 +66,19 @@ const ZenoxPlugin: Plugin = async (ctx) => {
   }
 
   return {
-    // Register all tools (background, session, code intelligence)
+    // Register all tools (background, session, code intelligence, APIs)
     tool: {
       ...backgroundTools,
       ...sessionTools,
       ...codeIntelligenceTools,
+      ...exaTools,
+      ...context7Tools,
     },
 
     // Register chat.message hook (variant handling + keyword detection)
     "chat.message": async (
       input: { sessionID: string; agent?: string },
-      output: { parts: Array<{ type: string; text?: string }>; message: Record<string, unknown> }
+      output: { parts: Array<{ type: string; text?: string }>; message: Record<string, unknown> },
     ) => {
       // Apply agent variant safely (defensive - handles undefined agent)
       const message = output.message as { variant?: string }
@@ -171,7 +164,10 @@ const ZenoxPlugin: Plugin = async (ctx) => {
               } catch (err) {
                 const errorMsg = err instanceof Error ? err.message : String(err)
                 // Retry without agent if we hit the undefined agent error
-                if (!omitAgent && (errorMsg.includes("agent.name") || errorMsg.includes("undefined"))) {
+                if (
+                  !omitAgent &&
+                  (errorMsg.includes("agent.name") || errorMsg.includes("undefined"))
+                ) {
                   return sendNotification(true)
                 }
                 // Silently ignore other errors
@@ -225,8 +221,8 @@ const ZenoxPlugin: Plugin = async (ctx) => {
       // User's other MCPs are preserved
       const builtinMcps = createBuiltinMcps(disabledMcps)
       config.mcp = {
-        ...config.mcp,    // User's existing MCPs (preserved)
-        ...builtinMcps,   // Our MCPs (overwrites conflicts)
+        ...config.mcp, // User's existing MCPs (preserved)
+        ...builtinMcps, // Our MCPs (overwrites conflicts)
       }
     },
   }
@@ -238,16 +234,9 @@ export default ZenoxPlugin
 // NOTE: Do NOT export functions from main index.ts!
 // OpenCode treats ALL exports as plugin instances and calls them.
 // Only export types for external usage.
-export type {
-  BuiltinAgentName,
-  AgentOverrideConfig,
-  AgentOverrides,
-} from "./agents"
+export type { BuiltinAgentName, AgentOverrideConfig, AgentOverrides } from "./agents"
 
-export type {
-  ZenoxConfig,
-  AgentName,
-} from "./config"
+export type { ZenoxConfig, AgentName } from "./config"
 
 export type { McpName } from "./mcp"
 

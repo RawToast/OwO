@@ -17,7 +17,7 @@ export type BackgroundTools = {
 
 export function createBackgroundTools(
   manager: BackgroundManager,
-  client: OpencodeClient
+  client: OpencodeClient,
 ): BackgroundTools {
   const backgroundTask = tool({
     description: `Launch a background agent task for parallel execution.
@@ -27,15 +27,11 @@ Use for independent research tasks that benefit from parallelism.`,
     args: {
       agent: tool.schema
         .string()
-        .describe(
-          "Agent to use: explorer, librarian, oracle, or ui-planner"
-        ),
+        .describe("Agent to use: explorer, librarian, oracle, or ui-planner"),
       description: tool.schema
         .string()
         .describe("Short 3-5 word description for tracking (e.g., 'Find auth code')"),
-      prompt: tool.schema
-        .string()
-        .describe("Detailed instructions for the agent to execute"),
+      prompt: tool.schema.string().describe("Detailed instructions for the agent to execute"),
     },
     async execute(args, context) {
       try {
@@ -80,9 +76,7 @@ Use this after receiving notification that tasks are complete.`,
     description: `Cancel a running background task.
 Use if a task is no longer needed or taking too long.`,
     args: {
-      task_id: tool.schema
-        .string()
-        .describe("Task ID to cancel"),
+      task_id: tool.schema.string().describe("Task ID to cancel"),
     },
     async execute(args) {
       const cancelled = await manager.cancel(client, args.task_id)

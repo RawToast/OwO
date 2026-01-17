@@ -43,7 +43,7 @@ export const DEFAULT_MODELS: Record<AgentName, string> = {
   "ui-planner": "google/gemini-3-pro-high",
 }
 
-export type McpName = "exa" | "grep_app" | "sequential-thinking"
+export type McpName = "grep_app" | "sequential-thinking"
 
 export interface McpInfo {
   name: McpName
@@ -53,12 +53,6 @@ export interface McpInfo {
 }
 
 export const MCP_SERVERS: McpInfo[] = [
-  {
-    name: "exa",
-    displayName: "Exa",
-    description: "Web search & code context via Exa AI",
-    recommended: true,
-  },
   {
     name: "grep_app",
     displayName: "grep.app",
