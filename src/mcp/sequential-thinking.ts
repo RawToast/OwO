@@ -13,6 +13,6 @@ import type { LocalMcpServerConfig } from "./types"
  */
 export const sequentialThinking: LocalMcpServerConfig = {
   type: "local",
-  command: ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+  command: ["bunx", "@modelcontextprotocol/server-sequential-thinking"],
   enabled: true,
 }

@@ -41,16 +41,16 @@ program
     }
   })
 
-program
-  .command("mcp")
-  .description("Configure MCP servers (enable/disable)")
-  .action(async () => {
-    try {
-      await runMcp()
-    } catch (err) {
-      console.error(err instanceof Error ? err.message : "Unknown error")
-      process.exit(1)
-    }
-  })
+// program
+//   .command("mcp")
+//   .description("Configure MCP servers (enable/disable)")
+//   .action(async () => {
+//     try {
+//       await runMcp()
+//     } catch (err) {
+//       console.error(err instanceof Error ? err.message : "Unknown error")
+//       process.exit(1)
+//     }
+//   })
 
 program.parse()

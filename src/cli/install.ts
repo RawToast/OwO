@@ -186,23 +186,16 @@ async function runNonInteractive(cwd: string, customConfigPath?: string): Promis
     : findConfigFile(cwd)
 
   if (!configFile) {
-    console.log(`Creating opencode.json with ${PACKAGE_NAME}...`)
     const configPath = getDefaultConfigPath(cwd)
     await createDefaultConfig(configPath)
-    console.log(`Created opencode.json with ${PACKAGE_NAME}`)
-    console.log("Using default models (run 'bunx zenox config' to customize)")
     return
   }
 
   // Check if already installed
   const { config } = await readConfig(configFile.path)
   if (isPluginInstalled(config)) {
-    console.log(`${PACKAGE_NAME} is already installed`)
     return
   }
 
-  console.log(`Adding ${PACKAGE_NAME} to ${configFile.path}...`)
   await installPlugin(configFile.path)
-  console.log(`${PACKAGE_NAME} installed successfully!`)
-  console.log("Using default models (run 'bunx zenox config' to customize)")
 }

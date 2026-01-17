@@ -14,7 +14,13 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import type { AgentConfig, Event } from "@opencode-ai/sdk"
 import { explorerAgent, librarianAgent, oracleAgent, uiPlannerAgent } from "./agents"
-import { ORCHESTRATION_PROMPT } from "./orchestration/prompt"
+import { getOrchestrationPrompt } from "./orchestration/prompt"
+import {
+  setSessionAgent,
+  getSessionAgent,
+  clearSessionAgent,
+  getOrchestrationAgentType,
+} from "./orchestration/session-agent-tracker"
 import { loadPluginConfig, type AgentName } from "./config"
 import { createBuiltinMcps } from "./mcp"
 import { BackgroundManager, createBackgroundTools } from "./background"
@@ -26,7 +32,8 @@ import { createExaTools } from "./tools/exa"
 import { createContext7Tools } from "./tools/context7"
 import { resolveAgentVariant, applyAgentVariant, createFirstMessageVariantGate } from "./shared"
 
-const ZenoxPlugin: Plugin = async (ctx) => {
+const OwOPlugin: Plugin = async (ctx) => {
+  // Load user/project configuration
   // Load user/project configuration
   const pluginConfig = loadPluginConfig(ctx.directory)
   const disabledAgents = new Set(pluginConfig.disabled_agents ?? [])
@@ -75,11 +82,14 @@ const ZenoxPlugin: Plugin = async (ctx) => {
       ...context7Tools,
     },
 
-    // Register chat.message hook (variant handling + keyword detection)
+    // Register chat.message hook (variant handling + keyword detection + agent tracking)
     "chat.message": async (
       input: { sessionID: string; agent?: string },
       output: { parts: Array<{ type: string; text?: string }>; message: Record<string, unknown> },
     ) => {
+      // Track agent for this session (used by system transform hook)
+      setSessionAgent(input.sessionID, input.agent)
+
       // Apply agent variant safely (defensive - handles undefined agent)
       const message = output.message as { variant?: string }
 
@@ -97,6 +107,23 @@ const ZenoxPlugin: Plugin = async (ctx) => {
 
       // Run keyword detection (ultrawork/deep-research/explore)
       await keywordDetectorHook["chat.message"]?.(input, output)
+    },
+
+    // Inject agent-specific orchestration prompt into system prompt
+    "experimental.chat.system.transform": async (input: unknown, output: { system: string[] }) => {
+      // Cast input to access sessionID (the hook actually passes it, but types say {})
+      const { sessionID } = input as { sessionID?: string }
+      if (!sessionID) return
+
+      // Look up which agent is active for this session
+      const agent = getSessionAgent(sessionID)
+      const agentType = getOrchestrationAgentType(agent)
+
+      // Only inject for build/plan agents
+      const prompt = getOrchestrationPrompt(agentType)
+      if (prompt) {
+        output.system.push(prompt)
+      }
     },
 
     // Handle session events
@@ -127,6 +154,9 @@ const ZenoxPlugin: Plugin = async (ctx) => {
 
         // Clear from variant gate
         firstMessageVariantGate.clear(sessionID)
+
+        // Clear session agent tracking
+        clearSessionAgent(sessionID)
 
         // Clear main session if this was it
         if (sessionID && sessionID === backgroundManager.getMainSession()) {
@@ -205,18 +235,6 @@ const ZenoxPlugin: Plugin = async (ctx) => {
         config.agent["ui-planner"] = applyModelOverride("ui-planner", uiPlannerAgent)
       }
 
-      // Inject orchestration into Build agent (append to existing prompt)
-      if (config.agent.build) {
-        const existingPrompt = config.agent.build.prompt ?? ""
-        config.agent.build.prompt = existingPrompt + ORCHESTRATION_PROMPT
-      }
-
-      // Inject orchestration into Plan agent (append to existing prompt)
-      if (config.agent.plan) {
-        const existingPrompt = config.agent.plan.prompt ?? ""
-        config.agent.plan.prompt = existingPrompt + ORCHESTRATION_PROMPT
-      }
-
       // Inject MCP servers (our MCPs win over user's conflicting MCPs)
       // User's other MCPs are preserved
       const builtinMcps = createBuiltinMcps(disabledMcps)
@@ -229,7 +247,7 @@ const ZenoxPlugin: Plugin = async (ctx) => {
 }
 
 // Default export for OpenCode plugin system
-export default ZenoxPlugin
+export default OwOPlugin
 
 // NOTE: Do NOT export functions from main index.ts!
 // OpenCode treats ALL exports as plugin instances and calls them.

@@ -64,10 +64,10 @@ function mergeConfigs(base: ZenoxConfig, override: ZenoxConfig): ZenoxConfig {
  */
 export function loadPluginConfig(projectDirectory: string): ZenoxConfig {
   // User-level config path
-  const userConfigPath = path.join(getUserConfigDir(), "opencode", "zenox.json")
+  const userConfigPath = path.join(getUserConfigDir(), "opencode", "owo.json")
 
   // Project-level config path
-  const projectConfigPath = path.join(projectDirectory, ".opencode", "zenox.json")
+  const projectConfigPath = path.join(projectDirectory, ".opencode", "owo.json")
 
   // Load user config first (base)
   let config: ZenoxConfig = loadConfigFromPath(userConfigPath) ?? {}

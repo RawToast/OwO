@@ -57,7 +57,8 @@
     "prepublishOnly": "bun run clean && bun run build",
     "typecheck": "tsgo --noEmit",
     "lint": "oxlint",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "dev": "bun run build && opencode"
   },
   "dependencies": {
     "@clack/prompts": "0.11.0",
