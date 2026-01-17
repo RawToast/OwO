@@ -31,6 +31,21 @@
       },
       "additionalProperties": false
     },
+    "tools": {
+      "type": "object",
+      "description": "Configure API tools (Exa, Context7)",
+      "properties": {
+        "exa": {
+          "$ref": "#/$defs/toolConfig",
+          "description": "Exa AI web search and content extraction"
+        },
+        "context7": {
+          "$ref": "#/$defs/toolConfig",
+          "description": "Context7 library documentation lookup"
+        }
+      },
+      "additionalProperties": false
+    },
     "disabled_agents": {
       "type": "array",
       "description": "List of agents to disable",
@@ -45,7 +60,7 @@
       "description": "List of MCP servers to not auto-inject",
       "items": {
         "type": "string",
-        "enum": ["exa", "grep_app", "sequential-thinking"]
+        "enum": ["grep_app", "sequential-thinking"]
       },
       "uniqueItems": true
     }
@@ -63,6 +78,22 @@
           "type": "string",
           "description": "Thinking/reasoning mode variant (e.g., 'high', 'xhigh', 'max'). Applied to messages for models that support extended thinking.",
           "examples": ["low", "medium", "high", "xhigh", "max"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "toolConfig": {
+      "type": "object",
+      "description": "API tool configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this tool is enabled (default: true)",
+          "default": true
+        },
+        "key": {
+          "type": "string",
+          "description": "API key for this tool. Falls back to environment variable (EXA_API_KEY or CONTEXT7_API_KEY) if not set."
         }
       },
       "additionalProperties": false

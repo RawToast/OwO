@@ -46,6 +46,12 @@ function mergeConfigs(base: ZenoxConfig, override: ZenoxConfig): ZenoxConfig {
       ...base.agents,
       ...override.agents,
     },
+    tools: {
+      ...base.tools,
+      ...override.tools,
+      exa: { ...base.tools?.exa, ...override.tools?.exa },
+      context7: { ...base.tools?.context7, ...override.tools?.context7 },
+    },
     disabled_agents: [
       ...new Set([...(base.disabled_agents ?? []), ...(override.disabled_agents ?? [])]),
     ],

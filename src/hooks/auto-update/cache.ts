@@ -1,6 +1,6 @@
 import { rm, readdir } from "node:fs/promises"
 import { join } from "node:path"
-import { BUN_CACHE_DIR, PACKAGE_NAME } from "./constants"
+import { BUN_CACHE_DIR } from "./constants"
 import { findPluginEntry } from "./checker"
 
 export async function invalidatePackageCache(): Promise<boolean> {

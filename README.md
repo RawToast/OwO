@@ -1,21 +1,10 @@
-<p align="center">
-  <img src="https://res.cloudinary.com/dyetf2h9n/image/upload/v1768073623/ZENOX_e4boob.png" alt="Zenox" width="600" />
-</p>
+# OwO
 
-<h1 align="center">ZENOX</h1>
-
-<p align="center">
-  <strong>Intelligent agent orchestration for OpenCode</strong>
-</p>
-
-<p align="center">
-  <a href="https://www.npmjs.com/package/zenox"><img src="https://img.shields.io/npm/v/zenox.svg?style=flat-square" alt="npm version" /></a>
-  <a href="https://github.com/CYBERBOYAYUSH/zenox/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
-</p>
+## Agent orchestration for OpenCode
 
 ---
 
-Zenox supercharges [OpenCode](https://opencode.ai) with specialized AI agents that handle different aspects of development. Instead of one agent doing everything, you get a team of experts — each optimized for their domain.
+OwO supercharges [OpenCode](https://opencode.ai) with specialized AI agents that handle different aspects of development. Instead of one agent doing everything, you get a team of experts — each optimized for their domain.
 
 ## Features
 
@@ -28,9 +17,9 @@ Zenox supercharges [OpenCode](https://opencode.ai) with specialized AI agents th
 - **Todo Continuation** — Auto-reminds when tasks are incomplete
 - **Auto-Updates** — Toast notification when new version available
 
-## Why Zenox?
+## Why OwO?
 
-Most AI coding assistants use a single model for everything. Zenox takes a different approach:
+OwO takes the more lightweight sub-aget and mutimodle approach from [zenox][https://github.com/CYBERBOYAYUSH/zenox] This lets you configure each agent to a model more tuned for the task:
 
 - **Explorer** finds code fast — optimized for codebase search with a lightweight model
 - **Librarian** digs deep into docs — researches libraries, finds GitHub examples, citations included
@@ -42,19 +31,19 @@ The main agent automatically delegates to specialists when needed. You don't hav
 ## Quick Start
 
 ```bash
-bunx zenox install
+bunx owo install
 ```
 
 That's it. Restart OpenCode and the agents are ready.
 
 ## Agents
 
-| Agent | What it does | Default Model |
-|-------|-------------|---------------|
-| **Explorer** | Codebase grep, file discovery, pattern matching | `claude-haiku-4-5` |
-| **Librarian** | Library research, docs lookup, GitHub examples | `claude-sonnet-4-5` |
-| **Oracle** | Architecture decisions, debugging strategy, code review | `gpt-5.2` |
-| **UI Planner** | Frontend design, CSS, animations, visual polish | `gemini-3-pro-high` |
+| Agent          | What it does                                            | Default Model          |
+| -------------- | ------------------------------------------------------- | ---------------------- |
+| **Explorer**   | Codebase grep, file discovery, pattern matching         | `claude-haiku-4-5`     |
+| **Librarian**  | Library research, docs lookup, GitHub examples          | `claude-sonnet-4-5`    |
+| **Oracle**     | Architecture decisions, debugging strategy, code review | `openai/gpt-5.2-codex` |
+| **UI Planner** | Frontend design, CSS, animations, visual polish         | `claude-opus-4-5`      |
 
 ### How delegation works
 
@@ -78,11 +67,11 @@ You: "Make this dashboard look better"
 
 Include these magic words in your prompt to unlock special modes:
 
-| Keyword | What it does |
-|---------|--------------|
+| Keyword              | What it does                                                                            |
+| -------------------- | --------------------------------------------------------------------------------------- |
 | `ultrawork` or `ulw` | Maximum multi-agent coordination — fires parallel background agents, sets max precision |
-| `deep research` | Comprehensive exploration — fires 3-4 background agents (explorer + librarian) |
-| `explore codebase` | Codebase mapping — multiple explorers search in parallel |
+| `deep research`      | Comprehensive exploration — fires 3-4 background agents (explorer + librarian)          |
+| `explore codebase`   | Codebase mapping — multiple explorers search in parallel                                |
 
 ### Examples
 
@@ -118,7 +107,7 @@ background_task(agent="librarian", description="JWT best practices", prompt="...
 
 ### Toast Notifications
 
-Zenox shows toast notifications for background task events:
+OwO shows toast notifications for background task events:
 
 - ⚡ **Task Launched** — Shows task description and agent
 - ✅ **Task Completed** — Shows duration and remaining count
@@ -129,9 +118,9 @@ Zenox shows toast notifications for background task events:
 
 Query past sessions to learn from previous work:
 
-| Tool | What it does |
-|------|--------------|
-| `session_list` | List recent sessions to find relevant past work |
+| Tool             | What it does                                               |
+| ---------------- | ---------------------------------------------------------- |
+| `session_list`   | List recent sessions to find relevant past work            |
 | `session_search` | Search messages across sessions for how something was done |
 
 ```
@@ -144,10 +133,10 @@ You: "How did we implement auth last time?"
 
 Search for symbols via LSP (Language Server Protocol):
 
-| Tool | What it does |
-|------|--------------|
+| Tool           | What it does                                     |
+| -------------- | ------------------------------------------------ |
 | `find_symbols` | Search for functions, classes, variables by name |
-| `lsp_status` | Check which language servers are running |
+| `lsp_status`   | Check which language servers are running         |
 
 ```
 You: "Find where handleLogin is defined"
@@ -157,7 +146,7 @@ You: "Find where handleLogin is defined"
 
 ## Todo Continuation
 
-Zenox automatically reminds you to continue working when:
+OwO automatically reminds you to continue working when:
 
 - You have incomplete tasks in your todo list
 - The session goes idle
@@ -172,10 +161,10 @@ This keeps you on track without manual intervention. The agent will be prompted 
 During installation, choose "Customize models" to pick your own. Or run later:
 
 ```bash
-bunx zenox config
+bunx owo config
 ```
 
-Config saves to `~/.config/opencode/zenox.json`:
+Config saves to `~/.config/opencode/owo.json`:
 
 ```json
 {
@@ -193,11 +182,11 @@ Configure thinking/reasoning levels for models that support extended thinking (l
 ```json
 {
   "agents": {
-    "oracle": { 
+    "oracle": {
       "model": "anthropic/claude-opus-4-5",
       "variant": "high"
     },
-    "ui-planner": { 
+    "ui-planner": {
       "model": "openai/gpt-5.2-codex",
       "variant": "xhigh"
     }
@@ -206,6 +195,7 @@ Configure thinking/reasoning levels for models that support extended thinking (l
 ```
 
 Available variants (model-dependent):
+
 - `low` — Minimal thinking
 - `medium` — Balanced thinking
 - `high` — Extended thinking
@@ -225,37 +215,114 @@ Variants are applied safely — if an agent doesn't exist or the model doesn't s
 
 ## Included MCP Servers
 
-Zenox auto-loads these tools for agents to use:
+OwO auto-loads these MCP servers for agents to use:
 
-| Server | Purpose |
-|--------|---------|
-| **exa** | Web search, docs lookup, URL crawling |
-| **grep_app** | Search millions of GitHub repos instantly |
+| Server                  | Purpose                                     |
+| ----------------------- | ------------------------------------------- |
+| **grep_app**            | Search millions of GitHub repos instantly   |
 | **sequential-thinking** | Step-by-step reasoning for complex problems |
+
+## API Tools
+
+OwO includes direct API integrations (faster than MCP, no protocol overhead):
+
+| Tool                 | Purpose                                            |
+| -------------------- | -------------------------------------------------- |
+| **exa_search**       | AI-powered web search with semantic understanding  |
+| **exa_code_context** | Code-focused search (GitHub, docs, Stack Overflow) |
+| **exa_crawl**        | Extract content from specific URLs                 |
+| **context7_resolve** | Resolve library names to Context7 IDs              |
+| **context7_docs**    | Query up-to-date library documentation             |
+
+### Setup API Keys
+
+These tools require API keys. You can configure them in two ways:
+
+**Option 1: Config file (recommended)**
+
+Add to `~/.config/opencode/owo.json`:
+
+```json
+{
+  "tools": {
+    "exa": {
+      "key": "your-exa-api-key"
+    },
+    "context7": {
+      "key": "your-context7-api-key"
+    }
+  }
+}
+```
+
+**Option 2: Environment variables**
+
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+export EXA_API_KEY="your-exa-api-key"
+export CONTEXT7_API_KEY="your-context7-api-key"
+```
+
+**Quick setup script (env vars):**
+
+```bash
+# Run this to add API keys to your shell config
+cat >> ~/.zshrc << 'EOF'
+
+# OwO API Keys
+export EXA_API_KEY="your-exa-api-key"
+export CONTEXT7_API_KEY="your-context7-api-key"
+EOF
+
+# Reload your shell
+source ~/.zshrc
+```
+
+Then replace the placeholder values with your actual keys.
+
+**Get your keys:**
+
+- Exa: https://exa.ai (free tier: $10 credits)
+- Context7: https://context7.com/dashboard (free tier available)
+
+### Disable Tools
+
+Don't want a specific tool? Disable it in config:
+
+```json
+{
+  "tools": {
+    "exa": {
+      "enabled": false
+    }
+  }
+}
+```
 
 ## CLI
 
 ```bash
-bunx zenox install          # Add to opencode.json + configure models
-bunx zenox install --no-tui # Non-interactive (uses defaults)
-bunx zenox config           # Reconfigure models anytime
-bunx zenox --help           # Show all commands
+bunx owo install          # Add to opencode.json + configure models
+bunx owo install --no-tui # Non-interactive (uses defaults)
+bunx owo config           # Reconfigure models anytime
+bunx owo --help           # Show all commands
 ```
 
 ## Auto-Update
 
-Zenox checks for updates on startup. When a new version drops:
+OwO checks for updates on startup. When a new version drops:
 
 1. You see a toast notification
 2. Bun cache is invalidated
 3. Restart to get the update
 
-Pin a version to disable: `"zenox@1.2.1"` in your plugins array.
+Pin a version to disable: `"owo@1.4.1"` in your plugins array.
 
 ## Credits
 
 - [OpenCode](https://opencode.ai) — The CLI this extends
 - [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — Inspiration for orchestration patterns
+- [zenox][https://github.com/CYBERBOYAYUSH/zenox] - Originally forked form this great setup
 
 ## License
 

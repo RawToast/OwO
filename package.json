@@ -52,11 +52,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm && bun build src/cli/index.ts --outdir dist/cli --target node --format esm && tsc --emitDeclarationOnly",
+    "build": "bun build src/index.ts --outdir dist --target bun --format esm && bun build src/cli/index.ts --outdir dist/cli --target node --format esm && tsgo --emitDeclarationOnly",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run clean && bun run build",
     "typecheck": "tsgo --noEmit",
-    "lint": "oxfmt",
+    "lint": "oxlint",
     "format": "oxfmt"
   },
   "dependencies": {
@@ -75,4 +75,3 @@
     "oxlint": "1.39.0"
   }
 }
- 

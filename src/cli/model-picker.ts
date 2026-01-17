@@ -2,7 +2,7 @@ import * as p from "@clack/prompts"
 import pc from "picocolors"
 import type { OpencodeConfig, UserModelInfo, ProviderConfig, ModelConfig } from "./types"
 import type { AgentName, AgentInfo } from "./constants"
-import { AGENTS, DEFAULT_MODELS } from "./constants"
+import { AGENTS } from "./constants"
 
 const CUSTOM_MODEL_OPTION = "__custom__"
 

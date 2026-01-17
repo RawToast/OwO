@@ -49,9 +49,9 @@ const ZenoxPlugin: Plugin = async (ctx) => {
   const sessionTools = createSessionTools(ctx.client)
   const codeIntelligenceTools = createCodeIntelligenceTools(ctx.client)
 
-  // Initialize API tools (Exa and Context7)
-  const exaTools = createExaTools()
-  const context7Tools = createContext7Tools()
+  // Initialize API tools (Exa and Context7) with config
+  const exaTools = createExaTools(pluginConfig.tools?.exa)
+  const context7Tools = createContext7Tools(pluginConfig.tools?.context7)
 
   // Initialize variant gate for safe variant application on first message
   const firstMessageVariantGate = createFirstMessageVariantGate()
