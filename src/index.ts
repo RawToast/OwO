@@ -13,7 +13,14 @@
 
 import type { Plugin } from "@opencode-ai/plugin"
 import type { AgentConfig, Event } from "@opencode-ai/sdk"
-import { explorerAgent, librarianAgent, oracleAgent, uiPlannerAgent } from "./agents"
+import {
+  askAgent,
+  explorerAgent,
+  librarianAgent,
+  oracleAgent,
+  owoAgent,
+  uiPlannerAgent,
+} from "./agents"
 import { getOrchestrationPrompt } from "./orchestration/prompt"
 import {
   setSessionAgent,
@@ -119,8 +126,8 @@ const OwOPlugin: Plugin = async (ctx) => {
       const agent = getSessionAgent(sessionID)
       const agentType = getOrchestrationAgentType(agent)
 
-      // Only inject for build/plan agents
-      const prompt = getOrchestrationPrompt(agentType)
+      // Only inject for build/plan agents (pass flair config for customization)
+      const prompt = getOrchestrationPrompt(agentType, pluginConfig.flair)
       if (prompt) {
         output.system.push(prompt)
       }
@@ -233,6 +240,14 @@ const OwOPlugin: Plugin = async (ctx) => {
 
       if (!disabledAgents.has("ui-planner")) {
         config.agent["ui-planner"] = applyModelOverride("ui-planner", uiPlannerAgent)
+      }
+
+      if (!disabledAgents.has("owo")) {
+        config.agent["owO"] = applyModelOverride("owo", owoAgent)
+      }
+
+      if (!disabledAgents.has("ask")) {
+        config.agent["ask"] = applyModelOverride("ask", askAgent)
       }
 
       // Inject MCP servers (our MCPs win over user's conflicting MCPs)

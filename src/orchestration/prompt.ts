@@ -3,18 +3,70 @@
  * Common base + agent-specific variants to avoid duplication.
  */
 
-const COMMON_ORCHESTRATION_BASE = `
-Remember to include japanese style cute kaomoji, e.g. (´｡• ω •｡\`) , ฅ( ᵕ ω ᵕ ), (´▽｀)ノ , ₍⸍⸌̣ʷ̣̫⸍̣⸌₎, (*ФωФ)ノ
-Don't always use those examples, make them up as you go!
+import type { FlairConfig } from "../config/schema"
 
----
-<EXTREMELY-IMPORTANT>
+/**
+ * Default flair text - vibes! ₍ᐢ•ﻌ•ᐢ₎
+ */
+export const DEFAULT_FLAIR = `Remember to include japanese cute kaomoji, e.g. (´｡• ω •｡\`) , ฅ( ᵕ ω ᵕ ), (´▽｀)ノ , ₍⸍⸌̣ʷ̣̫⸍̣⸌₎, (*ФωФ)ノ
+Don't always use those examples, make them up as you go!`
+
+/**
+ * Resolves the flair text for a given agent based on config.
+ *
+ * Resolution order:
+ * 1. Agent-specific flair (e.g., config.build for "build" agent)
+ * 2. Default flair from config (config.default)
+ * 3. Hardcoded DEFAULT_FLAIR constant
+ *
+ * Special cases:
+ * - `flair: false` → returns undefined (no flair)
+ * - `flair: true` or `flair: undefined` → uses DEFAULT_FLAIR
+ */
+export function resolveFlair(
+  agent: "build" | "plan" | "owo" | string | undefined,
+  flairConfig: FlairConfig | undefined,
+): string | undefined {
+  // flair: false → disable entirely
+  if (flairConfig === false) {
+    return undefined
+  }
+
+  // flair: true or undefined → use default
+  if (flairConfig === true || flairConfig === undefined) {
+    return DEFAULT_FLAIR
+  }
+
+  // flair: { ... } → resolve agent-specific or fall back
+  if (agent && typeof flairConfig === "object" && agent in flairConfig) {
+    return (flairConfig as Record<string, string | undefined>)[agent]
+  }
+
+  // Fall back to config.default, then hardcoded default
+  return flairConfig.default ?? DEFAULT_FLAIR
+}
+
+/**
+ * Builds the flair section for the orchestration prompt.
+ * Returns empty string if flair is disabled.
+ */
+function buildFlairSection(flair: string | undefined): string {
+  if (!flair) return ""
+  return `${flair}
+
+---`
+}
+
+export const CORE_SKILL_PROMPT = `<EXTREMELY-IMPORTANT>
 If you think there is even a 1% chance a skill or subagent might apply to what you are doing, you ABSOLUTELY MUST invoke the skill or use the agent.
 
 IF A SKILL OR AGENT APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 
 This is not negotiable. This is not optional. You cannot rationalize your way out of this.
-</EXTREMELY-IMPORTANT>
+</EXTREMELY-IMPORTANT>`
+
+const COMMON_ORCHESTRATION_BASE = `
+${CORE_SKILL_PROMPT}
 
 ## Sub-Agent Delegation
 
@@ -408,16 +460,36 @@ Consult oracle before finalizing plans:
 Always ask questions, remember there are no stupid questions -- only bad plans!
 `
 
+const MICRO_BUILD = `
+
+## SKILLS
+
+Use these skills when building
+
+'verification-before-completion'
+'systematic-debugging'
+'test-driven-development'
+`
+
 export const ORCHESTRATION_PROMPT = COMMON_ORCHESTRATION_BASE + BUILD_SPECIFIC
 
 export function getOrchestrationPrompt(
   agent: "build" | "plan" | string | undefined,
+  flairConfig?: FlairConfig,
 ): string | undefined {
-  switch (agent) {
+  const flair = resolveFlair(agent, flairConfig)
+  const flairSection = buildFlairSection(flair)
+
+  const normAgent = agent?.toLowerCase()
+  switch (normAgent) {
     case "build":
-      return COMMON_ORCHESTRATION_BASE + BUILD_SPECIFIC
+      return flairSection + MICRO_BUILD // + COMMON_ORCHESTRATION_BASE + BUILD_SPECIFIC
     case "plan":
-      return COMMON_ORCHESTRATION_BASE + PLAN_SPECIFIC
+      return flairSection + COMMON_ORCHESTRATION_BASE + PLAN_SPECIFIC
+    case "ask":
+      return flairSection
+    case "owo":
+      return flairSection
     default:
       return undefined
   }

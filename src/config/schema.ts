@@ -4,7 +4,40 @@ import { McpNameSchema } from "../mcp/types"
 /**
  * Agent names that can be configured
  */
-export const AgentNameSchema = z.enum(["explorer", "librarian", "oracle", "ui-planner"])
+export const AgentNameSchema = z.enum([
+  "owo",
+  "explorer",
+  "librarian",
+  "oracle",
+  "ui-planner",
+  "ask",
+])
+
+/**
+ * Flair configuration - controls personality/style injected into prompts
+ *
+ * Can be:
+ * - `false`: Disable flair entirely
+ * - `true`: Use default flair for all agents
+ * - Object with agent-specific overrides:
+ *   - `default`: Fallback flair for agents without specific config
+ *   - `build`: Flair for build agent
+ *   - `plan`: Flair for plan agent
+ *   - Additional keys for future agents
+ */
+export const FlairConfigObjectSchema = z
+  .object({
+    default: z.string().optional(),
+    build: z.string().optional(),
+    plan: z.string().optional(),
+    owo: z.string().optional(),
+    ask: z.string().optional(),
+  })
+  .passthrough() // Allow additional agent keys
+
+export const FlairConfigSchema = z.union([z.boolean(), FlairConfigObjectSchema])
+
+export type FlairConfig = z.infer<typeof FlairConfigSchema>
 
 export type AgentName = z.infer<typeof AgentNameSchema>
 
@@ -27,6 +60,8 @@ export const AgentOverridesSchema = z.object({
   librarian: AgentOverrideConfigSchema.optional(),
   oracle: AgentOverrideConfigSchema.optional(),
   "ui-planner": AgentOverrideConfigSchema.optional(),
+  owo: AgentOverrideConfigSchema.optional(),
+  ask: AgentOverrideConfigSchema.optional(),
 })
 
 export type AgentOverrides = z.infer<typeof AgentOverridesSchema>
@@ -67,6 +102,7 @@ export const ZenoxConfigSchema = z.object({
   $schema: z.string().optional(),
   agents: AgentOverridesSchema.optional(),
   tools: ToolsConfigSchema.optional(),
+  flair: FlairConfigSchema.optional(),
   disabled_agents: z.array(AgentNameSchema).optional(),
   disabled_mcps: z.array(McpNameSchema).optional(),
 })

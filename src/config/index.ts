@@ -6,6 +6,8 @@ export {
   ToolNameSchema,
   ToolConfigSchema,
   ToolsConfigSchema,
+  FlairConfigSchema,
+  FlairConfigObjectSchema,
   type ZenoxConfig,
   type AgentName,
   type AgentOverrideConfig,
@@ -13,6 +15,7 @@ export {
   type ToolName,
   type ToolConfig,
   type ToolsConfig,
+  type FlairConfig,
 } from "./schema"
 
 export { loadPluginConfig } from "./loader"
