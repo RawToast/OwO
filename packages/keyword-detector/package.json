@@ -2,6 +2,9 @@
   "name": "@owo/keyword-detector",
   "version": "0.1.0",
   "description": "Config-driven keyword detection plugin for OpenCode",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,9 +14,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "make": "bun build src/index.ts --outdir dist --target bun --format esm && bun run compile",
     "compile": "tsgo --emitDeclarationOnly",
@@ -27,8 +30,5 @@
   "devDependencies": {
     "@typescript/native-preview": "7.0.0-dev.20260120.1",
     "bun-types": "1.3.6"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
