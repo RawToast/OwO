@@ -1,0 +1,33 @@
+{
+  "name": "@owo/config",
+  "version": "0.1.0",
+  "description": "Shared configuration schema and loader for owo plugins",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "make": "bun build src/index.ts --outdir dist --target bun --format esm && bun run compile",
+    "compile": "tsgo --emitDeclarationOnly",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "strip-json-comments": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260120.1",
+    "bun-types": "1.3.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
