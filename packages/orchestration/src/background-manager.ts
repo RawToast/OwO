@@ -141,6 +141,7 @@ export class BackgroundManager {
 
   async getOutput(client: OpencodeClient, taskId: string): Promise<string | undefined> {
     const task = this.tasks.get(taskId)
+
     if (!task) {
       return `Task ${taskId} not found`
     }
@@ -159,6 +160,8 @@ export class BackgroundManager {
 
     // Read messages from the background session
     try {
+      console.log(`[owo/orchestration] Fetching output for ${taskId}`)
+
       const messagesResult = await client.session.messages({
         path: { id: task.sessionID },
       })
@@ -174,11 +177,28 @@ export class BackgroundManager {
       type MessageWrapper = {
         info: {
           role: string
+          error?: {
+            name?: string
+            data?: {
+              message?: string
+            }
+          }
         }
         parts: Array<{
           type: string
           text?: string
         }>
+      }
+
+      // Check for errors in assistant messages first
+      const assistantWithError = (messages as MessageWrapper[]).find(
+        (m) => m.info.role === "assistant" && m.info.error,
+      )
+      if (assistantWithError?.info.error) {
+        const errorData = assistantWithError.info.error
+        const errorMsg = errorData.data?.message ?? errorData.name ?? "Unknown error"
+        console.error(`[owo/orchestration] Task ${taskId} had error: ${errorMsg}`)
+        return `Task ${taskId} failed: ${errorMsg}`
       }
 
       const assistantMessages = (messages as MessageWrapper[]).filter(
@@ -195,9 +215,12 @@ export class BackgroundManager {
       const textParts = lastMessage.parts.filter((p) => p.type === "text")
       const output = textParts.map((p) => p.text ?? "").join("\n")
 
+      console.log(`[owo/orchestration] Retrieved output for ${taskId} (${output.length} chars)`)
+
       return output || `Task ${taskId} completed but output was empty`
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Unknown error"
+      console.error(`[owo/orchestration] Error retrieving output for ${taskId}: ${errorMsg}`)
       return `Failed to retrieve output for ${taskId}: ${errorMsg}`
     }
   }
@@ -230,6 +253,7 @@ export class BackgroundManager {
     // Mark task as complete
     task.status = "completed"
     task.completedAt = new Date()
+    console.log(`[owo/orchestration] Task ${task.id} completed`)
 
     // Show completion toast
     if (this.toastManager) {

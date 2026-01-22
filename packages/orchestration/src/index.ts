@@ -12,14 +12,17 @@ import { BackgroundManager } from "./background-manager"
 import { TaskToastManager } from "./task-toast"
 import { createBackgroundTools } from "./tools"
 
-// Re-exports
-export { BackgroundManager } from "./background-manager"
-export { TaskToastManager } from "./task-toast"
-export { createBackgroundTools, type BackgroundTools } from "./tools"
-export type { BackgroundTask, TaskStatus, LaunchInput, CompletionNotification } from "./types"
-
 const OrchestrationPlugin: Plugin = async (ctx) => {
-  const { config } = loadConfig(ctx.directory)
+  let configResult
+  try {
+    configResult = loadConfig(ctx.directory)
+  } catch (err) {
+    const errorMessage = err instanceof Error ? (err.stack ?? err.message) : String(err)
+    console.error(`[owo/orchestration] Failed to load config: ${errorMessage}`)
+    throw err
+  }
+
+  const { config } = configResult
 
   // Check if disabled
   if (config.orchestration?.enabled === false) {
@@ -27,17 +30,40 @@ const OrchestrationPlugin: Plugin = async (ctx) => {
   }
 
   // Initialize toast manager (if toasts enabled)
-  const toastManager =
-    config.orchestration?.toasts !== false ? new TaskToastManager(ctx.client) : undefined
+  let toastManager: TaskToastManager | undefined
+  try {
+    toastManager =
+      config.orchestration?.toasts !== false ? new TaskToastManager(ctx.client) : undefined
+  } catch (err) {
+    const errorMessage = err instanceof Error ? (err.stack ?? err.message) : String(err)
+    console.error(`[owo/orchestration] Failed to init TaskToastManager: ${errorMessage}`)
+    throw err
+  }
+
+  console.log("toastManager exists", toastManager !== undefined)
 
   // Initialize background task manager
-  const backgroundManager = new BackgroundManager()
-  if (toastManager) {
-    backgroundManager.setToastManager(toastManager)
+  let backgroundManager: BackgroundManager
+  try {
+    backgroundManager = new BackgroundManager()
+    if (toastManager) {
+      backgroundManager.setToastManager(toastManager)
+    }
+  } catch (err) {
+    const errorMessage = err instanceof Error ? (err.stack ?? err.message) : String(err)
+    console.error(`[owo/orchestration] Failed to init BackgroundManager: ${errorMessage}`)
+    throw err
   }
 
   // Create background tools
-  const backgroundTools = createBackgroundTools(backgroundManager, ctx.client)
+  let backgroundTools
+  try {
+    backgroundTools = createBackgroundTools(backgroundManager, ctx.client)
+  } catch (err) {
+    const errorMessage = err instanceof Error ? (err.stack ?? err.message) : String(err)
+    console.error(`[owo/orchestration] Failed to create tools: ${errorMessage}`)
+    throw err
+  }
 
   return {
     tool: backgroundTools,

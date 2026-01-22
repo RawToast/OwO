@@ -29,6 +29,7 @@
 ### Task 1.1: Setup Workspace Structure with TurboRepo
 
 **Files:**
+
 - Modify: `package.json` (workspaces + catalogs)
 - Modify: `bunfig.toml` (add linker = isolated)
 - Create: `turbo.json`
@@ -124,6 +125,7 @@ git commit -m "chore: setup monorepo with turborepo and bun catalogs"
 ### Task 2.1: Create Config Package Structure
 
 **Files:**
+
 - Create: `packages/config/package.json`
 - Create: `packages/config/tsconfig.json`
 - Create: `packages/config/src/index.ts`
@@ -202,10 +204,7 @@ import { z } from "zod"
  * - string: inline content
  * - { file: "path" }: load from file relative to config
  */
-export const ContextSchema = z.union([
-  z.string(),
-  z.object({ file: z.string() }),
-])
+export const ContextSchema = z.union([z.string(), z.object({ file: z.string() })])
 
 export type Context = z.infer<typeof ContextSchema>
 
@@ -343,9 +342,7 @@ export function resolveContext(context: Context, configDir: string): string {
   }
 
   // File reference - resolve path relative to config file
-  const filePath = isAbsolute(context.file)
-    ? context.file
-    : join(configDir, context.file)
+  const filePath = isAbsolute(context.file) ? context.file : join(configDir, context.file)
 
   try {
     return readFileSync(filePath, "utf-8")
@@ -454,6 +451,7 @@ git commit -m "feat(config): add @owo/config shared configuration package"
 ### Task 3.1: Create Keyword Detector Package
 
 **Files:**
+
 - Create: `packages/keyword-detector/package.json`
 - Create: `packages/keyword-detector/tsconfig.json`
 - Create: `packages/keyword-detector/src/index.ts`
@@ -524,7 +522,7 @@ Create `packages/keyword-detector/tsconfig.json`:
 
 Create `packages/keyword-detector/src/detector.ts`:
 
-```typescript
+````typescript
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { KeywordPattern, KeywordDetectorConfig } from "@owo/config"
 import { resolveContext } from "@owo/config"
@@ -658,7 +656,7 @@ export function createKeywordDetectorHook(
     },
   }
 }
-```
+````
 
 **Step 4: Create index.ts (plugin entry)**
 
@@ -705,6 +703,7 @@ git commit -m "feat(keyword-detector): add @owo/keyword-detector config-driven p
 ### Task 4.1: Create Prompt Injector Package
 
 **Files:**
+
 - Create: `packages/prompt-injector/package.json`
 - Create: `packages/prompt-injector/tsconfig.json`
 - Create: `packages/prompt-injector/src/index.ts`
@@ -926,6 +925,7 @@ git commit -m "feat(prompt-injector): add @owo/prompt-injector config-driven plu
 ### Task 5.1: Create Orchestration Package
 
 **Files:**
+
 - Create: `packages/orchestration/package.json`
 - Create: `packages/orchestration/tsconfig.json`
 - Create: `packages/orchestration/src/index.ts`
@@ -997,6 +997,7 @@ Create `packages/orchestration/tsconfig.json`:
 **Step 3: Copy and adapt files from src/**
 
 Copy and adapt from existing source:
+
 - `src/background/manager.ts` -> `packages/orchestration/src/background-manager.ts`
 - `src/features/task-toast/manager.ts` -> `packages/orchestration/src/task-toast.ts`
 - `src/background/tools.ts` -> `packages/orchestration/src/tools.ts`
@@ -1027,6 +1028,7 @@ git commit -m "feat(orchestration): add @owo/orchestration background task plugi
 ### Task 6.1: Create Examples Package
 
 **Files:**
+
 - Create: `packages/examples/package.json`
 - Create: `packages/examples/README.md`
 - Create: `packages/examples/agents/` (copy from src/agents/)
@@ -1134,17 +1136,18 @@ git add -A && git commit -m "chore: remove legacy source"
 
 ## Summary
 
-| Package | Purpose | Published |
-|---------|---------|-----------|
-| `@owo/config` | Shared schema + loader | Yes |
-| `@owo/keyword-detector` | Config-driven keyword detection | Yes |
-| `@owo/prompt-injector` | Config-driven prompt injection | Yes |
-| `@owo/orchestration` | Background tasks + toasts | Yes |
-| `@owo/examples` | Reference examples | No (private) |
+| Package                 | Purpose                         | Published    |
+| ----------------------- | ------------------------------- | ------------ |
+| `@owo/config`           | Shared schema + loader          | Yes          |
+| `@owo/keyword-detector` | Config-driven keyword detection | Yes          |
+| `@owo/prompt-injector`  | Config-driven prompt injection  | Yes          |
+| `@owo/orchestration`    | Background tasks + toasts       | Yes          |
+| `@owo/examples`         | Reference examples              | No (private) |
 
 **Build order (handled by Turbo):** config -> keyword-detector, prompt-injector, orchestration (parallel)
 
 **User installation options:**
+
 - `bun add @owo/keyword-detector` - Just keyword detection
 - `bun add @owo/prompt-injector` - Just prompt injection
 - `bun add @owo/orchestration` - Just background tasks

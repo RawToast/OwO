@@ -1,8 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { loadConfig } from "@owo/config"
-import { buildPrompt, resolveFlair, buildFlairSection, resolvePromptSections } from "./resolver"
-
-export { buildPrompt, resolveFlair, buildFlairSection, resolvePromptSections } from "./resolver"
+import { buildPrompt } from "./resolver"
 
 // Session agent tracking (simple in-memory map)
 const sessionAgents = new Map<string, string | undefined>()

@@ -70,6 +70,7 @@
     "format": "oxfmt",
     "dev": "bun run build && opencode",
     "make": "turbo run make",
+    "make:local": "turbo run make:local  --filter='./packages/*'",
     "make:packages": "turbo run make --filter='./packages/*'",
     "compile": "turbo run compile",
     "clean:packages": "turbo run clean --filter='./packages/*'"

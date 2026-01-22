@@ -19,7 +19,7 @@
     "access": "public"
   },
   "scripts": {
-    "make": "bun build src/index.ts --outdir dist --target bun --format esm && bun run compile",
+    "make": "bun build src/index.ts --outdir dist --target node --format esm --external 'zod' --external 'strip-json-comments' && bun run compile",
     "compile": "tsgo --emitDeclarationOnly",
     "clean": "rm -rf dist"
   },
