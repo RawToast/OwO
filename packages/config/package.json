@@ -12,7 +12,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "schema.json"
   ],
   "scripts": {
     "make": "bun build src/index.ts --outdir dist --target bun --format esm && bun run compile",

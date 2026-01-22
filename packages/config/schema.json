@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OwoConfig",
+  "description": "Configuration schema for owo plugins",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "keywords": {
+      "type": "object",
+      "description": "Keyword detector configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable keyword detection"
+        },
+        "patterns": {
+          "type": "array",
+          "default": [],
+          "description": "Keyword patterns to detect",
+          "items": {
+            "type": "object",
+            "required": ["type", "pattern", "context", "toast"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Unique identifier for this keyword"
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regex pattern to match"
+              },
+              "flags": {
+                "type": "string",
+                "default": "i",
+                "description": "Regex flags (e.g., 'i' for case-insensitive)"
+              },
+              "context": {
+                "oneOf": [
+                  { "type": "string", "description": "Inline context to inject" },
+                  {
+                    "type": "object",
+                    "required": ["file"],
+                    "properties": {
+                      "file": {
+                        "type": "string",
+                        "description": "Path to file containing context (relative to config)"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Context to inject when keyword is detected"
+              },
+              "toast": {
+                "type": "object",
+                "required": ["title", "message"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Toast notification title"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Toast notification message"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "prompts": {
+      "type": "object",
+      "description": "Prompt injector configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable prompt injection"
+        },
+        "agents": {
+          "type": "object",
+          "description": "Agent-specific prompt configurations",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "flair": {
+                "oneOf": [
+                  { "type": "string", "description": "Inline flair text" },
+                  {
+                    "type": "object",
+                    "required": ["file"],
+                    "properties": {
+                      "file": {
+                        "type": "string",
+                        "description": "Path to file containing flair"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Flair/personality to inject for this agent"
+              },
+              "sections": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Template section names to include"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "templates": {
+          "type": "object",
+          "description": "Named prompt templates",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string", "description": "Inline template content" },
+              {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "Path to file containing template"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "orchestration": {
+      "type": "object",
+      "description": "Orchestration configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable orchestration"
+        },
+        "toasts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show toast notifications for background tasks"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
