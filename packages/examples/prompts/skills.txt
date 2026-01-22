@@ -1,0 +1,7 @@
+## SKILLS
+
+Use these skills when building:
+
+- 'verification-before-completion' - Verify work before claiming it's done
+- 'systematic-debugging' - Debug issues methodically
+- 'test-driven-development' - Write tests first, then implementation

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RawToast/owo/main/packages/config/schema.json",
+  "keywords": {
+    "enabled": true,
+    "patterns": [
+      {
+        "type": "ultrawork",
+        "pattern": "\\b(ultrawork|ulw)\\b",
+        "flags": "i",
+        "context": { "file": "./keywords/ultrawork.txt" },
+        "toast": {
+          "title": "Ultrawork Mode",
+          "message": "Maximum precision engaged. Multi-agent coordination active."
+        }
+      },
+      {
+        "type": "deep-research",
+        "pattern": "\\b(deep\\s*research|research\\s*deep(ly)?)\\b",
+        "flags": "i",
+        "context": { "file": "./keywords/deep-research.txt" },
+        "toast": {
+          "title": "Deep Research Mode",
+          "message": "Comprehensive exploration enabled. Background agents will fire."
+        }
+      },
+      {
+        "type": "explore",
+        "pattern": "\\b(explore\\s*(the\\s*)?(codebase|code|project))\\b",
+        "flags": "i",
+        "context": { "file": "./keywords/explore.txt" },
+        "toast": {
+          "title": "Explore Mode",
+          "message": "Codebase exploration active. Multiple explorers will run."
+        }
+      }
+    ]
+  },
+  "prompts": {
+    "enabled": true,
+    "agents": {
+      "build": {
+        "flair": { "file": "./prompts/kaomoji-flair.txt" },
+        "sections": ["skills"]
+      },
+      "plan": {
+        "flair": "Be strategic and thorough. Think before you act!",
+        "sections": ["skills"]
+      }
+    },
+    "templates": {
+      "skills": { "file": "./prompts/skills.txt" }
+    }
+  },
+  "orchestration": {
+    "enabled": true,
+    "toasts": true
+  }
+}
