@@ -19,6 +19,7 @@ OwO supercharges [OpenCode](https://opencode.ai) with specialized AI agents that
 
 ## Why OwO?
 
+a
 OwO takes the more lightweight sub-aget and mutimodle approach from [zenox][https://github.com/CYBERBOYAYUSH/zenox] This lets you configure each agent to a model more tuned for the task:
 
 - **Explorer** finds code fast — optimized for codebase search with a lightweight model
