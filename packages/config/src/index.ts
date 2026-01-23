@@ -8,6 +8,10 @@ export {
   PromptInjectorConfigSchema,
   PromptTemplateSchema,
   OrchestrationConfigSchema,
+  ReviewerConfigSchema,
+  ReviewVerifyConfigSchema,
+  ReviewOutputConfigSchema,
+  CodeReviewConfigSchema,
 } from "./schema"
 
 // Type exports
@@ -20,6 +24,10 @@ export type {
   PromptInjectorConfig,
   PromptTemplate,
   OrchestrationConfig,
+  ReviewerConfig,
+  ReviewVerifyConfig,
+  ReviewOutputConfig,
+  CodeReviewConfig,
 } from "./schema"
 
 // Loader exports
