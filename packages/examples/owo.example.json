@@ -54,5 +54,18 @@
   "orchestration": {
     "enabled": true,
     "toasts": true
+  },
+  "review": {
+    "enabled": true,
+    "reviewers": [
+      { "agent": "oracle", "focus": "security vulnerabilities and breaking changes" },
+      { "agent": "explorer", "context": { "file": "reviewers/style-guide.md" } }
+    ],
+    "verify": {
+      "guidance": "Ignore test file formatting. Focus on production code issues."
+    },
+    "output": {
+      "template": { "file": "templates/review-output.md" }
+    }
   }
 }
