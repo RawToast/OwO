@@ -37,6 +37,10 @@ function buildCommand(input: DiffInput): string {
       }
       return `git diff ${refs[0]} ${refs[1]}`
     }
+    default: {
+      const _exhaustive: never = input.mode
+      throw new Error(`Unknown diff mode: ${input.mode}`)
+    }
   }
 }
 
@@ -45,6 +49,14 @@ export async function gatherDiff(
   options: GatherOptions
 ): Promise<DiffResult> {
   const command = buildCommand(input)
-  const diff = await options.exec(command, { cwd: options.cwd })
+
+  let diff: string
+  try {
+    diff = await options.exec(command, { cwd: options.cwd })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(`Git command failed: ${command} (cwd: ${options.cwd}): ${msg}`)
+  }
+
   return { mode: input.mode, diff, refs: input.refs, command }
 }
