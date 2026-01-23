@@ -73,6 +73,54 @@ export const OrchestrationConfigSchema = z.object({
 export type OrchestrationConfig = z.infer<typeof OrchestrationConfigSchema>
 
 /**
+ * Single reviewer configuration
+ * Uses an existing agent with optional focus/context overrides
+ */
+export const ReviewerConfigSchema = z.object({
+  agent: z.string().describe("Agent name to use for review (e.g., oracle, explorer)"),
+  focus: z.string().optional().describe("Short focus instruction to steer the review"),
+  context: ContextSchema.optional().describe("File with additional review instructions"),
+})
+
+export type ReviewerConfig = z.infer<typeof ReviewerConfigSchema>
+
+/**
+ * Verify step configuration
+ */
+export const ReviewVerifyConfigSchema = z.object({
+  guidance: z.union([z.string(), ContextSchema]).optional().describe("Instructions for verification step"),
+})
+
+export type ReviewVerifyConfig = z.infer<typeof ReviewVerifyConfigSchema>
+
+/**
+ * Output formatting configuration
+ */
+export const ReviewOutputConfigSchema = z.object({
+  template: ContextSchema.optional().describe("Template file with formatting instructions"),
+})
+
+export type ReviewOutputConfig = z.infer<typeof ReviewOutputConfigSchema>
+
+/**
+ * Code review plugin configuration
+ */
+export const CodeReviewConfigSchema = z.object({
+  enabled: z.boolean().optional().default(true),
+  reviewers: z
+    .array(ReviewerConfigSchema)
+    .min(1)
+    .max(2)
+    .optional()
+    .default([{ agent: "oracle" }])
+    .describe("1-2 reviewer configurations"),
+  verify: ReviewVerifyConfigSchema.optional(),
+  output: ReviewOutputConfigSchema.optional(),
+})
+
+export type CodeReviewConfig = z.infer<typeof CodeReviewConfigSchema>
+
+/**
  * Main unified configuration schema for all owo packages
  * Minimal - only package-specific sections, no agents/tools/flair at root
  */
@@ -81,6 +129,7 @@ export const OwoConfigSchema = z.object({
   keywords: KeywordDetectorConfigSchema.optional(),
   prompts: PromptInjectorConfigSchema.optional(),
   orchestration: OrchestrationConfigSchema.optional(),
+  review: CodeReviewConfigSchema.optional(),
 })
 
 export type OwoConfig = z.infer<typeof OwoConfigSchema>
