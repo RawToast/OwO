@@ -1,0 +1,218 @@
+================================================================================
+OPENCODE SDK EXPLORATION - SUMMARY
+================================================================================
+
+LOCATION: /Users/james.morris/github/opencode/packages/sdk/js/
+
+KEY FINDINGS:
+================================================================================
+
+1. PARALLEL REQUESTS ARE FULLY SUPPORTED ✅
+   - All SDK methods return Promises
+   - Can use Promise.all() for coordinated parallel execution
+   - promptAsync() for fire-and-forget non-blocking requests
+   - No built-in rate limiting (server may have limits)
+
+2. CORE PARALLEL PATTERNS
+   ✓ Promise.all() with multiple sessions
+   ✓ promptAsync() for background processing
+   ✓ Session forking for parallel branches
+   ✓ AgentPartInput for multi-agent delegation
+   ✓ SubtaskPartInput for structured delegation
+
+3. KEY API METHODS
+   - client.session.create()        → Create new session
+   - client.session.prompt()        → Send message (blocking)
+   - client.session.promptAsync()   → Send message (non-blocking) ⭐
+   - client.session.fork()          → Create parallel branch
+   - client.app.agents()            → List available agents
+   - client.session.messages()      → Get all messages
+
+4. MESSAGE PARTS SYSTEM
+   - type: "text"     → Text content
+   - type: "file"     → File reference (file:// or http://)
+   - type: "agent"    → Delegate to subagent
+   - type: "subtask"  → Structured delegation with model
+
+5. AGENT CONFIGURATION
+   - Agents have modes: "primary", "subagent", "all"
+   - Can specify model per request
+   - Can specify agent per request
+   - Agents can have custom permissions and steps
+
+6. PLUGIN INTEGRATION
+   - Plugins receive SDK client in PluginInput
+   - Can spawn parallel requests from tools
+   - Can spawn parallel requests from event hooks
+   - Full access to all SDK methods
+
+7. CONCURRENCY PATTERNS
+   - All at once:     await Promise.all(requests)
+   - First to complete: await Promise.race(requests)
+   - Sequential:      for (const req of requests) await req
+   - Batches of N:    Process in chunks to control concurrency
+
+8. OFFICIAL EXAMPLE SHOWS
+   - Promise.all() with multiple sessions
+   - File processing in parallel
+   - Reusing sessions for multiple messages
+   - Fire-and-forget pattern with tasks array
+
+================================================================================
+DOCUMENTATION CREATED
+================================================================================
+
+1. OPENCODE_README.md (INDEX)
+   - Navigation guide
+   - Quick reference
+   - Learning path
+   - FAQ
+
+2. OPENCODE_QUICK_START.md (5-10 MIN READ)
+   - 3 core patterns
+   - Key methods table
+   - Common patterns
+   - Tips and best practices
+
+3. OPENCODE_SDK_ANALYSIS.md (20-30 MIN READ)
+   - Complete architecture
+   - All API methods
+   - 5 detailed patterns
+   - Agent configuration
+   - Plugin integration
+   - Advanced patterns
+   - Error handling
+
+4. OPENCODE_EXAMPLES.md (15-20 MIN READ)
+   - 10 complete, runnable examples
+   - Production guidelines
+   - Debugging tips
+   - Real-world patterns
+
+================================================================================
+WHAT'S POSSIBLE FOR PARALLEL AGENT REQUESTS
+================================================================================
+
+✅ FULLY SUPPORTED:
+   • Create multiple sessions in parallel
+   • Send messages to multiple sessions in parallel
+   • Fire-and-forget async requests with promptAsync()
+   • Delegate to other agents via AgentPartInput
+   • Create independent parallel branches via fork()
+   • Process multiple files concurrently
+   • Compare different agents on same task
+   • Chain parallel operations (cascading)
+   • Batch process large workloads
+   • Handle partial failures with Promise.allSettled()
+
+🎯 RECOMMENDED PATTERNS:
+   1. For independent work: Promise.all() with multiple sessions
+   2. For background tasks: promptAsync()
+   3. For agent delegation: AgentPartInput or SubtaskPartInput
+   4. For branching: session.fork()
+   5. For resource control: Batch requests
+
+⚠️ BEST PRACTICES:
+   • Reuse sessions when possible
+   • Specify agents explicitly
+   • Batch large workloads (100+ items)
+   • Use Promise.allSettled() for error handling
+   • Monitor concurrent session count
+   • Clean up old sessions
+
+================================================================================
+EXAMPLE: BASIC PARALLEL ANALYSIS
+================================================================================
+
+const client = createOpencodeClient({ baseUrl: "http://localhost:3000" })
+const session = await client.session.create()
+
+const [review, perf, security] = await Promise.all([
+  client.session.prompt({
+    sessionID: session.data.id,
+    agent: "code-review",
+    parts: [{ type: "text", text: code }]
+  }),
+  client.session.prompt({
+    sessionID: session.data.id,
+    agent: "performance",
+    parts: [{ type: "text", text: code }]
+  }),
+  client.session.prompt({
+    sessionID: session.data.id,
+    agent: "security",
+    parts: [{ type: "text", text: code }]
+  })
+])
+
+================================================================================
+EXAMPLE: FROM WITHIN A PLUGIN
+================================================================================
+
+const MyPlugin: Plugin = async (input) => {
+  const { client, directory } = input
+  
+  return {
+    tool: {
+      analyzeParallel: tool({
+        description: "Analyze with multiple agents",
+        args: { code: tool.schema.string() },
+        async execute(args) {
+          const session = await client.session.create({ directory })
+          
+          const results = await Promise.all([
+            client.session.prompt({
+              sessionID: session.data.id,
+              agent: "code-review",
+              parts: [{ type: "text", text: args.code }]
+            }),
+            client.session.prompt({
+              sessionID: session.data.id,
+              agent: "performance",
+              parts: [{ type: "text", text: args.code }]
+            })
+          ])
+          
+          return results
+        }
+      })
+    }
+  }
+}
+
+================================================================================
+SOURCE FILES ANALYZED
+================================================================================
+
+/Users/james.morris/github/opencode/packages/sdk/js/src/v2/gen/sdk.gen.ts
+  - Generated SDK class with all methods
+  - 2900+ lines of auto-generated code
+  - Methods for sessions, messages, agents, PTY, etc.
+
+/Users/james.morris/github/opencode/packages/sdk/js/src/v2/gen/types.gen.ts
+  - Generated type definitions
+  - 4800+ lines of types
+  - Agent, Session, Message, Part types
+  - Request/Response types
+
+/Users/james.morris/github/opencode/packages/sdk/js/example/example.ts
+  - Official example showing parallel patterns
+  - Promise.all() with multiple sessions
+  - File processing in parallel
+
+/Users/james.morris/github/opencode/packages/plugin/src/index.ts
+  - Plugin type definitions
+  - PluginInput includes SDK client
+  - Event hooks and tool definitions
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Read OPENCODE_README.md for navigation
+2. Start with OPENCODE_QUICK_START.md (5 min)
+3. Copy examples from OPENCODE_EXAMPLES.md
+4. Refer to OPENCODE_SDK_ANALYSIS.md for details
+5. Implement parallel requests in your plugin
+
+================================================================================

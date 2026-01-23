@@ -1,18 +1,19 @@
 # AGENTS
 
-OwO - OpenCode plugin monorepo. TypeScript + Bun, ESM, strict mode.
+OwO - OpenCode modular plugin monorepo. TypeScript + Bun, ESM, strict mode.
+Plugins should be customizable and reusable.
 
 ## Quick Reference
 
-| Item | Value |
-|------|-------|
-| Runtime | Bun (builds/scripts), Node APIs where needed |
-| Language | TypeScript (strict mode) |
-| Module | ESM (`"type": "module"`) |
-| Formatter | oxfmt (semicolons disabled) |
-| Linter | oxlint |
-| Build | Bun + tsgo for declarations |
-| Package Manager | Bun 1.3.6 with workspaces |
+| Item            | Value                                        |
+| --------------- | -------------------------------------------- |
+| Runtime         | Bun (builds/scripts), Node APIs where needed |
+| Language        | TypeScript (strict mode)                     |
+| Module          | ESM (`"type": "module"`)                     |
+| Formatter       | oxfmt (semicolons disabled)                  |
+| Linter          | oxlint                                       |
+| Build           | Bun + tsgo for declarations                  |
+| Package Manager | Bun 1.3.6 with workspaces                    |
 
 ## Commands
 
@@ -27,7 +28,7 @@ bun run build
 bun run make           # or: turbo run make
 
 # Typecheck
-bun run typecheck      # uses tsgo --noEmit
+bun run compile      # uses tsgo --noEmit
 
 # Lint
 bun run lint           # oxlint
@@ -53,6 +54,7 @@ bun test --watch packages/prompt-injector/
 ```
 
 Test files use `bun:test` with `expect` and `test` imports:
+
 ```typescript
 import { expect, test } from "bun:test"
 ```
@@ -74,12 +76,14 @@ Root `dist/` contains the main plugin entry (`dist/index.js`).
 ## Code Style
 
 ### Formatting (oxfmt)
+
 - No semicolons
 - Double quotes for strings
 - Two-space indentation
 - Trailing commas (applied by oxfmt)
 
 ### Imports
+
 ```typescript
 // Type-only imports use `import type`
 import type { Plugin } from "@opencode-ai/plugin"
@@ -92,9 +96,11 @@ import { BackgroundManager } from "./background-manager"
 ```
 
 ### Types and Zod
+
 - Use Zod for runtime validation in config schemas
 - Derive TypeScript types with `z.infer<typeof Schema>`
 - Use `type` for unions/derived types, `interface` for extendable shapes
+
 ```typescript
 export const ToastConfigSchema = z.object({
   title: z.string(),
@@ -104,12 +110,14 @@ export type ToastConfig = z.infer<typeof ToastConfigSchema>
 ```
 
 ### Naming
+
 - `camelCase` for variables/functions
 - `PascalCase` for classes/types/components
 - `UPPER_SNAKE` for constants
 - `kebab-case` for file/folder names
 
 ### Error Handling
+
 ```typescript
 try {
   configResult = loadConfig(ctx.directory)
@@ -121,11 +129,13 @@ try {
 ```
 
 ### Async Patterns
+
 - Prefer `async/await` over raw Promises
 - Fire-and-forget calls must catch errors: `.catch(() => {})`
 - Don't block on background tasks unless results are needed
 
 ### Exports
+
 - Plugin files default-export the plugin
 - Type exports are fine alongside default export
 - Index files are thin re-export layers
@@ -133,13 +143,18 @@ try {
 ## Plugin Patterns
 
 Plugins implement the `Plugin` type from `@opencode-ai/plugin`:
+
 ```typescript
 import type { Plugin } from "@opencode-ai/plugin"
 
 const MyPlugin: Plugin = async (ctx) => {
   return {
-    tool: { /* tool definitions */ },
-    event: async ({ event }) => { /* event handlers */ },
+    tool: {
+      /* tool definitions */
+    },
+    event: async ({ event }) => {
+      /* event handlers */
+    },
   }
 }
 export default MyPlugin
@@ -148,6 +163,7 @@ export default MyPlugin
 ## Package Scripts
 
 Each package in `packages/` has:
+
 ```bash
 bun run make      # Build with externals
 bun run compile   # Generate .d.ts only
@@ -157,6 +173,7 @@ bun run clean     # Remove dist/
 ## Config System
 
 Config is loaded from `~/.config/opencode/owo.json` or `.opencode/owo.json`:
+
 ```typescript
 import { loadConfig } from "@owo/config"
 const { config, configDir } = loadConfig(ctx.directory)
@@ -167,6 +184,7 @@ Keep Zod schemas (`packages/config/src/schema.ts`) aligned with JSON schema.
 ## Verification Checklist
 
 Before committing:
+
 ```bash
 bun run lint       # Check for lint errors
 bun run typecheck  # Verify types compile

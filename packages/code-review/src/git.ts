@@ -44,10 +44,7 @@ function buildCommand(input: DiffInput): string {
   }
 }
 
-export async function gatherDiff(
-  input: DiffInput,
-  options: GatherOptions
-): Promise<DiffResult> {
+export async function gatherDiff(input: DiffInput, options: GatherOptions): Promise<DiffResult> {
   const command = buildCommand(input)
 
   let diff: string

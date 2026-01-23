@@ -88,7 +88,10 @@ export type ReviewerConfig = z.infer<typeof ReviewerConfigSchema>
  * Verify step configuration
  */
 export const ReviewVerifyConfigSchema = z.object({
-  guidance: z.union([z.string(), ContextSchema]).optional().describe("Instructions for verification step"),
+  guidance: z
+    .union([z.string(), ContextSchema])
+    .optional()
+    .describe("Instructions for verification step"),
 })
 
 export type ReviewVerifyConfig = z.infer<typeof ReviewVerifyConfigSchema>

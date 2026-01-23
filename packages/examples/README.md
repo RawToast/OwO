@@ -28,6 +28,7 @@ Copy and adapt these examples into your own configuration. The agents here are d
 ### Example Config
 
 See `owo.example.json` for a complete configuration example that uses:
+
 - Custom keyword patterns with file-based contexts
 - Agent-specific prompt injection
 - Flair customization
@@ -35,13 +36,17 @@ See `owo.example.json` for a complete configuration example that uses:
 ## Agent Descriptions
 
 ### Explorer
+
 Fast codebase grep - answers "Where is X?", "Find the code that does Y". Optimized for parallel search with structured results.
 
 ### Librarian
+
 Open-source research specialist. Searches GitHub, documentation, and the web to find implementation examples and best practices.
 
 ### Oracle
+
 Strategic technical advisor with deep reasoning. Use for architecture decisions, code reviews, and complex debugging.
 
 ### UI Planner
+
 Designer-turned-developer. Creates stunning interfaces even without mockups. Focuses on aesthetics, animations, and user experience.

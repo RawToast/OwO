@@ -1,0 +1,244 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    OPENCODE SDK - PARALLEL AGENTS GUIDE                    ║
+║                                                                            ║
+║  How to make parallel agent requests from within a plugin                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─ ARCHITECTURE ─────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  Plugin (owo)                                                             │
+│    ↓                                                                       │
+│  PluginInput { client, directory, ... }                                   │
+│    ↓                                                                       │
+│  SDK Client (createOpencodeClient)                                        │
+│    ↓                                                                       │
+│  OpenCode Server (localhost:3000)                                         │
+│    ↓                                                                       │
+│  Agents (code-review, performance, security, ...)                         │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PARALLEL PATTERNS ────────────────────────────────────────────────────────┐
+│                                                                            │
+│  PATTERN 1: Promise.all() with Multiple Sessions                          │
+│  ─────────────────────────────────────────────────────────────────────    │
+│                                                                            │
+│    const session = await client.session.create()                          │
+│                                                                            │
+│    const [review, perf, security] = await Promise.all([                   │
+│      client.session.prompt({ sessionID, agent: "code-review", ... }),     │
+│      client.session.prompt({ sessionID, agent: "performance", ... }),     │
+│      client.session.prompt({ sessionID, agent: "security", ... })         │
+│    ])                                                                      │
+│                                                                            │
+│  ✓ Fastest for coordinated work                                           │
+│  ✓ Single session, multiple agents                                        │
+│  ✓ All requests start simultaneously                                      │
+│                                                                            │
+│  ─────────────────────────────────────────────────────────────────────    │
+│                                                                            │
+│  PATTERN 2: Fire-and-Forget (promptAsync)                                 │
+│  ─────────────────────────────────────────────────────────────────────    │
+│                                                                            │
+│    await client.session.promptAsync({                                     │
+│      sessionID,                                                           │
+│      agent: "build",                                                      │
+│      parts: [{ type: "text", text: "Build the project" }]                 │
+│    })                                                                      │
+│                                                                            │
+│    console.log("Request sent, continuing...")                             │
+│                                                                            │
+│  ✓ Returns immediately                                                    │
+│  ✓ Processing happens in background                                       │
+│  ✓ Good for background tasks                                              │
+│                                                                            │
+│  ─────────────────────────────────────────────────────────────────────    │
+│                                                                            │
+│  PATTERN 3: Batch Processing                                              │
+│  ─────────────────────────────────────────────────────────────────────    │
+│                                                                            │
+│    const results = await Promise.all(                                     │
+│      files.map(async (file) => {                                          │
+│        const session = await client.session.create()                      │
+│        return client.session.prompt({                                      │
+│          sessionID: session.data.id,                                       │
+│          parts: [{ type: "file", url: `file://${file}` }, ...]            │
+│        })                                                                  │
+│      })                                                                    │
+│    )                                                                       │
+│                                                                            │
+│  ✓ Process multiple files in parallel                                     │
+│  ✓ Each file gets its own session                                         │
+│  ✓ Scales to many items                                                   │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ MESSAGE PARTS ────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  Text Part                                                                │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  { type: "text", text: "Your message" }                                   │
+│                                                                            │
+│  File Part                                                                │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  { type: "file", mime: "text/plain", url: "file:///path/to/file" }       │
+│                                                                            │
+│  Agent Part (Delegate to Subagent)                                        │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  { type: "agent", name: "code-review" }                                   │
+│                                                                            │
+│  Subtask Part (Structured Delegation)                                     │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  {                                                                         │
+│    type: "subtask",                                                       │
+│    prompt: "Analyze performance",                                         │
+│    agent: "performance",                                                  │
+│    model: { providerID: "openai", modelID: "gpt-4" }                      │
+│  }                                                                         │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PLUGIN INTEGRATION ───────────────────────────────────────────────────────┐
+│                                                                            │
+│  import type { Plugin } from "@opencode-ai/plugin"                        │
+│                                                                            │
+│  const MyPlugin: Plugin = async (input) => {                              │
+│    const { client, directory } = input  ← SDK client provided!            │
+│                                                                            │
+│    return {                                                               │
+│      tool: {                                                              │
+│        analyzeParallel: tool({                                            │
+│          description: "Analyze with multiple agents",                     │
+│          args: { code: tool.schema.string() },                            │
+│          async execute(args) {                                            │
+│            const session = await client.session.create({ directory })     │
+│                                                                            │
+│            // Spawn parallel requests                                     │
+│            const results = await Promise.all([                            │
+│              client.session.prompt({                                      │
+│                sessionID: session.data.id,                                │
+│                agent: "code-review",                                      │
+│                parts: [{ type: "text", text: args.code }]                 │
+│              }),                                                          │
+│              client.session.prompt({                                      │
+│                sessionID: session.data.id,                                │
+│                agent: "performance",                                      │
+│                parts: [{ type: "text", text: args.code }]                 │
+│              })                                                           │
+│            ])                                                             │
+│                                                                            │
+│            return results                                                 │
+│          }                                                                │
+│        })                                                                 │
+│      }                                                                    │
+│    }                                                                      │
+│  }                                                                        │
+│                                                                            │
+│  export default MyPlugin                                                  │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ KEY API METHODS ──────────────────────────────────────────────────────────┐
+│                                                                            │
+│  Session Management                                                       │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  client.session.create()           Create new session                     │
+│  client.session.list()             List all sessions                      │
+│  client.session.fork()             Fork session at message point          │
+│  client.session.delete()           Delete session                         │
+│                                                                            │
+│  Message/Prompt (Core for Parallel)                                       │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  client.session.prompt()           Send message (blocking)                │
+│  client.session.promptAsync()      Send message (non-blocking) ⭐         │
+│  client.session.messages()         Get all messages                       │
+│  client.session.message()          Get specific message                   │
+│                                                                            │
+│  Agent Discovery                                                          │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  client.app.agents()               List available agents                  │
+│  client.app.skills()               List available skills                  │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CONCURRENCY PATTERNS ─────────────────────────────────────────────────────┐
+│                                                                            │
+│  All at Once (Fastest)                                                    │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  await Promise.all(requests)                                              │
+│                                                                            │
+│  First to Complete                                                        │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  const first = await Promise.race(requests)                               │
+│                                                                            │
+│  Sequential (Slowest)                                                     │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  for (const req of requests) await req                                    │
+│                                                                            │
+│  Batches of N (Balanced)                                                  │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  for (let i = 0; i < requests.length; i += batchSize) {                   │
+│    await Promise.all(requests.slice(i, i + batchSize))                    │
+│  }                                                                         │
+│                                                                            │
+│  Error Handling                                                           │
+│  ──────────────────────────────────────────────────────────────────────   │
+│  const results = await Promise.allSettled(requests)                       │
+│  // Handle partial failures                                               │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ BEST PRACTICES ───────────────────────────────────────────────────────────┐
+│                                                                            │
+│  ✓ DO:                                                                    │
+│    • Use Promise.all() for coordinated parallel work                      │
+│    • Use promptAsync() for background tasks                               │
+│    • Reuse sessions for multiple messages                                 │
+│    • Specify agents explicitly                                            │
+│    • Batch large workloads (100+ items)                                   │
+│    • Use Promise.allSettled() for error handling                          │
+│                                                                            │
+│  ✗ DON'T:                                                                 │
+│    • Create unnecessary sessions                                          │
+│    • Ignore errors in Promise.all()                                       │
+│    • Spawn unlimited concurrent requests                                  │
+│    • Rely on default agents                                               │
+│    • Block on fire-and-forget requests                                    │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DOCUMENTATION FILES ──────────────────────────────────────────────────────┐
+│                                                                            │
+│  OPENCODE_README.md                                                       │
+│  └─ Navigation guide, quick reference, learning path                      │
+│                                                                            │
+│  OPENCODE_QUICK_START.md                                                  │
+│  └─ 3 core patterns, key methods, common patterns (5-10 min)              │
+│                                                                            │
+│  OPENCODE_SDK_ANALYSIS.md                                                 │
+│  └─ Complete architecture, all API methods, advanced patterns (20-30 min) │
+│                                                                            │
+│  OPENCODE_EXAMPLES.md                                                     │
+│  └─ 10 complete, runnable examples, production guidelines (15-20 min)     │
+│                                                                            │
+│  OPENCODE_SUMMARY.txt                                                     │
+│  └─ Key findings, what's possible, next steps                             │
+│                                                                            │
+│  OPENCODE_VISUAL_GUIDE.txt                                                │
+│  └─ This file - visual overview of patterns and API                       │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║  QUICK START:                                                             ║
+║  1. Read OPENCODE_README.md (2 min)                                       ║
+║  2. Read OPENCODE_QUICK_START.md (5 min)                                  ║
+║  3. Copy Example 1 from OPENCODE_EXAMPLES.md                              ║
+║  4. Modify and run                                                        ║
+║                                                                            ║
+║  FULL REFERENCE:                                                          ║
+║  → OPENCODE_SDK_ANALYSIS.md (comprehensive)                               ║
+║  → OPENCODE_EXAMPLES.md (10 ready-to-use examples)                        ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝

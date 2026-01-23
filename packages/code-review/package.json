@@ -2,7 +2,9 @@
   "name": "@owo/code-review",
   "version": "0.1.0",
   "description": "Multi-stage code review with parallel reviewer agents for OpenCode",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,6 +19,7 @@
   },
   "scripts": {
     "make": "bun build src/index.ts --outdir dist --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
+    "make:local": "bun build src/index.ts --outfile dist/code-review.js --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
     "compile": "tsgo --emitDeclarationOnly",
     "clean": "rm -rf dist"
   },

@@ -21,6 +21,19 @@
         "turbo": "2.5.4",
       },
     },
+    "packages/code-review": {
+      "name": "@owo/code-review",
+      "version": "0.1.0",
+      "dependencies": {
+        "@opencode-ai/plugin": "catalog:",
+        "@opencode-ai/sdk": "catalog:",
+        "@owo/config": "workspace:*",
+      },
+      "devDependencies": {
+        "@typescript/native-preview": "7.0.0-dev.20260120.1",
+        "bun-types": "1.3.6",
+      },
+    },
     "packages/config": {
       "name": "@owo/config",
       "version": "0.1.0",
@@ -91,6 +104,8 @@
     "@opencode-ai/plugin": ["@opencode-ai/plugin@1.1.25", "", { "dependencies": { "@opencode-ai/sdk": "1.1.25", "zod": "4.1.8" } }, "sha512-oTUWS446H/j7z3pdzo3cOrB5N87XZ/RKdgPD8yHv/rLX92B4YQHjOqggVQ56Q+1VEnN0jxzhoqRylv/0ZEts/Q=="],
 
     "@opencode-ai/sdk": ["@opencode-ai/sdk@1.1.25", "", {}, "sha512-mWUX489ArEF2ICg3iZsx2VQaGS3Z2j/dwAJDacao9t7dGDzjOIaacPw2weZ10zld7XmT9V9C0PM/A5lDZ52J+w=="],
+
+    "@owo/code-review": ["@owo/code-review@workspace:packages/code-review"],
 
     "@owo/config": ["@owo/config@workspace:packages/config"],
 

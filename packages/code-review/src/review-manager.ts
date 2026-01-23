@@ -32,30 +32,48 @@ export class ReviewManager {
     const startTime = Date.now()
 
     // Create child session
-    const createResult = await this.client.session.create({
-      body: {
-        parentID: input.parentSessionID,
-      },
-    })
-
-    const sessionData = "data" in createResult ? createResult.data : createResult
-    const sessionID = sessionData?.id
-
-    if (!sessionID) {
-      throw new Error("Failed to create reviewer session")
+    let sessionID: string
+    try {
+      const createResult = await this.client.session.create({
+        body: { parentID: input.parentSessionID },
+      })
+      const sessionData = "data" in createResult ? createResult.data : createResult
+      const id = sessionData?.id
+      if (!id) {
+        throw new Error("No session ID returned")
+      }
+      sessionID = id
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      throw new Error(`Failed to create reviewer session: ${msg}`)
     }
 
-    // Build the review prompt
-    const prompt = this.buildReviewPrompt(input)
+    // Send prompt with retry logic for agent errors
+    const sendPrompt = async (retryWithoutAgent = false): Promise<void> => {
+      try {
+        await this.client.session.prompt({
+          path: { id: sessionID },
+          body: {
+            ...(retryWithoutAgent ? {} : { agent: input.config.agent }),
+            parts: [{ type: "text", text: this.buildReviewPrompt(input) }],
+          },
+        })
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err)
+        if (
+          !retryWithoutAgent &&
+          (errorMsg.includes("agent.name") || errorMsg.includes("undefined is not an object"))
+        ) {
+          console.warn(
+            `[code-review] Agent "${input.config.agent}" not found, retrying with default`,
+          )
+          return sendPrompt(true)
+        }
+        throw new Error(`Failed to send review prompt: ${errorMsg}`)
+      }
+    }
 
-    // Send prompt and wait for response
-    await this.client.session.prompt({
-      path: { id: sessionID },
-      body: {
-        agent: input.config.agent,
-        parts: [{ type: "text", text: prompt }],
-      },
-    })
+    await sendPrompt()
 
     // Retrieve the response
     const output = await this.getSessionOutput(sessionID)
@@ -72,13 +90,14 @@ export class ReviewManager {
 
   /**
    * Launch multiple reviewers in parallel
+   * Uses Promise.allSettled so one failure doesn't abort all reviewers
    */
   async launchReviewers(
     configs: ReviewerConfig[],
     diff: string,
     query: string,
     parentSessionID: string,
-    resolveContext?: (ctx: string | { file: string }) => string
+    resolveContext?: (ctx: string | { file: string }) => string,
   ): Promise<ReviewerResult[]> {
     const promises = configs.map((config) => {
       // Resolve context content if present
@@ -96,7 +115,21 @@ export class ReviewManager {
       })
     })
 
-    return Promise.all(promises)
+    const results = await Promise.allSettled(promises)
+
+    return results.map((result, i) => {
+      if (result.status === "fulfilled") {
+        return result.value
+      }
+      // Return failure as a result with error output
+      return {
+        agent: configs[i].agent,
+        focus: configs[i].focus,
+        output: `Review failed: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`,
+        sessionID: "",
+        duration: 0,
+      }
+    })
   }
 
   /**
@@ -137,23 +170,38 @@ export class ReviewManager {
    * Get the output from a completed session
    */
   private async getSessionOutput(sessionID: string): Promise<string> {
-    const messagesResult = await this.client.session.messages({
-      path: { id: sessionID },
-    })
-
-    const messages = "data" in messagesResult ? messagesResult.data : messagesResult
+    let messages: unknown[]
+    try {
+      const messagesResult = await this.client.session.messages({
+        path: { id: sessionID },
+      })
+      messages = ("data" in messagesResult ? messagesResult.data : messagesResult) as unknown[]
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return `Failed to retrieve review output: ${msg}`
+    }
 
     if (!messages || !Array.isArray(messages)) {
       return "No output received from reviewer"
     }
 
     type MessageWrapper = {
-      info: { role: string }
+      info: { role: string; error?: { name?: string; data?: { message?: string } } }
       parts: Array<{ type: string; text?: string }>
     }
 
+    // Check for errors first
+    const assistantWithError = (messages as MessageWrapper[]).find(
+      (m) => m.info.role === "assistant" && m.info.error,
+    )
+    if (assistantWithError?.info.error) {
+      const errorData = assistantWithError.info.error
+      const errorMsg = errorData.data?.message ?? errorData.name ?? "Unknown error"
+      return `Reviewer error: ${errorMsg}`
+    }
+
     const assistantMessages = (messages as MessageWrapper[]).filter(
-      (m) => m.info.role === "assistant" && m.parts && m.parts.length > 0
+      (m) => m.info.role === "assistant" && m.parts && m.parts.length > 0,
     )
 
     if (assistantMessages.length === 0) {
