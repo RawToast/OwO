@@ -39,20 +39,7 @@
                 "description": "Regex flags (e.g., 'i' for case-insensitive)"
               },
               "context": {
-                "oneOf": [
-                  { "type": "string", "description": "Inline context to inject" },
-                  {
-                    "type": "object",
-                    "required": ["file"],
-                    "properties": {
-                      "file": {
-                        "type": "string",
-                        "description": "Path to file containing context (relative to config)"
-                      }
-                    },
-                    "additionalProperties": false
-                  }
-                ],
+                "$ref": "#/$defs/context",
                 "description": "Context to inject when keyword is detected"
               },
               "toast": {
@@ -92,50 +79,15 @@
           "additionalProperties": {
             "type": "object",
             "properties": {
-              "flair": {
-                "oneOf": [
-                  { "type": "string", "description": "Inline flair text" },
-                  {
-                    "type": "object",
-                    "required": ["file"],
-                    "properties": {
-                      "file": {
-                        "type": "string",
-                        "description": "Path to file containing flair"
-                      }
-                    },
-                    "additionalProperties": false
-                  }
-                ],
-                "description": "Flair/personality to inject for this agent"
-              },
-              "sections": {
+              "context": {
                 "type": "array",
-                "items": { "type": "string" },
-                "description": "Template section names to include"
+                "description": "Array of context items to inject into agent prompt",
+                "items": {
+                  "$ref": "#/$defs/context"
+                }
               }
             },
             "additionalProperties": false
-          }
-        },
-        "templates": {
-          "type": "object",
-          "description": "Named prompt templates",
-          "additionalProperties": {
-            "oneOf": [
-              { "type": "string", "description": "Inline template content" },
-              {
-                "type": "object",
-                "required": ["file"],
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "description": "Path to file containing template"
-                  }
-                },
-                "additionalProperties": false
-              }
-            ]
           }
         }
       },
@@ -157,6 +109,180 @@
         }
       },
       "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "description": "Code review plugin configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable code review"
+        },
+        "reviewers": {
+          "type": "array",
+          "description": "1-2 reviewer configurations",
+          "default": [{ "agent": "oracle" }],
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["agent"],
+            "properties": {
+              "agent": {
+                "type": "string",
+                "description": "Agent name to use for review (e.g., oracle, explorer)"
+              },
+              "focus": {
+                "type": "string",
+                "description": "Short focus instruction to steer the review"
+              },
+              "context": {
+                "$ref": "#/$defs/context",
+                "description": "File with additional review instructions"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "verify": {
+          "type": "object",
+          "description": "Verify step configuration",
+          "properties": {
+            "guidance": {
+              "$ref": "#/$defs/context",
+              "description": "Instructions for verification step"
+            }
+          },
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "description": "Output formatting configuration",
+          "properties": {
+            "template": {
+              "$ref": "#/$defs/context",
+              "description": "Template file with formatting instructions"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tools": {
+      "type": "object",
+      "description": "API-based tools configuration",
+      "properties": {
+        "exa": {
+          "type": "object",
+          "description": "Exa web search tool",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable Exa tools (requires EXA_API_KEY env var)"
+            },
+            "key": {
+              "type": "string",
+              "description": "API key (prefer env var instead)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "context7": {
+          "type": "object",
+          "description": "Context7 library documentation tool",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable Context7 tools (requires CONTEXT7_API_KEY env var)"
+            },
+            "key": {
+              "type": "string",
+              "description": "API key (prefer env var instead)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "jira": {
+          "type": "object",
+          "description": "Jira issue tracking tool",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable Jira tools (requires JIRA_API_TOKEN env var)"
+            },
+            "key": {
+              "type": "string",
+              "description": "API token (prefer env var instead)"
+            },
+            "cloudId": {
+              "type": "string",
+              "description": "Jira Cloud ID"
+            },
+            "email": {
+              "type": "string",
+              "description": "Jira account email"
+            }
+          },
+          "additionalProperties": false
+        },
+        "coderabbit": {
+          "type": "object",
+          "description": "CodeRabbit code review tool",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable CodeRabbit tools (requires CODERABBIT_API_KEY env var)"
+            },
+            "key": {
+              "type": "string",
+              "description": "API key (prefer env var instead)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "grep_app": {
+          "type": "object",
+          "description": "grep.app GitHub code search tool (no API key required)",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable grep.app search tool"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "context": {
+      "description": "Context can be inline string or file reference",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Inline text content"
+        },
+        {
+          "type": "object",
+          "description": "File reference",
+          "required": ["file"],
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "Path to file (relative to config or absolute)"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     }
   },
   "additionalProperties": false

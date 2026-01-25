@@ -160,8 +160,6 @@ export class BackgroundManager {
 
     // Read messages from the background session
     try {
-      console.log(`[owo/orchestration] Fetching output for ${taskId}`)
-
       const messagesResult = await client.session.messages({
         path: { id: task.sessionID },
       })
@@ -215,8 +213,6 @@ export class BackgroundManager {
       const textParts = lastMessage.parts.filter((p) => p.type === "text")
       const output = textParts.map((p) => p.text ?? "").join("\n")
 
-      console.log(`[owo/orchestration] Retrieved output for ${taskId} (${output.length} chars)`)
-
       return output || `Task ${taskId} completed but output was empty`
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Unknown error"
@@ -253,7 +249,6 @@ export class BackgroundManager {
     // Mark task as complete
     task.status = "completed"
     task.completedAt = new Date()
-    console.log(`[owo/orchestration] Task ${task.id} completed`)
 
     // Show completion toast
     if (this.toastManager) {

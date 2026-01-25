@@ -48,8 +48,7 @@ export type KeywordDetectorConfig = z.infer<typeof KeywordDetectorConfigSchema>
  * Agent names are open strings - user defines their own
  */
 export const PromptTemplateSchema = z.object({
-  flair: ContextSchema.optional(),
-  sections: z.array(z.string()).optional(),
+  context: z.array(ContextSchema).optional(),
 })
 
 export type PromptTemplate = z.infer<typeof PromptTemplateSchema>
@@ -57,7 +56,6 @@ export type PromptTemplate = z.infer<typeof PromptTemplateSchema>
 export const PromptInjectorConfigSchema = z.object({
   enabled: z.boolean().optional().default(true),
   agents: z.record(z.string(), PromptTemplateSchema).optional(),
-  templates: z.record(z.string(), ContextSchema).optional(),
 })
 
 export type PromptInjectorConfig = z.infer<typeof PromptInjectorConfigSchema>
@@ -124,6 +122,69 @@ export const CodeReviewConfigSchema = z.object({
 export type CodeReviewConfig = z.infer<typeof CodeReviewConfigSchema>
 
 /**
+ * Base tool configuration (enabled + optional API key)
+ */
+export const BaseToolConfigSchema = z.object({
+  enabled: z.boolean().optional().default(false),
+  key: z.string().optional().describe("API key (prefer env var instead)"),
+})
+
+export type BaseToolConfig = z.infer<typeof BaseToolConfigSchema>
+
+/**
+ * Exa web search tool config
+ */
+export const ExaToolConfigSchema = BaseToolConfigSchema.extend({})
+
+export type ExaToolConfig = z.infer<typeof ExaToolConfigSchema>
+
+/**
+ * Context7 library docs tool config
+ */
+export const Context7ToolConfigSchema = BaseToolConfigSchema.extend({})
+
+export type Context7ToolConfig = z.infer<typeof Context7ToolConfigSchema>
+
+/**
+ * Jira issue tracking tool config
+ */
+export const JiraToolConfigSchema = BaseToolConfigSchema.extend({
+  cloudId: z.string().optional().describe("Jira Cloud ID"),
+  email: z.string().optional().describe("Jira account email"),
+})
+
+export type JiraToolConfig = z.infer<typeof JiraToolConfigSchema>
+
+/**
+ * CodeRabbit code review tool config
+ */
+export const CodeRabbitToolConfigSchema = BaseToolConfigSchema.extend({})
+
+export type CodeRabbitToolConfig = z.infer<typeof CodeRabbitToolConfigSchema>
+
+/**
+ * grep.app GitHub code search tool config (no API key needed!)
+ */
+export const GrepAppToolConfigSchema = z.object({
+  enabled: z.boolean().optional().default(false),
+})
+
+export type GrepAppToolConfig = z.infer<typeof GrepAppToolConfigSchema>
+
+/**
+ * All tools configuration
+ */
+export const ToolsConfigSchema = z.object({
+  exa: ExaToolConfigSchema.optional(),
+  context7: Context7ToolConfigSchema.optional(),
+  jira: JiraToolConfigSchema.optional(),
+  coderabbit: CodeRabbitToolConfigSchema.optional(),
+  grep_app: GrepAppToolConfigSchema.optional(),
+})
+
+export type ToolsConfig = z.infer<typeof ToolsConfigSchema>
+
+/**
  * Main unified configuration schema for all owo packages
  * Minimal - only package-specific sections, no agents/tools/flair at root
  */
@@ -133,6 +194,7 @@ export const OwoConfigSchema = z.object({
   prompts: PromptInjectorConfigSchema.optional(),
   orchestration: OrchestrationConfigSchema.optional(),
   review: CodeReviewConfigSchema.optional(),
+  tools: ToolsConfigSchema.optional(),
 })
 
 export type OwoConfig = z.infer<typeof OwoConfigSchema>

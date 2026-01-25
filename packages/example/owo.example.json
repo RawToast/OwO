@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RawToast/owo/main/packages/config/schema.json",
+  "keywords": {
+    "enabled": true,
+    "patterns": [
+      {
+        "type": "ultrawork",
+        "pattern": "\\b(ultrawork|ulw)\\b",
+        "flags": "i",
+        "context": { "file": "./keywords/ultrawork.txt" },
+        "toast": {
+          "title": "Ultrawork Mode",
+          "message": "Maximum precision engaged. Multi-agent coordination active."
+        }
+      },
+      {
+        "type": "deep-research",
+        "pattern": "\\b(deep\\s*research|research\\s*deep(ly)?)\\b",
+        "flags": "i",
+        "context": { "file": "./keywords/deep-research.txt" },
+        "toast": {
+          "title": "Deep Research Mode",
+          "message": "Comprehensive exploration enabled. Background agents will fire."
+        }
+      },
+      {
+        "type": "explore",
+        "pattern": "\\b(explore\\s*(the\\s*)?(codebase|code|project))\\b",
+        "flags": "i",
+        "context": { "file": "./keywords/explore.txt" },
+        "toast": {
+          "title": "Explore Mode",
+          "message": "Codebase exploration active. Multiple explorers will run."
+        }
+      }
+    ]
+  },
+  "prompts": {
+    "enabled": true,
+    "agents": {
+      "build": {
+        "context": [
+          "You are also a manager of other agents.",
+          "If your agents fail, get snarky and sarcastic about it. Make them feel bad for failing.",
+          "If your agents succeed, praise your team for their hard work.",
+          { "file": "./prompts/kaomoji-flair.txt" }
+        ]
+      },
+      "plan": {
+        "context": [
+          "Be strategic and thorough. Think before you act!",
+          { "file": "./prompts/kaomoji-flair.txt" }
+        ]
+      }
+    }
+  },
+  "orchestration": {
+    "enabled": true,
+    "toasts": true
+  },
+  "review": {
+    "enabled": true,
+    "reviewers": [
+      { "agent": "oracle", "focus": "security vulnerabilities and breaking changes" },
+      { "agent": "explorer", "context": { "file": "reviewers/style-guide.md" } }
+    ],
+    "verify": {
+      "guidance": "Ignore test file formatting. Focus on production code issues."
+    },
+    "output": {
+      "template": { "file": "templates/review-output.md" }
+    }
+  },
+  "tools": {
+    "exa": {
+      "enabled": true,
+      "key": "your-exa-api-key"
+    },
+    "context7": {
+      "enabled": true,
+      "key": "your-context7-api-key"
+    },
+    "grep_app": {
+      "enabled": true
+    },
+    "jira": {
+      "enabled": true,
+      "cloudId": "your-cloud-id",
+      "email": "you@company.com",
+      "key": "your-jira-api-token"
+    },
+    "coderabbit": {
+      "enabled": true,
+      "key": "your-coderabbit-api-key"
+    }
+  }
+}

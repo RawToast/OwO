@@ -40,8 +40,6 @@ const OrchestrationPlugin: Plugin = async (ctx) => {
     throw err
   }
 
-  console.log("toastManager exists", toastManager !== undefined)
-
   // Initialize background task manager
   let backgroundManager: BackgroundManager
   try {

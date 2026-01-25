@@ -1,0 +1,29 @@
+{
+  "name": "@owo/tools",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "make": "bun build src/index.ts --outdir dist --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
+    "make:local": "bun build src/index.ts --outfile dist/tools.js --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
+    "compile": "tsgo --emitDeclarationOnly",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@owo/config": "workspace:*"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "*",
+    "@opencode-ai/sdk": "*"
+  },
+  "devDependencies": {
+    "zod": "^3.25.67"
+  }
+}

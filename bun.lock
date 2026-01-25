@@ -46,7 +46,7 @@
         "bun-types": "1.3.6",
       },
     },
-    "packages/examples": {
+    "packages/example": {
       "name": "@owo/examples",
       "version": "0.0.0",
     },
@@ -89,6 +89,20 @@
         "bun-types": "1.3.6",
       },
     },
+    "packages/tools": {
+      "name": "@owo/tools",
+      "version": "0.0.1",
+      "dependencies": {
+        "@owo/config": "workspace:*",
+      },
+      "devDependencies": {
+        "zod": "^3.25.67",
+      },
+      "peerDependencies": {
+        "@opencode-ai/plugin": "*",
+        "@opencode-ai/sdk": "*",
+      },
+    },
   },
   "catalog": {
     "@opencode-ai/plugin": "1.1.25",
@@ -109,13 +123,15 @@
 
     "@owo/config": ["@owo/config@workspace:packages/config"],
 
-    "@owo/examples": ["@owo/examples@workspace:packages/examples"],
+    "@owo/examples": ["@owo/examples@workspace:packages/example"],
 
     "@owo/keyword-detector": ["@owo/keyword-detector@workspace:packages/keyword-detector"],
 
     "@owo/orchestration": ["@owo/orchestration@workspace:packages/orchestration"],
 
     "@owo/prompt-injector": ["@owo/prompt-injector@workspace:packages/prompt-injector"],
+
+    "@owo/tools": ["@owo/tools@workspace:packages/tools"],
 
     "@oxfmt/darwin-arm64": ["@oxfmt/darwin-arm64@0.24.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-aYXuGf/yq8nsyEcHindGhiz9I+GEqLkVq8CfPbd+6VE259CpPEH+CaGHEO1j6vIOmNr8KHRq+IAjeRO2uJpb8A=="],
 
@@ -202,5 +218,7 @@
     "zod": ["zod@3.24.1", "", {}, "sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A=="],
 
     "@opencode-ai/plugin/zod": ["zod@4.1.8", "", {}, "sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ=="],
+
+    "@owo/tools/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
   }
 }
