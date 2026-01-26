@@ -6,8 +6,8 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
@@ -19,11 +19,11 @@
   "dependencies": {
     "@owo/config": "workspace:*"
   },
+  "devDependencies": {
+    "zod": "^3.25.67"
+  },
   "peerDependencies": {
     "@opencode-ai/plugin": "*",
     "@opencode-ai/sdk": "*"
-  },
-  "devDependencies": {
-    "zod": "^3.25.67"
   }
 }

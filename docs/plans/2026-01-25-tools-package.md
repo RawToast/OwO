@@ -19,8 +19,8 @@ Add to `owo.json`:
   "tools": {
     "exa": { "enabled": true },
     "context7": { "enabled": true },
-    "jira": { 
-      "enabled": true, 
+    "jira": {
+      "enabled": true,
       "cloudId": "your-cloud-id",
       "email": "you@company.com"
     },
@@ -31,18 +31,19 @@ Add to `owo.json`:
 
 ## Environment Variables
 
-| Tool | Env Var | Required |
-|------|---------|----------|
-| exa | `EXA_API_KEY` | Yes |
-| context7 | `CONTEXT7_API_KEY` | Yes |
-| jira | `JIRA_API_TOKEN` | Yes |
-| coderabbit | `CODERABBIT_API_KEY` | Yes |
+| Tool       | Env Var              | Required |
+| ---------- | -------------------- | -------- |
+| exa        | `EXA_API_KEY`        | Yes      |
+| context7   | `CONTEXT7_API_KEY`   | Yes      |
+| jira       | `JIRA_API_TOKEN`     | Yes      |
+| coderabbit | `CODERABBIT_API_KEY` | Yes      |
 
 ---
 
 ### Task 1: Scaffold Package Structure
 
 **Files:**
+
 - Create: `packages/tools/package.json`
 - Create: `packages/tools/tsconfig.json`
 - Create: `packages/tools/src/index.ts`
@@ -207,12 +208,18 @@ const ToolsPlugin: Plugin = async (ctx) => {
 }
 
 export default ToolsPlugin
-export type { ToolsConfig, ExaToolConfig, Context7ToolConfig, JiraToolConfig, CodeRabbitToolConfig } from "./types"
+export type {
+  ToolsConfig,
+  ExaToolConfig,
+  Context7ToolConfig,
+  JiraToolConfig,
+  CodeRabbitToolConfig,
+} from "./types"
 ```
 
 **Step 5: Create README.md**
 
-```markdown
+````markdown
 # @owo/tools
 
 API-based tools for OpenCode. All tools are disabled by default to avoid context bloat.
@@ -226,6 +233,7 @@ Add to your `opencode.json`:
   "plugins": ["@owo/tools"]
 }
 ```
+````
 
 ## Configuration
 
@@ -236,7 +244,7 @@ Enable tools in `~/.config/opencode/owo.json` (or `.opencode/owo.json`):
   "tools": {
     "exa": { "enabled": true },
     "context7": { "enabled": true },
-    "jira": { 
+    "jira": {
       "enabled": true,
       "cloudId": "your-cloud-id",
       "email": "you@company.com"
@@ -250,12 +258,12 @@ Enable tools in `~/.config/opencode/owo.json` (or `.opencode/owo.json`):
 
 Set API keys as environment variables (recommended):
 
-| Tool | Environment Variable | Get Key |
-|------|---------------------|---------|
-| Exa | `EXA_API_KEY` | https://exa.ai |
-| Context7 | `CONTEXT7_API_KEY` | https://context7.com/dashboard |
-| Jira | `JIRA_API_TOKEN` | https://id.atlassian.com/manage-profile/security/api-tokens |
-| CodeRabbit | `CODERABBIT_API_KEY` | https://coderabbit.ai |
+| Tool       | Environment Variable | Get Key                                                     |
+| ---------- | -------------------- | ----------------------------------------------------------- |
+| Exa        | `EXA_API_KEY`        | https://exa.ai                                              |
+| Context7   | `CONTEXT7_API_KEY`   | https://context7.com/dashboard                              |
+| Jira       | `JIRA_API_TOKEN`     | https://id.atlassian.com/manage-profile/security/api-tokens |
+| CodeRabbit | `CODERABBIT_API_KEY` | https://coderabbit.ai                                       |
 
 ## Available Tools
 
@@ -285,7 +293,8 @@ Interact with Jira issues.
 AI-powered code review.
 
 - `coderabbit_review` - Review code changes
-```
+
+````
 
 **Step 6: Run bun install to link workspace**
 
@@ -296,13 +305,14 @@ Run: `bun install`
 ```bash
 git add packages/tools/
 git commit -m "feat(tools): scaffold @owo/tools package structure"
-```
+````
 
 ---
 
 ### Task 2: Update Config Schema
 
 **Files:**
+
 - Modify: `packages/config/src/schema.ts`
 - Modify: `packages/config/schema.json`
 
@@ -464,6 +474,7 @@ git commit -m "feat(config): add tools schema for exa, context7, jira, coderabbi
 ### Task 3: Implement Exa Tool
 
 **Files:**
+
 - Create: `packages/tools/src/exa/index.ts`
 - Create: `packages/tools/src/exa/tools.ts`
 - Modify: `packages/tools/src/index.ts`
@@ -490,7 +501,7 @@ async function exaFetch(
   endpoint: string,
   apiKey: string,
   body: Record<string, any>,
-  abort?: AbortSignal
+  abort?: AbortSignal,
 ): Promise<any> {
   const response = await fetch(`${EXA_API_URL}${endpoint}`, {
     method: "POST",
@@ -517,7 +528,10 @@ export function createExaTools(apiKey: string) {
         "Search the web using Exa AI. Returns relevant web pages with content snippets. Use for finding documentation, articles, tutorials, and general web content.",
       args: {
         query: tool.schema.string().describe("Search query"),
-        numResults: tool.schema.number().optional().describe("Number of results (default: 10, max: 100)"),
+        numResults: tool.schema
+          .number()
+          .optional()
+          .describe("Number of results (default: 10, max: 100)"),
       },
       async execute(args, context) {
         const response: ExaSearchResponse = await exaFetch(
@@ -532,7 +546,7 @@ export function createExaTools(apiKey: string) {
               highlights: true,
             },
           },
-          context.abort
+          context.abort,
         )
 
         if (!response.results?.length) {
@@ -578,7 +592,7 @@ export function createExaTools(apiKey: string) {
               highlights: true,
             },
           },
-          context.abort
+          context.abort,
         )
 
         if (!response.results?.length) {
@@ -607,7 +621,7 @@ const ENV_KEY = "EXA_API_KEY"
 
 export function loadExaTools(
   config: { enabled?: boolean },
-  factoryCtx: ToolFactoryContext
+  factoryCtx: ToolFactoryContext,
 ): Record<string, any> | null {
   if (!config.enabled) {
     return null
@@ -615,10 +629,9 @@ export function loadExaTools(
 
   const apiKey = process.env[ENV_KEY]
   if (!apiKey) {
-    factoryCtx.showToast(
-      "Exa: Missing API Key",
-      `Set ${ENV_KEY} environment variable to enable Exa tools.`
-    ).catch(() => {})
+    factoryCtx
+      .showToast("Exa: Missing API Key", `Set ${ENV_KEY} environment variable to enable Exa tools.`)
+      .catch(() => {})
     return null
   }
 
@@ -663,6 +676,7 @@ git commit -m "feat(tools): implement Exa web search tools"
 ### Task 4: Implement Context7 Tool
 
 **Files:**
+
 - Create: `packages/tools/src/context7/index.ts`
 - Create: `packages/tools/src/context7/tools.ts`
 - Modify: `packages/tools/src/index.ts`
@@ -678,7 +692,7 @@ async function context7Fetch(
   endpoint: string,
   apiKey: string,
   params: Record<string, string>,
-  abort?: AbortSignal
+  abort?: AbortSignal,
 ): Promise<any> {
   const url = new URL(`${CONTEXT7_API_URL}${endpoint}`)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
@@ -704,14 +718,16 @@ export function createContext7Tools(apiKey: string) {
       description:
         "Resolve a library/package name to a Context7 library ID. Call this BEFORE context7_docs to get the correct library ID.",
       args: {
-        libraryName: tool.schema.string().describe("Library name to search for (e.g., 'react', 'express', 'pandas')"),
+        libraryName: tool.schema
+          .string()
+          .describe("Library name to search for (e.g., 'react', 'express', 'pandas')"),
       },
       async execute(args, context) {
         const response = await context7Fetch(
           "/libraries/search",
           apiKey,
           { query: args.libraryName },
-          context.abort
+          context.abort,
         )
 
         if (!response.libraries?.length) {
@@ -729,7 +745,9 @@ export function createContext7Tools(apiKey: string) {
       description:
         "Query documentation and code examples for a library. Use context7_resolve first to get the library ID.",
       args: {
-        libraryId: tool.schema.string().describe("Context7 library ID (e.g., '/facebook/react', '/expressjs/express')"),
+        libraryId: tool.schema
+          .string()
+          .describe("Context7 library ID (e.g., '/facebook/react', '/expressjs/express')"),
         query: tool.schema.string().describe("What you want to know about the library"),
       },
       async execute(args, context) {
@@ -740,7 +758,7 @@ export function createContext7Tools(apiKey: string) {
             libraryId: args.libraryId,
             query: args.query,
           },
-          context.abort
+          context.abort,
         )
 
         if (!response.content) {
@@ -764,7 +782,7 @@ const ENV_KEY = "CONTEXT7_API_KEY"
 
 export function loadContext7Tools(
   config: { enabled?: boolean },
-  factoryCtx: ToolFactoryContext
+  factoryCtx: ToolFactoryContext,
 ): Record<string, any> | null {
   if (!config.enabled) {
     return null
@@ -772,10 +790,12 @@ export function loadContext7Tools(
 
   const apiKey = process.env[ENV_KEY]
   if (!apiKey) {
-    factoryCtx.showToast(
-      "Context7: Missing API Key",
-      `Set ${ENV_KEY} environment variable to enable Context7 tools.`
-    ).catch(() => {})
+    factoryCtx
+      .showToast(
+        "Context7: Missing API Key",
+        `Set ${ENV_KEY} environment variable to enable Context7 tools.`,
+      )
+      .catch(() => {})
     return null
   }
 
@@ -813,6 +833,7 @@ git commit -m "feat(tools): implement Context7 library docs tools"
 ### Task 5: Implement Jira Tool
 
 **Files:**
+
 - Create: `packages/tools/src/jira/index.ts`
 - Create: `packages/tools/src/jira/tools.ts`
 - Modify: `packages/tools/src/index.ts`
@@ -830,11 +851,7 @@ interface JiraConfig {
   apiToken: string
 }
 
-async function jiraFetch(
-  config: JiraConfig,
-  endpoint: string,
-  abort?: AbortSignal
-): Promise<any> {
+async function jiraFetch(config: JiraConfig, endpoint: string, abort?: AbortSignal): Promise<any> {
   const url = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3${endpoint}`
   const auth = Buffer.from(`${config.email}:${config.apiToken}`).toString("base64")
 
@@ -857,7 +874,8 @@ async function jiraFetch(
 export function createJiraTools(config: JiraConfig) {
   return {
     jira: tool({
-      description: "Fetch a Jira issue by key (e.g., BDM-3739). Returns key, summary, status, and blocking links.",
+      description:
+        "Fetch a Jira issue by key (e.g., BDM-3739). Returns key, summary, status, and blocking links.",
       args: {
         key: tool.schema.string().describe("Jira issue key (e.g., PROJ-123)"),
       },
@@ -865,7 +883,7 @@ export function createJiraTools(config: JiraConfig) {
         const issue = await jiraFetch(
           config,
           `/issue/${args.key}?fields=summary,status,issuelinks`,
-          context.abort
+          context.abort,
         )
 
         const links = issue.fields.issuelinks
@@ -881,13 +899,14 @@ export function createJiraTools(config: JiraConfig) {
             blocks: links || [],
           },
           null,
-          2
+          2,
         )
       },
     }),
 
     jira_search: tool({
-      description: "Search Jira issues using JQL. Returns list of issues with key, summary, status, and links.",
+      description:
+        "Search Jira issues using JQL. Returns list of issues with key, summary, status, and links.",
       args: {
         jql: tool.schema.string().describe("JQL query string"),
         max: tool.schema.number().optional().describe("Maximum results (default: 20)"),
@@ -896,7 +915,7 @@ export function createJiraTools(config: JiraConfig) {
         const response = await jiraFetch(
           config,
           `/search?jql=${encodeURIComponent(args.jql)}&maxResults=${args.max ?? 20}&fields=summary,status,issuelinks`,
-          context.abort
+          context.abort,
         )
 
         const issues = response.issues.map((issue: any) => ({
@@ -922,7 +941,7 @@ const ENV_KEY = "JIRA_API_TOKEN"
 
 export function loadJiraTools(
   config: { enabled?: boolean; cloudId?: string; email?: string },
-  factoryCtx: ToolFactoryContext
+  factoryCtx: ToolFactoryContext,
 ): Record<string, any> | null {
   if (!config.enabled) {
     return null
@@ -930,18 +949,19 @@ export function loadJiraTools(
 
   const apiToken = process.env[ENV_KEY]
   if (!apiToken) {
-    factoryCtx.showToast(
-      "Jira: Missing API Token",
-      `Set ${ENV_KEY} environment variable to enable Jira tools.`
-    ).catch(() => {})
+    factoryCtx
+      .showToast(
+        "Jira: Missing API Token",
+        `Set ${ENV_KEY} environment variable to enable Jira tools.`,
+      )
+      .catch(() => {})
     return null
   }
 
   if (!config.cloudId || !config.email) {
-    factoryCtx.showToast(
-      "Jira: Missing Config",
-      "Set cloudId and email in owo.json tools.jira config."
-    ).catch(() => {})
+    factoryCtx
+      .showToast("Jira: Missing Config", "Set cloudId and email in owo.json tools.jira config.")
+      .catch(() => {})
     return null
   }
 
@@ -981,6 +1001,7 @@ git commit -m "feat(tools): implement Jira issue tracking tools"
 ### Task 6: Implement CodeRabbit Tool
 
 **Files:**
+
 - Create: `packages/tools/src/coderabbit/index.ts`
 - Create: `packages/tools/src/coderabbit/tools.ts`
 - Modify: `packages/tools/src/index.ts`
@@ -998,7 +1019,7 @@ async function coderabbitFetch(
   endpoint: string,
   apiKey: string,
   body: Record<string, any>,
-  abort?: AbortSignal
+  abort?: AbortSignal,
 ): Promise<any> {
   const response = await fetch(`${CODERABBIT_API_URL}${endpoint}`, {
     method: "POST",
@@ -1035,7 +1056,7 @@ export function createCodeRabbitTools(apiKey: string) {
             diff: args.diff,
             context: args.context,
           },
-          context.abort
+          context.abort,
         )
 
         return response.review || "No review feedback generated."
@@ -1055,7 +1076,7 @@ const ENV_KEY = "CODERABBIT_API_KEY"
 
 export function loadCodeRabbitTools(
   config: { enabled?: boolean },
-  factoryCtx: ToolFactoryContext
+  factoryCtx: ToolFactoryContext,
 ): Record<string, any> | null {
   if (!config.enabled) {
     return null
@@ -1063,10 +1084,12 @@ export function loadCodeRabbitTools(
 
   const apiKey = process.env[ENV_KEY]
   if (!apiKey) {
-    factoryCtx.showToast(
-      "CodeRabbit: Missing API Key",
-      `Set ${ENV_KEY} environment variable to enable CodeRabbit tools.`
-    ).catch(() => {})
+    factoryCtx
+      .showToast(
+        "CodeRabbit: Missing API Key",
+        `Set ${ENV_KEY} environment variable to enable CodeRabbit tools.`,
+      )
+      .catch(() => {})
     return null
   }
 
@@ -1102,6 +1125,7 @@ git commit -m "feat(tools): implement CodeRabbit code review tool"
 ### Task 7: Final Integration & Testing
 
 **Files:**
+
 - Modify: `packages/tools/src/index.ts` (finalize)
 - Modify: Root `package.json` (if needed for workspace)
 
@@ -1234,6 +1258,7 @@ After completing all tasks, you will have:
 4. **README documentation** - Setup instructions for each tool
 
 Users can then:
+
 1. Add `@owo/tools` to their opencode.json plugins
 2. Enable specific tools in owo.json
 3. Set environment variables for API keys

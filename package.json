@@ -52,14 +52,18 @@
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target bun --format esm && bun build src/cli/index.ts --outdir dist/cli --target node --format esm && tsgo --emitDeclarationOnly",
     "prepublishOnly": "bun run clean && bun run build",
-    "lint": "oxlint",
+    "lint": "oxlint --fix",
     "format": "oxfmt",
+    "lint:ci": "oxlint",
+    "format:ci": "oxfmt --check",
     "dev": "bun run build && opencode",
     "make": "turbo run make",
     "make:local": "turbo run make:local  --filter='./packages/*'",
     "make:packages": "turbo run make --filter='./packages/*'",
     "compile": "turbo run compile",
-    "clean:packages": "turbo run clean --filter='./packages/*'"
+    "clean:packages": "turbo run clean --filter='./packages/*'",
+    "check": "turbo run compile format lint",
+    "check:ci": "turbo run compile format:ci lint:ci"
   },
   "dependencies": {
     "@clack/prompts": "0.11.0",
