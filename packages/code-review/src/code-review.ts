@@ -6,7 +6,7 @@
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
-import { loadConfig, resolveContext } from "@owo/config"
+import { loadConfig, resolveContextArray } from "@owo/config"
 import { createReviewTool } from "./tool"
 
 const CodeReviewPlugin: Plugin = async (ctx) => {
@@ -27,8 +27,9 @@ const CodeReviewPlugin: Plugin = async (ctx) => {
     return {}
   }
 
-  // Create context resolver
-  const resolve = (context: string | { file: string }) => resolveContext(context, configDir)
+  // Create context array resolver
+  const resolveArray = (contexts: Array<string | { file: string }>) =>
+    resolveContextArray(contexts, configDir)
 
   // Create exec function from Bun shell
   const exec = async (cmd: string, opts: { cwd: string }) => {
@@ -42,7 +43,7 @@ const CodeReviewPlugin: Plugin = async (ctx) => {
     config: config.review ?? { enabled: true, reviewers: [{ agent: "oracle" }] },
     directory: ctx.directory,
     exec,
-    resolveContext: resolve,
+    resolveContextArray: resolveArray,
   })
 
   return {

@@ -31,4 +31,10 @@ export type {
 } from "./schema"
 
 // Loader exports
-export { findConfigFile, loadConfig, getConfigWritePath, resolveContext } from "./loader"
+export {
+  findConfigFile,
+  loadConfig,
+  getConfigWritePath,
+  resolveContext,
+  resolveContextArray,
+} from "./loader"

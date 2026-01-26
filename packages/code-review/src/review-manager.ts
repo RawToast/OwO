@@ -97,13 +97,13 @@ export class ReviewManager {
     diff: string,
     query: string,
     parentSessionID: string,
-    resolveContext?: (ctx: string | { file: string }) => string,
+    resolveContextArray?: (contexts: Array<string | { file: string }>) => string,
   ): Promise<ReviewerResult[]> {
     const promises = configs.map((config) => {
       // Resolve context content if present
       let contextContent: string | undefined
-      if (config.context && resolveContext) {
-        contextContent = resolveContext(config.context)
+      if (config.context && resolveContextArray) {
+        contextContent = resolveContextArray(config.context)
       }
 
       return this.launchReviewer({

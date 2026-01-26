@@ -39,8 +39,11 @@
                 "description": "Regex flags (e.g., 'i' for case-insensitive)"
               },
               "context": {
-                "$ref": "#/$defs/context",
-                "description": "Context to inject when keyword is detected"
+                "type": "array",
+                "description": "Context to inject when keyword is detected",
+                "items": {
+                  "$ref": "#/$defs/context"
+                }
               },
               "toast": {
                 "type": "object",
@@ -138,8 +141,11 @@
                 "description": "Short focus instruction to steer the review"
               },
               "context": {
-                "$ref": "#/$defs/context",
-                "description": "File with additional review instructions"
+                "type": "array",
+                "description": "Additional review instructions",
+                "items": {
+                  "$ref": "#/$defs/context"
+                }
               }
             },
             "additionalProperties": false
@@ -150,8 +156,11 @@
           "description": "Verify step configuration",
           "properties": {
             "guidance": {
-              "$ref": "#/$defs/context",
-              "description": "Instructions for verification step"
+              "type": "array",
+              "description": "Instructions for verification step",
+              "items": {
+                "$ref": "#/$defs/context"
+              }
             }
           },
           "additionalProperties": false
@@ -161,8 +170,11 @@
           "description": "Output formatting configuration",
           "properties": {
             "template": {
-              "$ref": "#/$defs/context",
-              "description": "Template file with formatting instructions"
+              "type": "array",
+              "description": "Template with formatting instructions",
+              "items": {
+                "$ref": "#/$defs/context"
+              }
             }
           },
           "additionalProperties": false

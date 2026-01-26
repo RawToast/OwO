@@ -6,7 +6,7 @@
 
 import { tool, type ToolDefinition } from "@opencode-ai/plugin"
 import type { OpencodeClient } from "@opencode-ai/sdk"
-import type { CodeReviewConfig, Context } from "@owo/config"
+import type { CodeReviewConfig } from "@owo/config"
 import { gatherDiff, type DiffMode } from "./git"
 import { ReviewManager } from "./review-manager"
 import type { ReviewResult } from "./types"
@@ -16,11 +16,11 @@ export type CreateToolOptions = {
   config: CodeReviewConfig
   directory: string
   exec: (cmd: string, opts: { cwd: string }) => Promise<string>
-  resolveContext: (ctx: Context) => string
+  resolveContextArray: (contexts: Array<string | { file: string }>) => string
 }
 
 export function createReviewTool(options: CreateToolOptions): ToolDefinition {
-  const { client, config, directory, exec, resolveContext } = options
+  const { client, config, directory, exec, resolveContextArray } = options
   const manager = new ReviewManager(client, directory)
 
   return tool({
@@ -65,7 +65,7 @@ Modes:
           diffResult.diff,
           args.query,
           context.sessionID,
-          resolveContext,
+          resolveContextArray,
         )
 
         // 3. Build result
@@ -78,14 +78,11 @@ Modes:
 
         // 4. Resolve optional config
         if (config.verify?.guidance) {
-          result.verifyGuidance =
-            typeof config.verify.guidance === "string"
-              ? config.verify.guidance
-              : resolveContext(config.verify.guidance)
+          result.verifyGuidance = resolveContextArray(config.verify.guidance)
         }
 
         if (config.output?.template) {
-          result.outputTemplate = resolveContext(config.output.template)
+          result.outputTemplate = resolveContextArray(config.output.template)
         }
 
         // 5. Format output

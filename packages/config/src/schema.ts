@@ -27,7 +27,7 @@ export const KeywordPatternSchema = z.object({
   type: z.string(),
   pattern: z.string(),
   flags: z.string().optional().default("i"),
-  context: ContextSchema,
+  context: z.array(ContextSchema),
   toast: ToastConfigSchema,
 })
 
@@ -77,7 +77,7 @@ export type OrchestrationConfig = z.infer<typeof OrchestrationConfigSchema>
 export const ReviewerConfigSchema = z.object({
   agent: z.string().describe("Agent name to use for review (e.g., oracle, explorer)"),
   focus: z.string().optional().describe("Short focus instruction to steer the review"),
-  context: ContextSchema.optional().describe("File with additional review instructions"),
+  context: z.array(ContextSchema).optional().describe("Additional review instructions"),
 })
 
 export type ReviewerConfig = z.infer<typeof ReviewerConfigSchema>
@@ -86,10 +86,7 @@ export type ReviewerConfig = z.infer<typeof ReviewerConfigSchema>
  * Verify step configuration
  */
 export const ReviewVerifyConfigSchema = z.object({
-  guidance: z
-    .union([z.string(), ContextSchema])
-    .optional()
-    .describe("Instructions for verification step"),
+  guidance: z.array(ContextSchema).optional().describe("Instructions for verification step"),
 })
 
 export type ReviewVerifyConfig = z.infer<typeof ReviewVerifyConfigSchema>
@@ -98,7 +95,7 @@ export type ReviewVerifyConfig = z.infer<typeof ReviewVerifyConfigSchema>
  * Output formatting configuration
  */
 export const ReviewOutputConfigSchema = z.object({
-  template: ContextSchema.optional().describe("Template file with formatting instructions"),
+  template: z.array(ContextSchema).optional().describe("Template with formatting instructions"),
 })
 
 export type ReviewOutputConfig = z.infer<typeof ReviewOutputConfigSchema>

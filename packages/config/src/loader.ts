@@ -42,7 +42,7 @@ export function findConfigFile(projectDir?: string): string | undefined {
 }
 
 /**
- * Resolve context - either inline string or load from file
+ * Resolve a single context item - either inline string or load from file
  */
 export function resolveContext(context: Context, configDir: string): string {
   if (typeof context === "string") {
@@ -61,6 +61,16 @@ export function resolveContext(context: Context, configDir: string): string {
     )
     return ""
   }
+}
+
+/**
+ * Resolve an array of context items and join them
+ */
+export function resolveContextArray(contexts: Context[], configDir: string): string {
+  return contexts
+    .map((ctx) => resolveContext(ctx, configDir))
+    .filter((s) => s.length > 0)
+    .join("\n\n")
 }
 
 /**
