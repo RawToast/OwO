@@ -6,21 +6,20 @@
     "dist"
   ],
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "./src/code-review.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/code-review.d.ts",
+      "default": "./dist/code-review.js"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "make": "bun build src/index.ts --outdir dist --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
-    "make:local": "bun build src/index.ts --outfile dist/code-review.js --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
-    "compile": "tsgo --emitDeclarationOnly",
+    "make": "bun build src/code-review.ts --outdir dist --target bun --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && tsgo --emitDeclarationOnly",
+    "prepublishOnly": "bun run make",
+    "compile": "tsgo --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {

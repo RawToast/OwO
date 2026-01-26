@@ -5,13 +5,9 @@
       "dependsOn": ["^make"],
       "outputs": ["dist/**"]
     },
-    "make:local": {
-      "dependsOn": ["^make:local"],
-      "outputs": ["dist/**"]
-    },
     "compile": {
       "dependsOn": ["^compile"],
-      "outputs": ["dist/**/*.d.ts"]
+      "outputs": []
     },
     "clean": {
       "cache": false

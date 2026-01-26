@@ -1,6 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { KeywordPattern, KeywordDetectorConfig } from "@owo/config"
-import { resolveContext } from "@owo/config"
+import { resolveContextArray } from "@owo/config"
 
 const TOAST_DURATION = 4000
 
@@ -29,7 +29,7 @@ function compilePatterns(patterns: KeywordPattern[], configDir: string): Compile
   return patterns.map((p) => ({
     type: p.type,
     regex: new RegExp(p.pattern, p.flags ?? "i"),
-    context: resolveContext(p.context, configDir),
+    context: resolveContextArray(p.context, configDir),
     toast: p.toast,
   }))
 }

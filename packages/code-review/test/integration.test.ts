@@ -14,7 +14,7 @@ describe("Code Review Config Schema", () => {
     const config = {
       reviewers: [
         { agent: "oracle", focus: "security" },
-        { agent: "explorer", context: { file: "style.md" } },
+        { agent: "explorer", context: [{ file: "style.md" }] },
       ],
     }
     expect(() => CodeReviewConfigSchema.parse(config)).not.toThrow()
@@ -40,31 +40,31 @@ describe("Code Review Config Schema", () => {
     expect(parsed.reviewers).toEqual([{ agent: "oracle" }])
   })
 
-  test("accepts verify guidance as string", () => {
+  test("accepts verify guidance as array", () => {
     const config = {
       reviewers: [{ agent: "oracle" }],
-      verify: { guidance: "Ignore test files" },
+      verify: { guidance: ["Ignore test files"] },
     }
     const parsed = CodeReviewConfigSchema.parse(config)
-    expect(parsed.verify?.guidance).toBe("Ignore test files")
+    expect(parsed.verify?.guidance).toEqual(["Ignore test files"])
   })
 
-  test("accepts verify guidance as file reference", () => {
+  test("accepts verify guidance as array with file reference", () => {
     const config = {
       reviewers: [{ agent: "oracle" }],
-      verify: { guidance: { file: "guidance.md" } },
+      verify: { guidance: [{ file: "guidance.md" }] },
     }
     const parsed = CodeReviewConfigSchema.parse(config)
-    expect(parsed.verify?.guidance).toEqual({ file: "guidance.md" })
+    expect(parsed.verify?.guidance).toEqual([{ file: "guidance.md" }])
   })
 
-  test("accepts output template", () => {
+  test("accepts output template as array", () => {
     const config = {
       reviewers: [{ agent: "oracle" }],
-      output: { template: { file: "template.md" } },
+      output: { template: [{ file: "template.md" }] },
     }
     const parsed = CodeReviewConfigSchema.parse(config)
-    expect(parsed.output?.template).toEqual({ file: "template.md" })
+    expect(parsed.output?.template).toEqual([{ file: "template.md" }])
   })
 })
 
@@ -75,14 +75,15 @@ describe("Review Tool", () => {
 
     const mockClient = {} as any
     const mockExec = async () => "diff output"
-    const mockResolve = (ctx: any) => (typeof ctx === "string" ? ctx : "resolved")
+    const mockResolveArray = (contexts: any[]) =>
+      contexts.map((ctx) => (typeof ctx === "string" ? ctx : "resolved")).join("\n\n")
 
     const tool = createReviewTool({
       client: mockClient,
       config: { enabled: true, reviewers: [{ agent: "oracle" }] },
       directory: "/test",
       exec: mockExec,
-      resolveContext: mockResolve,
+      resolveContextArray: mockResolveArray,
     })
 
     expect(tool).toBeDefined()

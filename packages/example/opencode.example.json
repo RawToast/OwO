@@ -1,10 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "<where-this-project-is>/packages/code-review/dist/code-review.js",
-    "<where-this-project-is>/packages/keyword-detector/dist/keyword-detector.js",
-    "<where-this-project-is>/packages/orchestration/dist/orchestration.js",
-    "<where-this-project-is>/packages/prompt-injector/dist/prompt-injector.js"
+    "<where-this-project-is>/packages/code-review/src/code-review.ts",
+    "<where-this-project-is>/packages/keyword-detector/src/keyword-detector.ts",
+    "<where-this-project-is>/packages/orchestration/src/orchestration.ts",
+    "<where-this-project-is>/packages/prompt-injector/src/prompt-injector.ts"
   ],
   "default_agent": "owO",
   "autoupdate": true,

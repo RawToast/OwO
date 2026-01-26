@@ -6,21 +6,20 @@
     "dist"
   ],
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "./src/prompt-injector.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/prompt-injector.d.ts",
+      "default": "./dist/prompt-injector.js"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "make": "bun build src/index.ts --outdir dist --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
-    "make:local": "bun build src/index.ts --outfile dist/prompt-injector.js --target node --format esm --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && bun run compile",
-    "compile": "tsgo --emitDeclarationOnly",
+    "make": "bun build src/prompt-injector.ts --outdir dist --target bun --external '@opencode-ai/*' --external '@owo/*' --external 'zod' && tsgo --emitDeclarationOnly",
+    "prepublishOnly": "bun run make",
+    "compile": "tsgo --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
