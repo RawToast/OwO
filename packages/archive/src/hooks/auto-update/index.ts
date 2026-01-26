@@ -58,7 +58,7 @@ export function createAutoUpdateHook(ctx: PluginInput, options: AutoUpdateHookOp
   }
 }
 
-async function showVersionToast(ctx: PluginInput, version: string) {
+async function showVersionToast(ctx: PluginInput, _version: string) {
   await ctx.client.tui
     .showToast({
       body: {

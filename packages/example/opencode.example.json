@@ -4,13 +4,13 @@
     "<where-this-project-is>/packages/code-review/dist/code-review.js",
     "<where-this-project-is>/packages/keyword-detector/dist/keyword-detector.js",
     "<where-this-project-is>/packages/orchestration/dist/orchestration.js",
-    "<where-this-project-is>/packages/prompt-injector/dist/prompt-injector.js",
+    "<where-this-project-is>/packages/prompt-injector/dist/prompt-injector.js"
   ],
   "default_agent": "owO",
   "autoupdate": true,
   "agent": {
     "plan": {
-      "disable": true,
+      "disable": true
     },
     "build": {
       "model": "openai/gpt-5.2-codex",
@@ -22,9 +22,9 @@
           "writing-plans": "deny",
           "finishing-a-development-branch": "deny",
           "executing-plans": "deny",
-          "verification-before-completion": "deny",
+          "verification-before-completion": "deny"
         }
-      },
+      }
     },
     "owO": {
       "description": "Main agent co-ordinator",
@@ -42,8 +42,8 @@
         "grep_app_*": false,
         "Ripgrep": false,
         "lsp": true,
-        "todo-write": true,
-      },
+        "todo-write": true
+      }
     },
     "ask": {
       "temperature": 0.1,
@@ -56,9 +56,9 @@
           "writing-plans": "deny",
           "finishing-a-development-branch": "deny",
           "executing-plans": "deny",
-          "verification-before-completion": "deny",
+          "verification-before-completion": "deny"
         }
-      },
+      }
     },
     "explore": {
       "mode": "subagent",
@@ -82,9 +82,9 @@
           "writing-plans": "deny",
           "finishing-a-development-branch": "deny",
           "executing-plans": "deny",
-          "verification-before-completion": "deny",
+          "verification-before-completion": "deny"
         }
-      },
+      }
     },
     "librarian": {
       "mode": "subagent",
@@ -101,9 +101,9 @@
           "writing-plans": "deny",
           "finishing-a-development-branch": "deny",
           "executing-plans": "deny",
-          "verification-before-completion": "deny",
+          "verification-before-completion": "deny"
         }
-      },
+      }
     },
     "oracle": {
       "mode": "subagent",
@@ -120,9 +120,9 @@
           "writing-plans": "deny",
           "finishing-a-development-branch": "deny",
           "executing-plans": "deny",
-          "test-driven-development": "deny",
+          "test-driven-development": "deny"
         }
-      },
+      }
     },
     "ui-planner": {
       "mode": "subagent",
@@ -137,7 +137,7 @@
           "writing-plans": "deny",
           "finishing-a-development-branch": "deny",
           "executing-plans": "deny",
-          "verification-before-completion": "deny",
+          "verification-before-completion": "deny"
         }
       }
     }

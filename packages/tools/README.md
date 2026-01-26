@@ -36,12 +36,12 @@ Enable tools in `~/.config/opencode/owo.json` (or `.opencode/owo.json`):
 
 Set API keys as environment variables (recommended):
 
-| Tool | Environment Variable | Get Key |
-|------|---------------------|---------|
-| Exa | `EXA_API_KEY` | https://exa.ai |
-| Context7 | `CONTEXT7_API_KEY` | https://context7.com/dashboard |
-| Jira | `JIRA_API_TOKEN` | https://id.atlassian.com/manage-profile/security/api-tokens |
-| CodeRabbit | `CODERABBIT_API_KEY` | https://coderabbit.ai |
+| Tool       | Environment Variable | Get Key                                                     |
+| ---------- | -------------------- | ----------------------------------------------------------- |
+| Exa        | `EXA_API_KEY`        | https://exa.ai                                              |
+| Context7   | `CONTEXT7_API_KEY`   | https://context7.com/dashboard                              |
+| Jira       | `JIRA_API_TOKEN`     | https://id.atlassian.com/manage-profile/security/api-tokens |
+| CodeRabbit | `CODERABBIT_API_KEY` | https://coderabbit.ai                                       |
 
 Alternatively, you can set keys directly in config (not recommended for shared configs):
 

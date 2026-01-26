@@ -3,12 +3,15 @@
 Format the final review with these sections:
 
 ## Overview
+
 2-3 sentence summary of the changes and overall assessment.
 
 ## Changes Summary
+
 Bullet list of files changed with brief description of each.
 
 ## Issues Found
+
 Group by severity (Critical, Warning, Info). Use <details> blocks:
 
 <details>
@@ -21,7 +24,9 @@ Group by severity (Critical, Warning, Info). Use <details> blocks:
 </details>
 
 ## Recommendations
+
 Numbered list of actionable improvements.
 
 ## Verdict
+
 APPROVE / REQUEST_CHANGES / NEEDS_DISCUSSION

@@ -2,7 +2,6 @@
 import { Command } from "commander"
 import { runInstall } from "./install"
 import { runConfig } from "./config"
-import { runMcp } from "./mcp"
 
 const program = new Command()
 

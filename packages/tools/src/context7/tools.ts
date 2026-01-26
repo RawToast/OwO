@@ -52,12 +52,14 @@ Use this for follow-up queries after context7_search has given you the library I
 const CONTEXT7_API_BASE = "https://context7.com/api/v2"
 
 interface LibraryResult {
-  libraryId: string
-  name: string
+  id: string
+  title: string
   description?: string
-  codeSnippetCount?: number
-  source?: string
+  totalSnippets?: number
+  totalTokens?: number
   benchmarkScore?: number
+  trustScore?: number
+  stars?: number
 }
 
 interface LibrarySearchResponse {
@@ -231,7 +233,7 @@ export function createContext7Tools(config?: Context7ToolConfig): Context7Tools 
         }
 
         const bestMatch = searchResponse.results[0]
-        let libraryId = bestMatch.libraryId
+        let libraryId = bestMatch.id
 
         // Append version if specified
         if (args.version) {
@@ -252,7 +254,7 @@ export function createContext7Tools(config?: Context7ToolConfig): Context7Tools 
 
         // Format response with library info header
         const header = [
-          `**Library:** ${bestMatch.name} (\`${libraryId}\`)`,
+          `**Library:** ${bestMatch.title} (\`${libraryId}\`)`,
           bestMatch.description ? `**Description:** ${bestMatch.description}` : null,
           ``,
           `> **Tip:** For follow-up queries, use \`context7_docs\` with ID \`${libraryId}\` to skip resolution.`,

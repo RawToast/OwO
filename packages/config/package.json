@@ -20,6 +20,7 @@
   },
   "scripts": {
     "make": "bun build src/index.ts --outdir dist --target node --format esm --external 'zod' --external 'strip-json-comments' && bun run compile",
+    "make:local": "bun run make",
     "compile": "tsgo --emitDeclarationOnly",
     "clean": "rm -rf dist"
   },
