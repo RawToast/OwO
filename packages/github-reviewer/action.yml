@@ -73,21 +73,26 @@ runs:
       shell: bash
       run: echo "$HOME/.opencode/bin" >> $GITHUB_PATH
 
-    - name: Install owo-reviewer plugin
+    - name: Install plugin dependencies
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
-        mkdir -p .opencode/plugins
-        npm pack @owo/github-reviewer --pack-destination .opencode/plugins/ 2>/dev/null || \
-          cp -r ${{ github.action_path }}/../ .opencode/plugins/github-reviewer
+        echo "Installing plugin dependencies at: $(pwd)"
+        npm install --omit=dev
+        ls -la
 
     - name: Create opencode config
       shell: bash
       run: |
-        cat > opencode.json << 'EOF'
+        # Point directly to the action's location
+        echo "Action path: ${{ github.action_path }}"
+        cat > opencode.json << EOF
         {
-          "plugin": ["file://.opencode/plugins/github-reviewer"]
+          "plugin": ["file://${{ github.action_path }}"]
         }
         EOF
+        echo "opencode.json contents:"
+        cat opencode.json
 
     - name: Set default prompt
       id: prompt
