@@ -5,6 +5,11 @@ import {
   createOctokit,
   mapCommentsToPositions,
   formatUnmappedComments,
+  getReviewMarker,
+  findExistingReview,
+  deleteReviewComments,
+  updateReviewBody,
+  addReviewComments,
 } from "../github"
 
 const InlineCommentInputSchema = tool.schema.object({
@@ -63,8 +68,9 @@ The tool will automatically:
       finalOverview += formatUnmappedComments(unmapped)
     }
 
-    // Add footer
-    finalOverview += `\n\n---\n*Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • ${mapped.length} inline comments*`
+    // Add marker (hidden) and footer
+    const marker = getReviewMarker()
+    finalOverview += `\n\n${marker}\n---\n*Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • ${mapped.length} inline comments*`
 
     // Build GitHub API review comments
     const reviewComments = mapped.map((c) => ({
@@ -73,27 +79,65 @@ The tool will automatically:
       body: c.body,
     }))
 
-    // Submit the review
-    const { data: review } = await octokit.rest.pulls.createReview({
-      owner: ctx.owner,
-      repo: ctx.repo,
-      pull_number: ctx.number,
-      commit_id: ctx.headSha,
-      body: finalOverview,
-      event: args.event,
-      comments: reviewComments,
-    })
+    // Check for existing review to update
+    const existingReview = await findExistingReview(octokit, ctx.owner, ctx.repo, ctx.number)
 
-    const reviewUrl = `https://github.com/${ctx.owner}/${ctx.repo}/pull/${ctx.number}#pullrequestreview-${review.id}`
+    let reviewId: number
+    let reviewUrl: string
+    let isUpdate = false
 
+    if (existingReview) {
+      // Update existing review
+      isUpdate = true
+      reviewId = existingReview.id
+
+      // Delete old inline comments
+      if (existingReview.commentIds.length > 0) {
+        await deleteReviewComments(octokit, ctx.owner, ctx.repo, existingReview.commentIds)
+      }
+
+      // Update the review body
+      await updateReviewBody(octokit, ctx.owner, ctx.repo, ctx.number, reviewId, finalOverview)
+
+      // Add new inline comments
+      if (reviewComments.length > 0) {
+        await addReviewComments(
+          octokit,
+          ctx.owner,
+          ctx.repo,
+          ctx.number,
+          ctx.headSha,
+          reviewComments,
+        )
+      }
+
+      reviewUrl = `https://github.com/${ctx.owner}/${ctx.repo}/pull/${ctx.number}#pullrequestreview-${reviewId}`
+    } else {
+      // Create new review
+      const { data: review } = await octokit.rest.pulls.createReview({
+        owner: ctx.owner,
+        repo: ctx.repo,
+        pull_number: ctx.number,
+        commit_id: ctx.headSha,
+        body: finalOverview,
+        event: args.event,
+        comments: reviewComments,
+      })
+
+      reviewId = review.id
+      reviewUrl = `https://github.com/${ctx.owner}/${ctx.repo}/pull/${ctx.number}#pullrequestreview-${reviewId}`
+    }
+
+    const action = isUpdate ? "updated" : "submitted"
     return JSON.stringify(
       {
         success: true,
-        reviewId: review.id,
+        reviewId,
         reviewUrl,
+        isUpdate,
         inlineComments: mapped.length,
         overviewComments: unmapped.length,
-        message: `Review submitted successfully! ${mapped.length} inline comments, ${unmapped.length} moved to overview.`,
+        message: `Review ${action} successfully! ${mapped.length} inline comments, ${unmapped.length} moved to overview.`,
       },
       null,
       2,

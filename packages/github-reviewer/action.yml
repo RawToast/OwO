@@ -92,19 +92,6 @@ runs:
         bun install --production
         ls -la
 
-    - name: Create opencode config
-      shell: bash
-      run: |
-        # Point directly to the plugin's index.ts file
-        echo "Action path: ${{ github.action_path }}"
-        cat > opencode.json << EOF
-        {
-          "plugin": ["file://${{ github.action_path }}/src/index.ts"]
-        }
-        EOF
-        echo "opencode.json contents:"
-        cat opencode.json
-
     - name: Set default prompt
       id: prompt
       shell: bash
@@ -146,4 +133,6 @@ runs:
         VARIANT: ${{ inputs.variant }}
         USE_GITHUB_TOKEN: ${{ inputs.use_github_token }}
         PROMPT: ${{ steps.prompt.outputs.value }}
+        # Pass config via env var to avoid creating opencode.json in repo (which would get committed)
+        OPENCODE_CONFIG_CONTENT: '{"plugin": ["file://${{ github.action_path }}/src/index.ts"]}'
       run: opencode github run

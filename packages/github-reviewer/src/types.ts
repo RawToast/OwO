@@ -59,3 +59,11 @@ export type PositionMapping = {
   position: number | null // null if line not in diff
   side: "LEFT" | "RIGHT"
 }
+
+/**
+ * Existing review found on the PR
+ */
+export type ExistingReview = {
+  id: number
+  commentIds: number[]
+}

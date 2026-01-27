@@ -1,6 +1,9 @@
 import { Octokit } from "@octokit/rest"
 import parseDiff from "parse-diff"
-import type { PRContext, InlineComment } from "./types"
+import type { PRContext, InlineComment, ExistingReview } from "./types"
+
+// Marker to identify our reviews
+const REVIEW_MARKER = "<!-- owo-reviewer -->"
 
 /**
  * Get GitHub token from environment
@@ -164,4 +167,135 @@ export function formatUnmappedComments(unmapped: InlineComment[]): string {
   }
 
   return lines.join("\n")
+}
+
+/**
+ * Get the review marker used to identify our reviews
+ */
+export function getReviewMarker(): string {
+  return REVIEW_MARKER
+}
+
+/**
+ * Find an existing review created by owo-reviewer on this PR
+ * Returns the review ID and its comment IDs if found
+ */
+export async function findExistingReview(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  pullNumber: number,
+): Promise<ExistingReview | null> {
+  try {
+    // List all reviews on the PR
+    const { data: reviews } = await octokit.rest.pulls.listReviews({
+      owner,
+      repo,
+      pull_number: pullNumber,
+      per_page: 100,
+    })
+
+    // Find our review by looking for the marker in the body
+    const ourReview = reviews.find((r) => r.body?.includes(REVIEW_MARKER))
+
+    if (!ourReview) return null
+
+    // Get the review comments for this review
+    const { data: allComments } = await octokit.rest.pulls.listReviewComments({
+      owner,
+      repo,
+      pull_number: pullNumber,
+      per_page: 100,
+    })
+
+    // Filter to comments from this specific review
+    const reviewComments = allComments.filter((c) => c.pull_request_review_id === ourReview.id)
+
+    return {
+      id: ourReview.id,
+      commentIds: reviewComments.map((c) => c.id),
+    }
+  } catch (error) {
+    console.error("[github-reviewer] Error finding existing review:", error)
+    return null
+  }
+}
+
+/**
+ * Delete review comments by their IDs
+ */
+export async function deleteReviewComments(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  commentIds: number[],
+): Promise<void> {
+  // Delete in parallel for speed
+  await Promise.all(
+    commentIds.map((id) =>
+      octokit.rest.pulls
+        .deleteReviewComment({
+          owner,
+          repo,
+          comment_id: id,
+        })
+        .catch((err) => {
+          console.warn(`[github-reviewer] Failed to delete comment ${id}:`, err.message)
+        }),
+    ),
+  )
+}
+
+/**
+ * Update an existing review's body
+ */
+export async function updateReviewBody(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  pullNumber: number,
+  reviewId: number,
+  body: string,
+): Promise<void> {
+  await octokit.rest.pulls.updateReview({
+    owner,
+    repo,
+    pull_number: pullNumber,
+    review_id: reviewId,
+    body,
+  })
+}
+
+/**
+ * Add new comments to an existing review
+ * Note: GitHub API doesn't support adding comments to an existing review directly,
+ * so we create them as standalone review comments
+ */
+export async function addReviewComments(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  pullNumber: number,
+  commitId: string,
+  comments: Array<{ path: string; position: number; body: string }>,
+): Promise<void> {
+  // Add comments sequentially to avoid rate limits
+  for (const comment of comments) {
+    try {
+      await octokit.rest.pulls.createReviewComment({
+        owner,
+        repo,
+        pull_number: pullNumber,
+        commit_id: commitId,
+        path: comment.path,
+        position: comment.position,
+        body: comment.body,
+      })
+    } catch (err: any) {
+      console.warn(
+        `[github-reviewer] Failed to add comment on ${comment.path}:${comment.position}:`,
+        err.message,
+      )
+    }
+  }
 }
