@@ -51,7 +51,9 @@ Adds model configuration following OpenCode's `provider/model` format with optio
       },
       {
         "name": "quality",
-        "context": ["You are a helpful peer reviewer. Focus on code quality, readability, and best practices."],
+        "context": [
+          "You are a helpful peer reviewer. Focus on code quality, readability, and best practices."
+        ],
         "focus": "code quality"
       }
     ],
@@ -70,6 +72,7 @@ Adds model configuration following OpenCode's `provider/model` format with optio
 ```
 
 **Context examples:**
+
 - Inline: `"context": ["You are a security expert..."]`
 - File: `"context": [{ "file": "prompts/security.md" }]`
 - Mixed: `"context": ["Base instructions", { "file": "detailed-rules.md" }]`
@@ -335,6 +338,8 @@ _Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • 2 reviewers • 4
 
 **Step 1: Create package.json**
 
+Note best to use bun to install these, which will get the latest versions
+
 ```json
 {
   "$schema": "https://json.schemastore.org/package.json",
@@ -352,19 +357,19 @@ _Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • 2 reviewers • 4
   },
   "files": ["dist"],
   "dependencies": {
-    "@octokit/rest": "^21.0.0",
-    "parse-diff": "^0.11.1",
+    "@octokit/rest": "21.0.0",
+    "parse-diff": "0.11.1",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.1.35",
-    "@opencode-ai/sdk": "^0.1.0",
+    "@opencode-ai/plugin": "1.1.35",
+    "@opencode-ai/sdk": "0.1.0",
     "@tsconfig/node22": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "^1.0.0"
+    "@opencode-ai/plugin": "1.0.0"
   }
 }
 ````
@@ -444,7 +449,7 @@ import { z } from "zod"
 /**
  * PR metadata from GitHub context
  */
-export interface PRContext {
+export type PRContext = {
   owner: string
   repo: string
   number: number
@@ -460,7 +465,7 @@ export interface PRContext {
 /**
  * File change information
  */
-export interface FileChange {
+export type FileChange = {
   path: string
   status: "added" | "modified" | "removed" | "renamed"
   additions: number
@@ -494,7 +499,7 @@ export type ReviewInput = z.infer<typeof ReviewInputSchema>
 /**
  * Diff position mapping result
  */
-export interface PositionMapping {
+export type PositionMapping = {
   path: string
   line: number
   position: number | null // null if line not in diff
@@ -1113,7 +1118,7 @@ jobs:
           # Or use other providers:
           # model: openai/gpt-4o
           # openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          # 
+          #
           # model: opencode/glm-4-7
           # opencode_api_key: ${{ secrets.OPENCODE_API_KEY }}
 ```
@@ -1143,7 +1148,10 @@ Add after `CodeReviewConfigSchema` in `packages/config/src/schema.ts`:
  * Format: "provider/model" (e.g., "anthropic/claude-sonnet-4-5", "openai/gpt-4o")
  */
 export const ModelConfigSchema = z.object({
-  model: z.string().optional().describe("Model in provider/model format (e.g., anthropic/claude-sonnet-4-5)"),
+  model: z
+    .string()
+    .optional()
+    .describe("Model in provider/model format (e.g., anthropic/claude-sonnet-4-5)"),
   variant: z
     .enum(["low", "default", "high"])
     .optional()
@@ -1211,7 +1219,9 @@ export const GitHubReviewConfigSchema = z.object({
     .default([{ name: "default", focus: "general code quality" }])
     .describe("Reviewer configurations (parallel in Phase 3)"),
   overview: GitHubReviewOverviewConfigSchema.optional(),
-  defaults: GitHubReviewDefaultsSchema.optional().describe("Default model settings for all reviewers"),
+  defaults: GitHubReviewDefaultsSchema.optional().describe(
+    "Default model settings for all reviewers",
+  ),
 })
 
 export type GitHubReviewConfig = z.infer<typeof GitHubReviewConfigSchema>
