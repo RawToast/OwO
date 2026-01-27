@@ -119,6 +119,89 @@ export const CodeReviewConfigSchema = z.object({
 export type CodeReviewConfig = z.infer<typeof CodeReviewConfigSchema>
 
 /**
+ * Model configuration for AI providers
+ * Format: "provider/model" (e.g., "anthropic/claude-sonnet-4-5", "openai/gpt-4o")
+ */
+export const ModelConfigSchema = z.object({
+  model: z
+    .string()
+    .optional()
+    .describe("Model in provider/model format (e.g., anthropic/claude-sonnet-4-5)"),
+  variant: z
+    .enum(["low", "default", "high"])
+    .optional()
+    .default("default")
+    .describe("Thinking level / variant"),
+})
+
+export type ModelConfig = z.infer<typeof ModelConfigSchema>
+
+/**
+ * Single GitHub reviewer configuration
+ * Uses ContextSchema for prompts (supports inline strings or file references)
+ */
+export const GitHubReviewerConfigSchema = ModelConfigSchema.extend({
+  name: z.string().describe("Reviewer identifier (e.g., 'security', 'quality')"),
+  context: z
+    .array(ContextSchema)
+    .optional()
+    .describe("Reviewer prompt/instructions (inline or file reference)"),
+  focus: z.string().optional().describe("Short focus area (e.g., 'security', 'performance')"),
+})
+
+export type GitHubReviewerConfig = z.infer<typeof GitHubReviewerConfigSchema>
+
+/**
+ * GitHub review overview configuration
+ * Uses ContextSchema for the synthesizer prompt
+ */
+export const GitHubReviewOverviewConfigSchema = ModelConfigSchema.extend({
+  context: z
+    .array(ContextSchema)
+    .optional()
+    .describe("Overview synthesizer prompt (inline or file reference)"),
+  includeDiagram: z.boolean().optional().default(true).describe("Include mermaid diagram"),
+  includeTable: z.boolean().optional().default(true).describe("Include changes table"),
+})
+
+export type GitHubReviewOverviewConfig = z.infer<typeof GitHubReviewOverviewConfigSchema>
+
+/**
+ * Default model settings for GitHub review
+ */
+export const GitHubReviewDefaultsSchema = ModelConfigSchema.extend({})
+
+export type GitHubReviewDefaults = z.infer<typeof GitHubReviewDefaultsSchema>
+
+/**
+ * GitHub PR review plugin configuration
+ */
+export const GitHubReviewConfigSchema = z.object({
+  enabled: z.boolean().optional().default(true),
+  trigger: z
+    .enum(["auto", "command"])
+    .optional()
+    .default("command")
+    .describe("'auto' reviews all PRs, 'command' waits for /review"),
+  mentions: z
+    .array(z.string())
+    .optional()
+    .default(["/review", "/oc-review"])
+    .describe("Trigger phrases for command mode"),
+  reviewers: z
+    .array(GitHubReviewerConfigSchema)
+    .optional()
+    .default([{ name: "default", focus: "general code quality" }])
+    .describe("Reviewer configurations (parallel in Phase 3)"),
+  overview: GitHubReviewOverviewConfigSchema.optional(),
+  defaults: GitHubReviewDefaultsSchema.optional().describe(
+    "Default model settings for all reviewers",
+  ),
+})
+
+export type GitHubReviewConfig = z.infer<typeof GitHubReviewConfigSchema>
+
+/**
  * Base tool configuration (enabled + optional API key)
  */
 export const BaseToolConfigSchema = z.object({
@@ -191,6 +274,7 @@ export const OwoConfigSchema = z.object({
   prompts: PromptInjectorConfigSchema.optional(),
   orchestration: OrchestrationConfigSchema.optional(),
   review: CodeReviewConfigSchema.optional(),
+  "github-review": GitHubReviewConfigSchema.optional(),
   tools: ToolsConfigSchema.optional(),
 })
 
