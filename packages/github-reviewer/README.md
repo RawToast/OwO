@@ -32,11 +32,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: jmagar/owo/packages/github-reviewer@main
+      - uses: rawtoast/owo/packages/github-reviewer@master
         with:
-          model: anthropic/claude-sonnet-4-20250514
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: opencode/claude-sonnet-4-5
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
 ```
 
 ### Configuration

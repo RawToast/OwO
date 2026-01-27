@@ -42,6 +42,11 @@ inputs:
     required: false
     default: "default"
 
+  use_github_token:
+    description: "Use GITHUB_TOKEN directly instead of OpenCode App token exchange"
+    required: false
+    default: "true"
+
 runs:
   using: "composite"
   steps:
@@ -84,6 +89,34 @@ runs:
         }
         EOF
 
+    - name: Set default prompt
+      id: prompt
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.prompt }}" ]; then
+          echo "value<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ inputs.prompt }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "value<<EOF" >> $GITHUB_OUTPUT
+          cat << 'PROMPT_EOF' >> $GITHUB_OUTPUT
+        You are a helpful code reviewer. Review this PR using the available tools:
+
+        1. First, call get_pr_context() to get the PR diff and file changes
+        2. Analyze the code for:
+           - Bugs and potential issues
+           - Security vulnerabilities
+           - Code quality and best practices
+           - Performance concerns
+        3. Call submit_review() with:
+           - A CodeRabbit-style overview (Summary, Changes table, Walkthrough)
+           - Inline comments for specific issues (with file path and line number)
+
+        Be constructive and helpful. Focus on actionable feedback.
+        PROMPT_EOF
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+
     - name: Run review
       shell: bash
       env:
@@ -94,21 +127,7 @@ runs:
         GOOGLE_API_KEY: ${{ inputs.google_api_key }}
         OPENCODE_API_KEY: ${{ inputs.opencode_api_key }}
         REVIEWERS: ${{ inputs.reviewers }}
-        CUSTOM_PROMPT: ${{ inputs.prompt }}
         VARIANT: ${{ inputs.variant }}
-      run: |
-        PROMPT="${CUSTOM_PROMPT:-You are a helpful code reviewer. Review this PR using the available tools:
-
-        1. First, call get_pr_context() to get the PR diff and file changes
-        2. Analyze the code for:
-           - Bugs and potential issues
-           - Security vulnerabilities  
-           - Code quality and best practices
-           - Performance concerns
-        3. Call submit_review() with:
-           - A CodeRabbit-style overview (Summary, Changes table, Walkthrough)
-           - Inline comments for specific issues (with file path and line number)
-
-        Be constructive and helpful. Focus on actionable feedback.}"
-
-        opencode github run --prompt "$PROMPT"
+        USE_GITHUB_TOKEN: ${{ inputs.use_github_token }}
+        PROMPT: ${{ steps.prompt.outputs.value }}
+      run: opencode github run
