@@ -73,6 +73,12 @@ runs:
       shell: bash
       run: echo "$HOME/.opencode/bin" >> $GITHUB_PATH
 
+    - name: Configure git identity
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
