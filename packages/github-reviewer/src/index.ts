@@ -2,7 +2,7 @@ import type { Plugin } from "@opencode-ai/plugin"
 import { getPRContextTool } from "./tools/get-pr-context"
 import { submitReviewTool } from "./tools/submit-review"
 
-export const GitHubReviewerPlugin: Plugin = async (ctx) => {
+export const GitHubReviewerPlugin: Plugin = async (_ctx) => {
   console.log("[github-reviewer] Plugin loaded")
 
   return {

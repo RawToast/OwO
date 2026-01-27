@@ -2,17 +2,19 @@
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@owo/github-reviewer",
   "version": "0.0.1",
-  "type": "module",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "make": "bun build ./src/index.ts --outdir ./dist --target node --format esm --external '@opencode-ai/*' --external 'zod' --external '@octokit/*' --external 'parse-diff'",
     "compile": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "files": ["dist"],
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "parse-diff": "^0.11.1",

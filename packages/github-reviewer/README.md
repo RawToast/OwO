@@ -76,8 +76,8 @@ Get PR metadata, diff, and file changes.
 
 ```typescript
 get_pr_context({
-  include_diff: true,   // Include full unified diff
-  include_files: true,  // Include file list with stats
+  include_diff: true, // Include full unified diff
+  include_files: true, // Include file list with stats
 })
 ```
 
@@ -93,10 +93,10 @@ submit_review({
       path: "src/auth.ts",
       line: 42,
       body: "Consider adding input validation here",
-      side: "RIGHT"
-    }
+      side: "RIGHT",
+    },
   ],
-  event: "COMMENT"  // or "APPROVE", "REQUEST_CHANGES"
+  event: "COMMENT", // or "APPROVE", "REQUEST_CHANGES"
 })
 ```
 

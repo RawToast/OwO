@@ -31,7 +31,8 @@ Use this to understand what changes are being reviewed before analyzing them.`,
       try {
         const diffResult = await $`git diff ${ctx.baseSha}...${ctx.headSha}`.text()
         result.diff = diffResult
-      } catch (err) {
+      } catch (_err) {
+        console.error("Error getting diff, falling back to fetch:", _err)
         await $`git fetch origin ${ctx.baseRef} --depth=100`.quiet()
         const diffResult = await $`git diff ${ctx.baseSha}...${ctx.headSha}`.text()
         result.diff = diffResult
