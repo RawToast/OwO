@@ -1,0 +1,114 @@
+name: "owo-reviewer"
+description: "AI-powered PR code review with inline comments"
+branding:
+  icon: "eye"
+  color: "purple"
+
+inputs:
+  model:
+    description: "Model to use in provider/model format (e.g., anthropic/claude-sonnet-4-5)"
+    required: true
+
+  github_token:
+    description: "GitHub token for API access"
+    required: true
+
+  anthropic_api_key:
+    description: "Anthropic API key (for Claude models)"
+    required: false
+
+  openai_api_key:
+    description: "OpenAI API key (for GPT models)"
+    required: false
+
+  google_api_key:
+    description: "Google API key (for Gemini models)"
+    required: false
+
+  opencode_api_key:
+    description: "OpenCode API key (for OpenCode Zen models)"
+    required: false
+
+  reviewers:
+    description: "JSON array of reviewer configs (optional)"
+    required: false
+
+  prompt:
+    description: "Custom review prompt (optional)"
+    required: false
+
+  variant:
+    description: "Model thinking level: low, default, high"
+    required: false
+    default: "default"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get opencode version
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(curl -sf https://api.github.com/repos/anomalyco/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
+        echo "version=${VERSION:-latest}" >> $GITHUB_OUTPUT
+
+    - name: Cache opencode
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.opencode/bin
+        key: opencode-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
+
+    - name: Install opencode
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: curl -fsSL https://opencode.ai/install | bash
+
+    - name: Add opencode to PATH
+      shell: bash
+      run: echo "$HOME/.opencode/bin" >> $GITHUB_PATH
+
+    - name: Install owo-reviewer plugin
+      shell: bash
+      run: |
+        mkdir -p .opencode/plugins
+        npm pack @owo/github-reviewer --pack-destination .opencode/plugins/ 2>/dev/null || \
+          cp -r ${{ github.action_path }}/../ .opencode/plugins/github-reviewer
+
+    - name: Create opencode config
+      shell: bash
+      run: |
+        cat > opencode.json << 'EOF'
+        {
+          "plugin": ["file://.opencode/plugins/github-reviewer"]
+        }
+        EOF
+
+    - name: Run review
+      shell: bash
+      env:
+        MODEL: ${{ inputs.model }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        GOOGLE_API_KEY: ${{ inputs.google_api_key }}
+        OPENCODE_API_KEY: ${{ inputs.opencode_api_key }}
+        REVIEWERS: ${{ inputs.reviewers }}
+        CUSTOM_PROMPT: ${{ inputs.prompt }}
+        VARIANT: ${{ inputs.variant }}
+      run: |
+        PROMPT="${CUSTOM_PROMPT:-You are a helpful code reviewer. Review this PR using the available tools:
+
+        1. First, call get_pr_context() to get the PR diff and file changes
+        2. Analyze the code for:
+           - Bugs and potential issues
+           - Security vulnerabilities  
+           - Code quality and best practices
+           - Performance concerns
+        3. Call submit_review() with:
+           - A CodeRabbit-style overview (Summary, Changes table, Walkthrough)
+           - Inline comments for specific issues (with file path and line number)
+
+        Be constructive and helpful. Focus on actionable feedback.}"
+
+        opencode github run --prompt "$PROMPT"
