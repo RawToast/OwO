@@ -89,11 +89,11 @@ runs:
     - name: Create opencode config
       shell: bash
       run: |
-        # Point directly to the action's location
+        # Point directly to the plugin's index.ts file
         echo "Action path: ${{ github.action_path }}"
         cat > opencode.json << EOF
         {
-          "plugin": ["file://${{ github.action_path }}"]
+          "plugin": ["file://${{ github.action_path }}/src/index.ts"]
         }
         EOF
         echo "opencode.json contents:"
