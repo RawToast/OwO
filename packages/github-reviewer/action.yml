@@ -64,9 +64,10 @@ runs:
         git clone --depth 1 --branch dev https://github.com/RawToast/opencode.git /tmp/opencode
         cd /tmp/opencode
         bun install
-        bun run build
+        ./packages/opencode/script/build.ts --single
+        # Find the platform-specific binary
         mkdir -p ~/.opencode/bin
-        cp packages/opencode/dist/opencode ~/.opencode/bin/
+        cp ./packages/opencode/dist/opencode-*/bin/opencode ~/.opencode/bin/
         chmod +x ~/.opencode/bin/opencode
 
     - name: Add opencode to PATH
