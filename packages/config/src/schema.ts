@@ -191,7 +191,13 @@ export const GitHubReviewConfigSchema = z.object({
   reviewers: z
     .array(GitHubReviewerConfigSchema)
     .optional()
-    .default([{ name: "default", focus: "general code quality" }])
+    .default([
+      {
+        name: "default",
+        focus: "general code quality",
+        variant: "default" as const,
+      },
+    ])
     .describe("Reviewer configurations (parallel in Phase 3)"),
   overview: GitHubReviewOverviewConfigSchema.optional(),
   defaults: GitHubReviewDefaultsSchema.optional().describe(

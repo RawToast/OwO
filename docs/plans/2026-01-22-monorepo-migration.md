@@ -69,7 +69,7 @@ linker = "isolated"
   },
   "devDependencies": {
     "turbo": "2.5.4",
-    "bun-types": "1.3.6",
+    "@types/bun": "catalog:*",
     "oxfmt": "0.24.0",
     "oxlint": "1.39.0"
   }
