@@ -108,7 +108,7 @@ export async function submitReview(
   review: Review,
   mappedComments: Array<{ path: string; position: number; body: string }>,
 ): Promise<{ reviewId: number; reviewUrl: string; isUpdate: boolean }> {
-  const body = `${review.overview}\n\n${REVIEW_MARKER}\n---\n*Reviewed by [owo-pr-review](https://github.com/jmagar/owo) | ${mappedComments.length} inline comments*`
+  const body = `${review.overview}\n\n${REVIEW_MARKER}\n---\n*Reviewed by [owo-pr-review](https://github.com/RawToast/owo) | ${mappedComments.length} inline comments*`
 
   const existing = await findExistingReview(client, prNumber)
 

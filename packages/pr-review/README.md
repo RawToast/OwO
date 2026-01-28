@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: jmagar/owo/packages/pr-review@main
+      - uses: RawToast/owo/packages/pr-review@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: anthropic/claude-sonnet-4-20250514
