@@ -1,0 +1,68 @@
+name: "OwO PR Review"
+description: "AI-powered PR code review using opencode SDK"
+author: "RawToast"
+
+branding:
+  icon: "eye"
+  color: "purple"
+
+inputs:
+  github_token:
+    description: "GitHub token with PR read/write permissions"
+    required: true
+  model:
+    description: "Model to use (e.g., anthropic/claude-sonnet-4-20250514)"
+    required: false
+    default: ""
+  opencode_api_key:
+    description: "OpenCode API key (for opencode/* models)"
+    required: false
+    default: ""
+  anthropic_api_key:
+    description: "Anthropic API key (for anthropic/* models)"
+    required: false
+    default: ""
+  openai_api_key:
+    description: "OpenAI API key (for openai/* models)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: bun install --frozen-lockfile
+
+    - name: Build
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: bun run make
+
+    - name: Install opencode CLI
+      shell: bash
+      run: |
+        curl -fsSL https://opencode.ai/install | bash
+        echo "$HOME/.opencode/bin" >> $GITHUB_PATH
+
+    - name: Run PR Review
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        MODEL: ${{ inputs.model }}
+        OPENCODE_API_KEY: ${{ inputs.opencode_api_key }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+      run: |
+        if [ -n "$MODEL" ]; then
+          node ${{ github.action_path }}/dist/index.js --model "$MODEL"
+        else
+          node ${{ github.action_path }}/dist/index.js
+        fi
