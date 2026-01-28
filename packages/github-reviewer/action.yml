@@ -56,7 +56,7 @@ runs:
         bun-version: "1.3.6"
 
     # TODO: Switch back to official opencode once SKIP_PULL_REQUEST_COMMENT is merged upstream
-    # For now, build from jmagar's fork which has the feature
+    # For now, build from RawToast's fork which has the feature
 
     - name: Clone and build opencode fork
       shell: bash

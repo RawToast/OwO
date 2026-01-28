@@ -279,7 +279,7 @@ clear migration paths. Nice work!
 
 ---
 
-_Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • 2 reviewers • 4 inline comments_
+_Reviewed by [owo-reviewer](https://github.com/RawToast/owo) • 2 reviewers • 4 inline comments_
 
 ````
 
@@ -871,7 +871,7 @@ The tool will automatically:
     }
 
     // Add footer
-    finalOverview += `\n\n---\n*Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • ${mapped.length} inline comments*`
+    finalOverview += `\n\n---\n*Reviewed by [owo-reviewer](https://github.com/RawToast/owo) • ${mapped.length} inline comments*`
 
     // Build GitHub API review comments
     const reviewComments = mapped.map((c) => ({
@@ -1110,7 +1110,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run owo-reviewer
-        uses: jmagar/owo/packages/github-reviewer@main
+        uses: RawToast/owo/packages/github-reviewer@main
         with:
           model: anthropic/claude-sonnet-4-5
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -1399,7 +1399,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: jmagar/owo/packages/github-reviewer@main
+      - uses: RawToast/owo/packages/github-reviewer@main
         with:
           model: anthropic/claude-sonnet-4-20250514
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -1539,11 +1539,11 @@ Call this AFTER submit_review() to remove the automatic opencode response commen
     // Find comments with opencode footer pattern (posted in last 60 seconds)
     const now = Date.now()
     const opencodePattern = /\[opencode session\]|\[github run\]/
-    
+
     for (const comment of comments) {
       const createdAt = new Date(comment.created_at).getTime()
       const ageSeconds = (now - createdAt) / 1000
-      
+
       // Only delete very recent comments (within 60s) that match opencode pattern
       if (ageSeconds < 60 && opencodePattern.test(comment.body || "")) {
         await octokit.rest.issues.deleteComment({
@@ -1561,6 +1561,7 @@ Call this AFTER submit_review() to remove the automatic opencode response commen
 ```
 
 Then update the prompt to call it:
+
 ```
 After calling submit_review(), call cleanup_opencode_comment() to remove any duplicate comments.
 ```

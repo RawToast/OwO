@@ -70,7 +70,7 @@ The tool will automatically:
 
     // Add marker (hidden) and footer
     const marker = getReviewMarker()
-    finalOverview += `\n\n${marker}\n---\n*Reviewed by [owo-reviewer](https://github.com/jmagar/owo) • ${mapped.length} inline comments*`
+    finalOverview += `\n\n${marker}\n---\n*Reviewed by [owo-reviewer](https://github.com/RawToast/owo) • ${mapped.length} inline comments*`
 
     // Build GitHub API review comments
     const reviewComments = mapped.map((c) => ({

@@ -4,13 +4,15 @@
 
 **Goal:** Build a standalone PR reviewer using opencode SDK + Octokit, replacing the plugin-based approach that required forking opencode.
 
-**Architecture:** 
+**Architecture:**
+
 - Use `@opencode-ai/sdk` to run the AI agent programmatically
 - Use `@octokit/rest` for all GitHub API interactions (fetch PR, post reviews)
 - Clean separation: Octokit handles GitHub, SDK handles AI, our code orchestrates
 - Can run as GitHub Action OR standalone CLI
 
 **Tech Stack:**
+
 - `@opencode-ai/sdk` - AI agent
 - `@octokit/rest` - GitHub API
 - `bun` - Runtime
@@ -18,6 +20,7 @@
 - `parse-diff` - Diff position mapping (reuse from github-reviewer)
 
 **Reference Code:**
+
 - `packages/github-reviewer/` - Our existing plugin-based implementation
 - `/Users/jim/Github/opencode/packages/opencode/src/cli/cmd/github.ts` - opencode's GitHub command (excellent patterns for PR/issue handling)
 
@@ -51,6 +54,7 @@ packages/pr-review/
 ## Task 1: Project Setup
 
 **Files:**
+
 - Create: `packages/pr-review/package.json`
 - Create: `packages/pr-review/tsconfig.json`
 - Create: `packages/pr-review/src/index.ts`
@@ -133,6 +137,7 @@ git commit -m "feat(pr-review): scaffold new package with SDK approach"
 ## Task 2: GitHub Types & Client
 
 **Files:**
+
 - Create: `packages/pr-review/src/github/types.ts`
 - Create: `packages/pr-review/src/github/client.ts`
 
@@ -305,6 +310,7 @@ git commit -m "feat(pr-review): add GitHub types and client"
 ## Task 3: PR Fetching with GraphQL
 
 **Files:**
+
 - Create: `packages/pr-review/src/github/pr.ts`
 
 **Step 1: Create PR fetching module**
@@ -432,10 +438,7 @@ type PRQueryResponse = {
 /**
  * Fetch full PR data via GraphQL
  */
-export async function fetchPR(
-  client: GitHubClient,
-  prNumber: number,
-): Promise<PRData> {
+export async function fetchPR(client: GitHubClient, prNumber: number): Promise<PRData> {
   const result = await client.graphql<PRQueryResponse>(PR_QUERY, {
     owner: client.owner,
     repo: client.repo,
@@ -487,10 +490,7 @@ export async function fetchPR(
 /**
  * Get PR diff via REST API
  */
-export async function fetchPRDiff(
-  client: GitHubClient,
-  prNumber: number,
-): Promise<string> {
+export async function fetchPRDiff(client: GitHubClient, prNumber: number): Promise<string> {
   const { data } = await client.rest.pulls.get({
     owner: client.owner,
     repo: client.repo,
@@ -551,6 +551,7 @@ git commit -m "feat(pr-review): add PR fetching with GraphQL"
 ## Task 4: Review Posting
 
 **Files:**
+
 - Create: `packages/pr-review/src/github/review.ts`
 
 **Step 1: Create review posting module**
@@ -597,9 +598,7 @@ export async function findExistingReview(
       per_page: 100,
     })
 
-    const reviewComments = allComments.filter(
-      (c) => c.pull_request_review_id === ourReview.id,
-    )
+    const reviewComments = allComments.filter((c) => c.pull_request_review_id === ourReview.id)
 
     return {
       id: ourReview.id,
@@ -691,7 +690,7 @@ export async function submitReview(
   mappedComments: Array<{ path: string; position: number; body: string }>,
 ): Promise<{ reviewId: number; reviewUrl: string; isUpdate: boolean }> {
   // Build final body with marker
-  const body = `${review.overview}\n\n${REVIEW_MARKER}\n---\n*Reviewed by [owo-pr-review](https://github.com/jmagar/owo) | ${mappedComments.length} inline comments*`
+  const body = `${review.overview}\n\n${REVIEW_MARKER}\n---\n*Reviewed by [owo-pr-review](https://github.com/RawToast/owo) | ${mappedComments.length} inline comments*`
 
   // Check for existing review
   const existing = await findExistingReview(client, prNumber)
@@ -751,6 +750,7 @@ git commit -m "feat(pr-review): add review posting with update support"
 ## Task 5: Diff Position Mapping
 
 **Files:**
+
 - Create: `packages/pr-review/src/diff/position.ts`
 
 **Step 1: Create diff position mapping**
@@ -873,6 +873,7 @@ git commit -m "feat(pr-review): add diff position mapping"
 ## Task 6: AI Client with opencode SDK
 
 **Files:**
+
 - Create: `packages/pr-review/src/ai/client.ts`
 - Create: `packages/pr-review/src/ai/prompts.ts`
 
@@ -1046,11 +1047,12 @@ git commit -m "feat(pr-review): add AI client and review prompts"
 ## Task 7: Response Parser
 
 **Files:**
+
 - Create: `packages/pr-review/src/ai/parser.ts`
 
 **Step 1: Create response parser**
 
-```typescript
+````typescript
 // packages/pr-review/src/ai/parser.ts
 import { ReviewSchema, type Review } from "../github/types"
 
@@ -1097,7 +1099,7 @@ export function validateComments(
     warnings,
   }
 }
-```
+````
 
 **Step 2: Verify compilation**
 
@@ -1116,6 +1118,7 @@ git commit -m "feat(pr-review): add AI response parser"
 ## Task 8: Core Reviewer Orchestration
 
 **Files:**
+
 - Create: `packages/pr-review/src/reviewer.ts`
 
 **Step 1: Create main reviewer module**
@@ -1233,7 +1236,9 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
       mapped.map((c) => ({ path: c.path, position: c.position, body: c.body })),
     )
 
-    console.log(`[pr-review] Review ${result.isUpdate ? "updated" : "submitted"}: ${result.reviewUrl}`)
+    console.log(
+      `[pr-review] Review ${result.isUpdate ? "updated" : "submitted"}: ${result.reviewUrl}`,
+    )
 
     return {
       success: true,
@@ -1274,6 +1279,7 @@ git commit -m "feat(pr-review): add core reviewer orchestration"
 ## Task 9: CLI Entry Point
 
 **Files:**
+
 - Modify: `packages/pr-review/src/index.ts`
 
 **Step 1: Implement CLI**
@@ -1414,6 +1420,7 @@ git commit -m "feat(pr-review): add CLI entry point"
 ## Task 10: GitHub Action
 
 **Files:**
+
 - Create: `packages/pr-review/action.yml`
 
 **Step 1: Create action definition**
@@ -1422,7 +1429,7 @@ git commit -m "feat(pr-review): add CLI entry point"
 # packages/pr-review/action.yml
 name: "OwO PR Review"
 description: "AI-powered PR code review using opencode SDK"
-author: "jmagar"
+author: "RawToast"
 
 branding:
   icon: "eye"
@@ -1491,7 +1498,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Review PR
-        uses: jmagar/owo/packages/pr-review@main
+        uses: RawToast/owo/packages/pr-review@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: anthropic/claude-sonnet-4-20250514
@@ -1509,6 +1516,7 @@ git commit -m "feat(pr-review): add GitHub Action"
 ## Task 11: Export Types & Index
 
 **Files:**
+
 - Create: `packages/pr-review/src/github/index.ts`
 - Create: `packages/pr-review/src/ai/index.ts`
 - Create: `packages/pr-review/src/diff/index.ts`
@@ -1564,11 +1572,12 @@ git commit -m "feat(pr-review): add barrel exports for library usage"
 ## Task 12: Documentation
 
 **Files:**
+
 - Create: `packages/pr-review/README.md`
 
 **Step 1: Create README**
 
-```markdown
+````markdown
 # @owo/pr-review
 
 AI-powered PR code review using opencode SDK + Octokit.
@@ -1602,11 +1611,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: jmagar/owo/packages/pr-review@main
+      - uses: RawToast/owo/packages/pr-review@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: anthropic/claude-sonnet-4-20250514
 ```
+````
 
 ### CLI
 
@@ -1639,11 +1649,11 @@ console.log(result.reviewUrl)
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GITHUB_TOKEN` | Yes | GitHub token with PR read/write |
-| `GITHUB_REPOSITORY` | No | Auto-set in Actions |
-| `GITHUB_EVENT_PATH` | No | Auto-set in Actions |
+| Variable            | Required | Description                     |
+| ------------------- | -------- | ------------------------------- |
+| `GITHUB_TOKEN`      | Yes      | GitHub token with PR read/write |
+| `GITHUB_REPOSITORY` | No       | Auto-set in Actions             |
+| `GITHUB_EVENT_PATH` | No       | Auto-set in Actions             |
 
 ## Architecture
 
@@ -1662,14 +1672,15 @@ Octokit (GitHub API)     opencode SDK (AI)
 ## License
 
 MIT
-```
+
+````
 
 **Step 2: Commit**
 
 ```bash
 git add packages/pr-review/README.md
 git commit -m "docs(pr-review): add README"
-```
+````
 
 ---
 
@@ -1687,7 +1698,7 @@ Expected: Help text displayed
 
 **Step 3: Test dry run (requires real PR)**
 
-Run: `GITHUB_TOKEN=ghp_xxx ./dist/index.js --pr 1 --owner jmagar --repo owo --dry-run`
+Run: `GITHUB_TOKEN=ghp_xxx ./dist/index.js --pr 1 --owner RawToast --repo owo --dry-run`
 Expected: Review generated but not posted
 
 **Step 4: Final commit**
@@ -1703,19 +1714,19 @@ git commit -m "feat(pr-review): complete SDK-based PR reviewer"
 
 ### What We Built
 
-| Component | Purpose |
-|-----------|---------|
-| `github/client.ts` | Octokit wrapper |
-| `github/pr.ts` | PR fetching (GraphQL + REST) |
-| `github/review.ts` | Review posting/updating |
-| `github/types.ts` | Type definitions |
-| `ai/client.ts` | opencode SDK wrapper |
-| `ai/prompts.ts` | Review prompts |
-| `ai/parser.ts` | Response parsing |
-| `diff/position.ts` | Line-to-position mapping |
-| `reviewer.ts` | Core orchestration |
-| `index.ts` | CLI entry point |
-| `action.yml` | GitHub Action |
+| Component          | Purpose                      |
+| ------------------ | ---------------------------- |
+| `github/client.ts` | Octokit wrapper              |
+| `github/pr.ts`     | PR fetching (GraphQL + REST) |
+| `github/review.ts` | Review posting/updating      |
+| `github/types.ts`  | Type definitions             |
+| `ai/client.ts`     | opencode SDK wrapper         |
+| `ai/prompts.ts`    | Review prompts               |
+| `ai/parser.ts`     | Response parsing             |
+| `diff/position.ts` | Line-to-position mapping     |
+| `reviewer.ts`      | Core orchestration           |
+| `index.ts`         | CLI entry point              |
+| `action.yml`       | GitHub Action                |
 
 ### Key Improvements Over github-reviewer
 

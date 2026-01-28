@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run owo-reviewer
-        uses: jmagar/owo/packages/github-reviewer@main
+        uses: RawToast/owo/packages/github-reviewer@main
         with:
           model: anthropic/claude-sonnet-4-5
           github_token: ${{ secrets.GITHUB_TOKEN }}
