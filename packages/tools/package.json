@@ -28,10 +28,10 @@
   "devDependencies": {
     "@types/bun": "catalog:",
     "@typescript/native-preview": "catalog:",
-    "zod": "^4.3.6"
+    "zod": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "1.1.40",
-    "@opencode-ai/sdk": "1.1.40"
+    "@opencode-ai/plugin": "catalog:",
+    "@opencode-ai/sdk": "catalog:"
   }
 }
