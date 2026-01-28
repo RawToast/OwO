@@ -45,6 +45,12 @@ runs:
       working-directory: ${{ github.action_path }}
       run: bun run make
 
+    - name: Install opencode CLI
+      shell: bash
+      run: |
+        curl -fsSL https://opencode.ai/install | bash
+        echo "$HOME/.opencode/bin" >> $GITHUB_PATH
+
     - name: Run PR Review
       shell: bash
       working-directory: ${{ github.workspace }}
