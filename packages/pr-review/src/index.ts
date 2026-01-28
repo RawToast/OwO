@@ -1,6 +1,12 @@
 #!/usr/bin/env bun
 // packages/pr-review/src/index.ts
 
+// Library exports
+export { reviewPR, type ReviewOptions, type ReviewResult } from "./reviewer"
+export * from "./github"
+export * from "./ai"
+export * from "./diff"
+
 import { reviewPR, type ReviewOptions } from "./reviewer"
 import { getPRContextFromEnv } from "./github/pr"
 import { getGitHubToken } from "./github/client"
