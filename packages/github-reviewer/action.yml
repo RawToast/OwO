@@ -50,24 +50,24 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Get opencode version
-      id: version
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: "1.3.6"
+
+    # TODO: Switch back to official opencode once SKIP_PULL_REQUEST_COMMENT is merged upstream
+    # For now, build from jmagar's fork which has the feature
+
+    - name: Clone and build opencode fork
       shell: bash
       run: |
-        VERSION=$(curl -sf https://api.github.com/repos/anomalyco/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
-        echo "version=${VERSION:-latest}" >> $GITHUB_OUTPUT
-
-    - name: Cache opencode
-      id: cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.opencode/bin
-        key: opencode-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
-
-    - name: Install opencode
-      if: steps.cache.outputs.cache-hit != 'true'
-      shell: bash
-      run: curl -fsSL https://opencode.ai/install | bash
+        git clone --depth 1 --branch dev https://github.com/RawToast/opencode.git /tmp/opencode
+        cd /tmp/opencode
+        bun install
+        bun run build
+        mkdir -p ~/.opencode/bin
+        cp packages/opencode/dist/opencode ~/.opencode/bin/
+        chmod +x ~/.opencode/bin/opencode
 
     - name: Add opencode to PATH
       shell: bash
@@ -78,11 +78,6 @@ runs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
-      with:
-        bun-version: "1.3.6"
 
     - name: Install plugin dependencies
       shell: bash
@@ -135,4 +130,6 @@ runs:
         PROMPT: ${{ steps.prompt.outputs.value }}
         # Pass config via env var to avoid creating opencode.json in repo (which would get committed)
         OPENCODE_CONFIG_CONTENT: '{"plugin": ["file://${{ github.action_path }}/src/index.ts"]}'
+        # Skip the automatic PR comment since we post our own review via submit_review tool
+        SKIP_PULL_REQUEST_COMMENT: "true"
       run: opencode github run
