@@ -8,7 +8,6 @@ AI-powered PR code review using opencode SDK + Octokit.
 - Posts reviews with inline comments on specific lines
 - Updates existing reviews instead of creating duplicates
 - Works as GitHub Action or standalone CLI
-- No opencode fork required!
 
 ## Usage
 
@@ -72,11 +71,11 @@ console.log(result.reviewUrl)
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GITHUB_TOKEN` | Yes | GitHub token with PR read/write |
-| `GITHUB_REPOSITORY` | No | Auto-set in Actions |
-| `GITHUB_EVENT_PATH` | No | Auto-set in Actions |
+| Variable            | Required | Description                     |
+| ------------------- | -------- | ------------------------------- |
+| `GITHUB_TOKEN`      | Yes      | GitHub token with PR read/write |
+| `GITHUB_REPOSITORY` | No       | Auto-set in Actions             |
+| `GITHUB_EVENT_PATH` | No       | Auto-set in Actions             |
 
 ## Architecture
 
