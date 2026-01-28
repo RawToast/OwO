@@ -1,0 +1,47 @@
+name: "OwO PR Review"
+description: "AI-powered PR code review using opencode SDK"
+author: "jmagar"
+
+branding:
+  icon: "eye"
+  color: "purple"
+
+inputs:
+  github_token:
+    description: "GitHub token with PR read/write permissions"
+    required: true
+  model:
+    description: "Model to use (e.g., anthropic/claude-sonnet-4-20250514)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: bun install --frozen-lockfile
+
+    - name: Build
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: bun run make
+
+    - name: Run PR Review
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        MODEL: ${{ inputs.model }}
+      run: |
+        if [ -n "$MODEL" ]; then
+          node ${{ github.action_path }}/dist/index.js --model "$MODEL"
+        else
+          node ${{ github.action_path }}/dist/index.js
+        fi
