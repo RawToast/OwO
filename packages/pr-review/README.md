@@ -35,6 +35,10 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: anthropic/claude-sonnet-4-20250514
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Or for opencode models:
+          # model: opencode/glm-4.7
+          # opencode_api_key: ${{ secrets.OPENCODE_API_KEY }}
 ```
 
 ### CLI
