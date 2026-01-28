@@ -26,12 +26,12 @@
     "@owo/config": "workspace:*"
   },
   "devDependencies": {
-    "@typescript/native-preview": "7.0.0-dev.20260120.1",
-    "bun-types": "1.3.6",
-    "zod": "^3.25.67"
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "*",
-    "@opencode-ai/sdk": "*"
+    "@opencode-ai/plugin": "catalog:",
+    "@opencode-ai/sdk": "catalog:"
   }
 }

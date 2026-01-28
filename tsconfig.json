@@ -10,8 +10,7 @@
     "declarationDir": "./dist",
     "emitDeclarationOnly": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "types": ["bun-types"]
+    "rootDir": "./src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

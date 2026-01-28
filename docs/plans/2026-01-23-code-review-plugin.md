@@ -198,7 +198,7 @@ git commit -m "feat(config): add code review plugin schema"
   },
   "devDependencies": {
     "@typescript/native-preview": "7.0.0-dev.20260120.1",
-    "bun-types": "1.3.6"
+    "@types/bun": "catalog:*"
   }
 }
 ```
