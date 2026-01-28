@@ -11,7 +11,7 @@ export function parseReviewResponse(response: string): Review {
   try {
     const parsed = JSON.parse(jsonStr.trim())
     return ReviewSchema.parse(parsed)
-  } catch (error) {
+  } catch {
     // If parsing fails, treat entire response as overview
     console.warn("[pr-review] Failed to parse JSON response, using as overview")
     return {
