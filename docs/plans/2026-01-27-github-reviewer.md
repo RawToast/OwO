@@ -1498,3 +1498,71 @@ Before marking complete:
 - [ ] Action workflow runs successfully
 - [ ] Inline comments appear on correct lines
 - [ ] Overview comment is properly formatted
+
+---
+
+## Known Issues & Workarounds
+
+### Duplicate PR Comment from opencode
+
+**Problem:** opencode's `github run` command always posts the agent's final text response as a PR comment (see `packages/opencode/src/cli/cmd/github.ts` lines 584, 599). This creates a duplicate comment after our `submit_review` tool already posts the review.
+
+**Current Solution:** We added `SKIP_PULL_REQUEST_COMMENT` env var to a fork of opencode (`RawToast/opencode` dev branch). The action sets this to skip the automatic comment on `pull_request` events only (not `pull_request_review_comment` or `issue_comment`, so users still get responses when replying).
+
+**Fallback Solution (if fork not merged upstream):**
+
+If the upstream opencode doesn't accept the `SKIP_PULL_REQUEST_COMMENT` feature, implement a `cleanup_opencode_comment` tool:
+
+```typescript
+// packages/github-reviewer/src/tools/cleanup-comment.ts
+import { tool } from "@opencode-ai/plugin"
+import { requirePRContext, createOctokit } from "../github"
+
+export const cleanupOpencodeCommentTool = tool({
+  description: `Clean up duplicate comments posted by opencode after review submission.
+Call this AFTER submit_review() to remove the automatic opencode response comment.`,
+  args: {},
+  async execute() {
+    const ctx = requirePRContext()
+    const octokit = createOctokit()
+
+    // List recent comments on the PR
+    const { data: comments } = await octokit.rest.issues.listComments({
+      owner: ctx.owner,
+      repo: ctx.repo,
+      issue_number: ctx.number,
+      per_page: 10,
+      sort: "created",
+      direction: "desc",
+    })
+
+    // Find comments with opencode footer pattern (posted in last 60 seconds)
+    const now = Date.now()
+    const opencodePattern = /\[opencode session\]|\[github run\]/
+    
+    for (const comment of comments) {
+      const createdAt = new Date(comment.created_at).getTime()
+      const ageSeconds = (now - createdAt) / 1000
+      
+      // Only delete very recent comments (within 60s) that match opencode pattern
+      if (ageSeconds < 60 && opencodePattern.test(comment.body || "")) {
+        await octokit.rest.issues.deleteComment({
+          owner: ctx.owner,
+          repo: ctx.repo,
+          comment_id: comment.id,
+        })
+        return JSON.stringify({ success: true, deleted: comment.id })
+      }
+    }
+
+    return JSON.stringify({ success: true, deleted: null, message: "No opencode comment found" })
+  },
+})
+```
+
+Then update the prompt to call it:
+```
+After calling submit_review(), call cleanup_opencode_comment() to remove any duplicate comments.
+```
+
+This approach works with upstream opencode without needing any fork changes.
