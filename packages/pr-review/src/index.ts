@@ -6,6 +6,9 @@ export { reviewPR, type ReviewOptions, type ReviewResult } from "./reviewer"
 export * from "./github"
 export * from "./ai"
 export * from "./diff"
+export * from "./config"
+export * from "./reviewers"
+export * from "./verifier"
 
 import { reviewPR, type ReviewOptions } from "./reviewer"
 import { getPRContextFromEnv } from "./github/pr"
@@ -29,6 +32,7 @@ Options:
   --repo <repo>      Repository name
   --model <model>    Model to use (e.g., anthropic/claude-sonnet-4-20250514)
   --dry-run          Don't post review, just print it
+  --legacy           Use single-reviewer mode (original behavior)
   --help, -h         Show this help
 
 Environment:
@@ -45,6 +49,9 @@ Examples:
 
   # Dry run
   owo-review --pr 123 --owner myorg --repo myrepo --dry-run
+
+  # Legacy single-reviewer mode
+  owo-review --pr 123 --owner myorg --repo myrepo --legacy
 `)
     process.exit(0)
   }
@@ -60,6 +67,7 @@ Examples:
   const repo = getArg("repo")
   const model = getArg("model")
   const dryRun = args.includes("--dry-run")
+  const legacyMode = args.includes("--legacy")
 
   // Build options
   let options: ReviewOptions
@@ -73,6 +81,7 @@ Examples:
       prNumber: parseInt(prNumber, 10),
       model,
       dryRun,
+      legacyMode,
     }
   } else {
     // Auto-detect from GitHub Actions environment
@@ -90,11 +99,17 @@ Examples:
       prNumber: ctx.number,
       model,
       dryRun,
+      legacyMode,
     }
   }
 
-  console.log(`@owo/pr-review v0.1.0`)
+  console.log(`@owo/pr-review v0.2.0`)
   console.log(`Reviewing ${options.owner}/${options.repo}#${options.prNumber}`)
+  if (legacyMode) {
+    console.log(`Mode: legacy (single-reviewer)`)
+  } else {
+    console.log(`Mode: multi-reviewer`)
+  }
   console.log("")
 
   const result = await reviewPR(options)
