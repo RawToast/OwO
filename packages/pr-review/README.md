@@ -83,6 +83,44 @@ Use `critical`, `warning`, or `info` to control severity. `critical` triggers `R
 }
 ```
 
+### Per-Reviewer Models
+
+Each reviewer (and the verifier) can use a different model:
+
+```json
+{
+  "defaults": {
+    "model": "anthropic/claude-sonnet-4-20250514"
+  },
+  "reviewers": [
+    {
+      "name": "quality",
+      "prompt": "Focus on code quality and best practices."
+    },
+    {
+      "name": "security",
+      "prompt": "Hunt for vulnerabilities and secrets.",
+      "model": "anthropic/claude-opus-4-20250514"
+    },
+    {
+      "name": "quick-check",
+      "prompt": "Fast sanity check for obvious issues.",
+      "model": "anthropic/claude-haiku-4-20250514"
+    }
+  ],
+  "verifier": {
+    "enabled": true,
+    "model": "anthropic/claude-sonnet-4-20250514"
+  }
+}
+```
+
+Model resolution order:
+1. Reviewer/verifier-specific `model`
+2. `defaults.model` from config
+3. `--model` CLI flag / Action input
+4. Falls back to `anthropic/claude-sonnet-4-20250514`
+
 ### CLI
 
 ```bash
@@ -133,13 +171,13 @@ console.log(result.reviewUrl)
 
 ## Environment Variables
 
-| Variable                 | Required | Description                          |
-| ------------------------ | -------- | ------------------------------------ |
-| `GITHUB_TOKEN`           | Yes      | GitHub token with PR read/write      |
-| `GITHUB_REPOSITORY`      | No       | Auto-set in Actions                  |
-| `GITHUB_EVENT_PATH`      | No       | Auto-set in Actions                  |
-| `ANTHROPIC_API_KEY`      | No       | Required for Anthropic models        |
-| `OPENCODE_API_KEY`       | No       | Required for opencode hosted models  |
+| Variable            | Required | Description                         |
+| ------------------- | -------- | ----------------------------------- |
+| `GITHUB_TOKEN`      | Yes      | GitHub token with PR read/write     |
+| `GITHUB_REPOSITORY` | No       | Auto-set in Actions                 |
+| `GITHUB_EVENT_PATH` | No       | Auto-set in Actions                 |
+| `ANTHROPIC_API_KEY` | No       | Required for Anthropic models       |
+| `OPENCODE_API_KEY`  | No       | Required for opencode hosted models |
 
 ## License
 
