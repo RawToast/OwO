@@ -63,7 +63,7 @@ describe("reviewers/engine", () => {
         name: "security",
         success: false,
         error: "API timeout",
-        durationMs: 60000,
+        durationMs: 180000,
       },
     ]
 

@@ -64,6 +64,45 @@ Respond with valid JSON in this exact format:
 }
 
 /**
+ * Build prompt for a specific reviewer in multi-reviewer mode
+ */
+export function buildMultiReviewerPrompt(
+  pr: PRData,
+  diff: string,
+  reviewerPrompt: string,
+  reviewerName: string,
+): string {
+  const filesTable = pr.files
+    .map((f) => `| ${f.path} | +${f.additions}/-${f.deletions} | ${f.changeType} |`)
+    .join("\n")
+
+  return `${reviewerPrompt}
+
+## PR Information
+
+**Title:** ${pr.title}
+**Author:** ${pr.author}
+**Branch:** ${pr.headRef} -> ${pr.baseRef}
+**Changes:** +${pr.additions}/-${pr.deletions} lines
+
+### Description
+${pr.body || "*No description provided*"}
+
+### Changed Files
+| File | Changes | Type |
+|------|---------|------|
+${filesTable}
+
+### Diff
+\`\`\`diff
+${diff}
+\`\`\`
+
+---
+You are the "${reviewerName}" reviewer. Provide your review in the JSON format specified above.`
+}
+
+/**
  * Build a simpler prompt for quick reviews
  */
 export function buildQuickReviewPrompt(pr: PRData, diff: string): string {
