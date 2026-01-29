@@ -66,9 +66,14 @@
           "description": "Minimum severity level to include in final review (critical=only critical, warning=critical+warning, info=all)",
           "type": "string",
           "enum": ["critical", "warning", "info"]
+        },
+        "diagrams": {
+          "default": true,
+          "description": "Generate mermaid diagrams in the review",
+          "type": "boolean"
         }
       },
-      "required": ["enabled", "level"],
+      "required": ["enabled", "level", "diagrams"],
       "additionalProperties": false
     },
     "defaults": {

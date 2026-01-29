@@ -4,12 +4,13 @@ AI-powered PR review with multi-reviewer support.
 
 ## Features
 
-- 🤖 Multi-Reviewer Mode - parallel reviewers
-- ✅ Verifier Step - AI synthesizes findings
-- 📝 Inline Comments - with severity levels
-- 🔄 Review Updates - no duplicates
-- ⚙️ Configurable - custom prompts
-- 🎯 Smart Actions - auto REQUEST_CHANGES
+- 🤖 Multi-Reviewer Mode - parallel reviewers with different focuses
+- ✅ Verifier Step - strongest model synthesizes and verifies findings
+- 📊 Rich Formatting - collapsible sections, tables, mermaid diagrams
+- 📝 Inline Comments - with severity levels (critical/warning/info)
+- 🔄 Review Updates - no duplicates on re-review
+- ⚙️ Configurable - custom prompts, per-reviewer models
+- 🎯 Smart Actions - auto REQUEST_CHANGES on critical issues
 - 🚀 Multiple Modes - Action, CLI, library
 
 ## Quick Start
@@ -118,6 +119,30 @@ Model resolution order:
 3. `--model` CLI flag / Action input
 4. Falls back to `anthropic/claude-sonnet-4-20250514`
 
+### Verifier Options
+
+The verifier synthesizes findings and produces the final formatted review:
+
+```json
+{
+  "verifier": {
+    "enabled": true,
+    "model": "anthropic/claude-opus-4-20250514",
+    "diagrams": true,
+    "level": "warning"
+  }
+}
+```
+
+| Option       | Default    | Description                                                 |
+| ------------ | ---------- | ----------------------------------------------------------- |
+| `enabled`    | `true`     | Enable/disable the verifier step                            |
+| `model`      | (default)  | Model for verification (use strongest for best results)     |
+| `diagrams`   | `true`     | Generate mermaid diagrams in the review                     |
+| `level`      | `"info"`   | Minimum severity to include (`critical`, `warning`, `info`) |
+| `prompt`     | (built-in) | Custom verifier prompt                                      |
+| `promptFile` | -          | Path to custom prompt file                                  |
+
 ### CLI
 
 ```bash
@@ -153,11 +178,23 @@ console.log(result.reviewUrl)
 
 ## How It Works
 
-1. Fetch PR metadata, commits, and diff hunks
-2. Run multiple reviewers in parallel with custom prompts
-3. Verify and synthesize findings into a single review payload
-4. Post inline comments with severity and de-duplication
-5. Update existing reviews to avoid duplicates
+1. **Fetch** PR metadata, commits, and diff hunks
+2. **Review** Run multiple reviewers in parallel (fast/cheap models)
+3. **Verify** Strongest model verifies claims and synthesizes findings
+4. **Format** Produces structured markdown with tables, diagrams, collapsible sections
+5. **Post** Inline comments with severity, updates existing reviews
+
+### Output Format
+
+The verifier produces a well-structured review:
+
+- **Summary** - Overview with key changes bullet points
+- **Changes** - Collapsible table with File, Change, Reason columns
+- **Critical Issues** - Collapsible blocks with location, impact, resolution
+- **Warnings** - Non-critical issues to consider
+- **Observations** - Minor notes and suggestions
+- **Diagrams** - Mermaid diagrams (architecture, flow, ERD)
+- **Verdict** - PASSED or REQUIRES CHANGES
 
 ## Default Reviewers
 

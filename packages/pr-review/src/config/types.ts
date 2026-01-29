@@ -33,6 +33,7 @@ export const VerifierConfigSchema = z.object({
     .describe(
       "Minimum severity level to include in final review (critical=only critical, warning=critical+warning, info=all)",
     ),
+  diagrams: z.boolean().default(true).describe("Generate mermaid diagrams in the review"),
 })
 
 export type VerifierConfig = z.infer<typeof VerifierConfigSchema>

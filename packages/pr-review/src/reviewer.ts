@@ -78,8 +78,14 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
     // Step 1: Run all reviewers in parallel
     const reviewerOutputs = await runAllReviewers(ai, pr, diff, config, repoRoot)
 
-    // Step 2: Verify and synthesize findings
-    const synthesized = await verifyAndSynthesize(ai, reviewerOutputs, config.verifier, repoRoot)
+    // Step 2: Verify and synthesize findings (pass PR data for context)
+    const synthesized = await verifyAndSynthesize(
+      ai,
+      reviewerOutputs,
+      config.verifier,
+      repoRoot,
+      pr,
+    )
 
     // Update summary with actual reviewer counts
     synthesized.summary.totalReviewers = reviewerOutputs.length
@@ -153,40 +159,46 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
 
 /**
  * Build final overview with summary
+ * The verifier produces the main formatted content, we just add markers and footer
  */
 function buildFinalOverview(synthesized: SynthesizedReview, outputs: ReviewerOutput[]): string {
   const parts: string[] = []
 
+  // Marker for identifying our reviews (for updates)
   parts.push("<!-- owo-pr-review -->")
   parts.push("")
+
+  // Main content from verifier (already formatted)
   parts.push(synthesized.overview)
   parts.push("")
+
+  // Add reviewer stats footer
   parts.push("---")
   parts.push("")
-  parts.push("### Review Stats")
+  parts.push("<details>")
+  parts.push("<summary>Review Stats</summary>")
   parts.push("")
   parts.push(
-    `- **Reviewers**: ${synthesized.summary.successfulReviewers}/${synthesized.summary.totalReviewers} completed successfully`,
+    `- **Reviewers**: ${synthesized.summary.successfulReviewers}/${synthesized.summary.totalReviewers} completed`,
   )
-  parts.push(
-    `- **Issues**: ${synthesized.summary.criticalIssues} critical, ${synthesized.summary.warnings} warnings, ${synthesized.summary.infos} suggestions`,
-  )
-  parts.push(`- **Status**: ${synthesized.passed ? "✅ Passed" : "❌ Changes requested"}`)
-  parts.push("")
 
   const successfulReviewers = outputs.filter((o) => o.success)
   if (successfulReviewers.length > 0) {
-    parts.push("### Reviewers")
-    parts.push("")
     for (const reviewer of successfulReviewers) {
       const commentCount = reviewer.review?.comments.length || 0
-      parts.push(`- **${reviewer.name}**: ${commentCount} comments (${reviewer.durationMs}ms)`)
+      parts.push(`  - ${reviewer.name}: ${commentCount} comments (${reviewer.durationMs}ms)`)
     }
-    parts.push("")
   }
 
+  parts.push(
+    `- **Issues Found**: ${synthesized.summary.criticalIssues} critical, ${synthesized.summary.warnings} warnings, ${synthesized.summary.infos} info`,
+  )
+  parts.push("")
+  parts.push("</details>")
+  parts.push("")
   parts.push("---")
-  parts.push(`*Reviewed by [owo-pr-review](https://github.com/RawToast/owo)*`)
+  parts.push("")
+  parts.push("*Reviewed by [owo-pr-review](https://github.com/RawToast/owo)*")
 
   return parts.join("\n")
 }
