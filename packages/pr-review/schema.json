@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/RawToast/owo/main/packages/pr-review/schema.json",
+  "title": "PR Review Configuration",
+  "description": "Configuration schema for @owo/pr-review",
+  "type": "object",
+  "properties": {
+    "version": {
+      "default": 1,
+      "type": "number",
+      "const": 1
+    },
+    "reviewers": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Reviewer identifier (e.g., 'security', 'quality')"
+          },
+          "prompt": {
+            "description": "Inline prompt text (alternative to promptFile)",
+            "type": "string"
+          },
+          "promptFile": {
+            "description": "Path to prompt file relative to repo root",
+            "type": "string"
+          },
+          "focus": {
+            "description": "Short focus description",
+            "type": "string"
+          },
+          "model": {
+            "description": "Model override for this reviewer",
+            "type": "string"
+          },
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": ["name", "enabled"],
+        "additionalProperties": false
+      }
+    },
+    "verifier": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "promptFile": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "level": {
+          "default": "info",
+          "description": "Minimum severity level to include in final review (critical=only critical, warning=critical+warning, info=all)",
+          "type": "string",
+          "enum": ["critical", "warning", "info"]
+        }
+      },
+      "required": ["enabled", "level"],
+      "additionalProperties": false
+    },
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["version", "reviewers"],
+  "additionalProperties": false
+}

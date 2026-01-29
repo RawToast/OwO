@@ -45,10 +45,11 @@ jobs:
 
 ### Configuration
 
-Create `.github/pr-review.json`:
+Create `.github/pr-review.json` (with optional schema for IDE autocomplete):
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/RawToast/owo/main/packages/pr-review/schema.json",
   "reviewers": [
     { "name": "architecture", "prompt": "Focus on structure and boundaries." },
     { "name": "security", "prompt": "Hunt for auth, secrets, and input risks." },
@@ -57,11 +58,6 @@ Create `.github/pr-review.json`:
   "verifier": {
     "enabled": true,
     "prompt": "Synthesize and de-duplicate findings."
-  },
-  "levels": {
-    "critical": "Must fix before merge",
-    "warning": "Should fix soon",
-    "info": "Nice to consider"
   }
 }
 ```
@@ -116,6 +112,7 @@ Each reviewer (and the verifier) can use a different model:
 ```
 
 Model resolution order:
+
 1. Reviewer/verifier-specific `model`
 2. `defaults.model` from config
 3. `--model` CLI flag / Action input

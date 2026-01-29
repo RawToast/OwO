@@ -10,7 +10,8 @@
   "scripts": {
     "make": "bun build ./src/index.ts --outdir ./dist --target node --external '@opencode-ai/sdk' --external '@octokit/rest' --external '@octokit/graphql' --external 'zod' --external 'parse-diff'",
     "compile": "tsgo --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "generate-schema": "bun run scripts/generate-schema.ts"
   },
   "dependencies": {
     "@octokit/graphql": "8.2.2",
