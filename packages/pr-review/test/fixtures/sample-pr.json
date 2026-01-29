@@ -1,0 +1,23 @@
+{
+  "owner": "test-org",
+  "repo": "test-repo",
+  "number": 123,
+  "title": "Add user authentication",
+  "body": "This PR adds JWT-based authentication",
+  "author": "testuser",
+  "baseSha": "abc123",
+  "headSha": "def456",
+  "baseRef": "main",
+  "headRef": "feature/auth",
+  "additions": 150,
+  "deletions": 20,
+  "state": "open",
+  "createdAt": "2026-01-29T10:00:00Z",
+  "commits": [],
+  "files": [
+    { "path": "src/auth.ts", "additions": 100, "deletions": 10, "changeType": "added" },
+    { "path": "src/middleware.ts", "additions": 50, "deletions": 10, "changeType": "modified" }
+  ],
+  "comments": [],
+  "reviews": []
+}

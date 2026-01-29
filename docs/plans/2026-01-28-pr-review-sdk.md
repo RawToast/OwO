@@ -1,7 +1,5 @@
 # PR Review SDK Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
-
 **Goal:** Build a standalone PR reviewer using opencode SDK + Octokit, replacing the plugin-based approach that required forking opencode.
 
 **Architecture:**
