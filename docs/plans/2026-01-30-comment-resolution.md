@@ -118,6 +118,29 @@ Single call with all old comments:
 | `FIXED` | Reply "This issue has been addressed" + resolve thread |
 | `NOT_FIXED` | Leave as-is |
 | `PARTIALLY_FIXED` | Reply with explanation, keep thread open |
+| `FILE_DELETED` | Auto-resolve without LLM (issue is moot) |
+
+### Edge Case: Deleted Files
+
+If a file with open comments was deleted in the latest push, auto-resolve those threads without calling the LLM — the issue is no longer relevant.
+
+```typescript
+// In checker.ts
+const deletedFiles = new Set(
+  prData.files
+    .filter(f => f.changeType === "DELETED")
+    .map(f => f.path)
+)
+
+// Auto-resolve comments on deleted files
+const deletedFileComments = oldComments.filter(c => deletedFiles.has(c.path))
+for (const comment of deletedFileComments) {
+  await replyAndResolve(client, comment.threadId, "📁 File was deleted — resolving.")
+}
+
+// Only send remaining comments to agent
+const commentsToCheck = oldComments.filter(c => !deletedFiles.has(c.path))
+```
 
 ## GitHub API Interactions
 
@@ -136,11 +159,17 @@ const owoComments = allComments.filter(c =>
 
 ### Get Thread IDs (GraphQL)
 
+**Note**: Must use cursor-based pagination for PRs with many threads.
+
 ```graphql
-query GetReviewThreads($owner: String!, $repo: String!, $pr: Int!) {
+query GetReviewThreads($owner: String!, $repo: String!, $pr: Int!, $cursor: String) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $pr) {
-      reviewThreads(first: 100) {
+      reviewThreads(first: 100, after: $cursor) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         nodes {
           id
           isResolved
@@ -153,6 +182,29 @@ query GetReviewThreads($owner: String!, $repo: String!, $pr: Int!) {
       }
     }
   }
+}
+```
+
+```typescript
+// Fetch all threads with pagination
+async function fetchAllThreads(client: GitHubClient, prNumber: number) {
+  const threads: ReviewThread[] = []
+  let cursor: string | null = null
+  
+  do {
+    const result = await client.graphql(GET_REVIEW_THREADS, { 
+      owner: client.owner, 
+      repo: client.repo, 
+      pr: prNumber,
+      cursor 
+    })
+    threads.push(...result.repository.pullRequest.reviewThreads.nodes)
+    cursor = result.repository.pullRequest.reviewThreads.pageInfo.hasNextPage
+      ? result.repository.pullRequest.reviewThreads.pageInfo.endCursor
+      : null
+  } while (cursor)
+  
+  return threads
 }
 ```
 
@@ -248,12 +300,41 @@ const REPLY_MESSAGES = {
   FIXED: "✅ This issue has been addressed in recent commits.",
   PARTIALLY_FIXED: (explanation: string) => 
     `⚠️ Partially addressed: ${explanation}`,
+  FILE_DELETED: "📁 File was deleted — resolving.",
 }
 ```
 
+## Rate Limiting
+
+When resolving many threads, limit concurrency to avoid GitHub's secondary rate limits:
+
+```typescript
+import pLimit from "p-limit"
+
+const limit = pLimit(5) // Max 5 concurrent mutations
+
+await Promise.all(
+  threadsToResolve.map(thread => 
+    limit(() => replyAndResolve(client, thread.id, message))
+  )
+)
+```
+
+**Note**: May need to add `p-limit` as a dependency, or use a simple semaphore implementation.
+
+## Oracle Review Notes
+
+Design reviewed by Oracle agent on 2026-01-30. Key additions:
+
+1. **Pagination** — Added cursor-based pagination for `reviewThreads` query
+2. **Deleted Files** — Auto-resolve threads on deleted files without LLM
+3. **Rate Limiting** — Limit concurrency when resolving many threads
+4. **Legacy Comments** — Skipped (no existing users yet)
+5. **Double Comments** — Accepted risk for v1 (new reviewer may duplicate NOT_FIXED issues)
+
 ## Open Questions
 
-None — design is complete and approved!
+None — design is complete and Oracle-approved!
 
 ## References
 
