@@ -39,12 +39,32 @@ export const VerifierConfigSchema = z.object({
 export type VerifierConfig = z.infer<typeof VerifierConfigSchema>
 
 /**
+ * Resolution checking configuration
+ */
+export const ResolutionTriggerSchema = z.enum(["first-push", "all-pushes", "on-request"])
+export type ResolutionTrigger = z.infer<typeof ResolutionTriggerSchema>
+
+export const ResolutionConfigSchema = z.object({
+  enabled: z.boolean().default(true).describe("Enable/disable resolution checking"),
+  trigger: ResolutionTriggerSchema.default("first-push").describe("When to run resolution checks"),
+  model: z
+    .string()
+    .optional()
+    .describe("Model for resolution agent (recommend cheap/fast like Haiku)"),
+  prompt: z.string().optional().describe("Custom resolution prompt"),
+  promptFile: z.string().optional().describe("Path to custom prompt file"),
+})
+
+export type ResolutionConfig = z.infer<typeof ResolutionConfigSchema>
+
+/**
  * Main PR review configuration
  */
 export const PRReviewConfigSchema = z.object({
   version: z.literal(1).default(1),
   reviewers: z.array(ReviewerConfigSchema).default([]),
   verifier: VerifierConfigSchema.optional(),
+  resolution: ResolutionConfigSchema.optional(),
   defaults: z
     .object({
       model: z.string().optional(),

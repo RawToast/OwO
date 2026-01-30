@@ -49,6 +49,10 @@ export function loadConfig(repoRoot: string): PRReviewConfig {
       level: "info",
       diagrams: true,
     },
+    resolution: {
+      enabled: true,
+      trigger: "first-push",
+    },
   }
 }
 

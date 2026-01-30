@@ -36,6 +36,20 @@ describe("config/types", () => {
     expect(SeverityLevelSchema.safeParse("info").success).toBe(true)
     expect(SeverityLevelSchema.safeParse("invalid").success).toBe(false)
   })
+
+  test("ResolutionConfigSchema provides defaults", async () => {
+    const { ResolutionConfigSchema } = await import("../src/config/types")
+    const result = ResolutionConfigSchema.parse({})
+    expect(result.enabled).toBe(true)
+    expect(result.trigger).toBe("first-push")
+  })
+
+  test("PRReviewConfigSchema accepts resolution config", async () => {
+    const { PRReviewConfigSchema } = await import("../src/config/types")
+    const result = PRReviewConfigSchema.parse({ version: 1, resolution: {} })
+    expect(result.resolution?.enabled).toBe(true)
+    expect(result.resolution?.trigger).toBe("first-push")
+  })
 })
 
 describe("config/loader", () => {
