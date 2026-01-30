@@ -29,7 +29,7 @@ const REPLY_MESSAGES = {
 /**
  * Marker to identify owo comments
  */
-const OWO_COMMENT_MARKER = "<!-- owo-comment -->"
+export const OWO_COMMENT_MARKER = "<!-- owo-comment -->"
 
 /**
  * Max concurrent mutations for rate limiting
@@ -286,6 +286,10 @@ async function processResults(
           notFixed++
           break
       }
+    } catch (error) {
+      console.error(
+        `[pr-review] Failed to process comment ${result.commentId}: ${error instanceof Error ? error.message : String(error)}`,
+      )
     } finally {
       semaphore.release()
     }
@@ -318,6 +322,10 @@ async function processDeletedFileComments(
 
       await replyAndResolve(client, threadId, REPLY_MESSAGES.FILE_DELETED)
       resolved++
+    } catch (error) {
+      console.error(
+        `[pr-review] Failed to process deleted file comment ${comment.id}: ${error instanceof Error ? error.message : String(error)}`,
+      )
     } finally {
       semaphore.release()
     }

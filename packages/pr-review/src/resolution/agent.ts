@@ -190,17 +190,26 @@ function validateAndTransformResponse(parsed: unknown): ResolutionOutput {
       // This is a fallback - the caller should match by path/line
       commentId = 0 // Will need to be resolved by caller
     } else {
-      throw new Error("Result missing commentId or path/line")
+      // If we can't identify the comment, skip it
+      continue
     }
 
     const status = result.status
     if (status !== "FIXED" && status !== "NOT_FIXED" && status !== "PARTIALLY_FIXED") {
-      throw new Error(`Invalid status: ${status}`)
+      // Skip invalid status
+      continue
     }
 
     const reason = typeof result.reason === "string" ? result.reason : ""
 
-    results.push({ commentId, status, reason })
+    // Store path/line temporarily if commentId is 0
+    const resultObj: any = { commentId, status, reason }
+    if (commentId === 0) {
+      resultObj.path = result.path
+      resultObj.line = result.line
+    }
+
+    results.push(resultObj)
   }
 
   return { results }
@@ -249,25 +258,37 @@ export async function checkResolutions(
  * Map results to comment IDs when the AI returned path/line instead
  */
 function mapResultsToCommentIds(
-  results: ResolutionResult[],
+  results: any[],
   comments: OldComment[],
 ): ResolutionResult[] {
-  // If all results have valid commentIds, return as-is
-  if (results.every((r) => r.commentId > 0)) {
-    return results
+  const mapped: ResolutionResult[] = []
+
+  for (const result of results) {
+    if (result.commentId > 0) {
+      mapped.push({
+        commentId: result.commentId,
+        status: result.status,
+        reason: result.reason,
+      })
+      continue
+    }
+
+    // Try to match by path and line
+    if (result.path && result.line) {
+      const match = comments.find(
+        (c) => c.path === result.path && c.line === result.line,
+      )
+      if (match) {
+        mapped.push({
+          commentId: match.id,
+          status: result.status,
+          reason: result.reason,
+        })
+      }
+    }
   }
 
-  // Otherwise, return results for all input comments
-  // The AI should have returned one result per comment in order
-  if (results.length === comments.length) {
-    return results.map((result, i) => ({
-      ...result,
-      commentId: comments[i].id,
-    }))
-  }
-
-  // Fallback: return what we have
-  return results
+  return mapped
 }
 
 /**

@@ -190,7 +190,7 @@ Let me know if you need more details.`
       expect(() => parseResolutionResponse('{ "data": [] }')).toThrow(/missing 'results' array/)
     })
 
-    test("throws on invalid status", async () => {
+    test("skips invalid status", async () => {
       const { parseResolutionResponse } = await import("../../src/resolution/agent")
 
       const response = `{
@@ -199,7 +199,8 @@ Let me know if you need more details.`
   ]
 }`
 
-      expect(() => parseResolutionResponse(response)).toThrow(/Invalid status/)
+      const output = parseResolutionResponse(response)
+      expect(output.results).toHaveLength(0)
     })
 
     test("handles missing reason gracefully", async () => {
@@ -325,7 +326,7 @@ Let me know if you need more details.`
       expect(capturedModel).toEqual({ providerID: "openai", modelID: "gpt-4o-mini" })
     })
 
-    test("maps results to comment IDs when AI returns them in order", async () => {
+    test("maps results to comment IDs using path and line", async () => {
       const { checkResolutions } = await import("../../src/resolution/agent")
 
       const mockAI = {
@@ -339,8 +340,8 @@ Let me know if you need more details.`
                     type: "text",
                     text: JSON.stringify({
                       results: [
-                        { commentId: 0, status: "FIXED", reason: "Done" },
-                        { commentId: 0, status: "NOT_FIXED", reason: "Nope" },
+                        { path: "a.ts", line: 1, status: "FIXED", reason: "Done" },
+                        { path: "b.ts", line: 2, status: "NOT_FIXED", reason: "Nope" },
                       ],
                     }),
                   },

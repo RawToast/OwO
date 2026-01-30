@@ -8,7 +8,7 @@ import { loadConfigFromPath } from "./config"
 import type { ReviewerOutput, SynthesizedReview } from "./config/types"
 import { runAllReviewers } from "./reviewers"
 import { verifyAndSynthesize } from "./verifier"
-import { runResolutionCheck } from "./resolution"
+import { runResolutionCheck, OWO_COMMENT_MARKER } from "./resolution"
 
 export type ReviewOptions = {
   /** GitHub token */
@@ -232,7 +232,7 @@ function formatCommentBody(comment: SynthesizedReview["comments"][0]): string {
     info: "💡",
   }[comment.severity]
 
-  return `${severityEmoji} **${comment.severity.toUpperCase()}** (${comment.reviewer})\n\n${comment.body}`
+  return `${severityEmoji} **${comment.severity.toUpperCase()}** (${comment.reviewer})\n\n${comment.body}\n\n${OWO_COMMENT_MARKER}`
 }
 
 /**
