@@ -1,5 +1,5 @@
-import { readFileSync, existsSync } from "fs"
-import { join } from "path"
+import { readFileSync, existsSync, statSync } from "fs"
+import { join, dirname, resolve } from "path"
 import { PRReviewConfigSchema, type PRReviewConfig, type ReviewerConfig } from "./types"
 import {
   DEFAULT_QUALITY_PROMPT,
@@ -68,4 +68,55 @@ export function loadReviewerPrompt(repoRoot: string, reviewer: ReviewerConfig): 
   }
 
   return reviewer.prompt || "Review this code and provide feedback."
+}
+
+/**
+ * Load config from a path (file or directory)
+ * Returns both the config and the resolved repoRoot for loading prompt files
+ */
+export function loadConfigFromPath(configPath?: string): {
+  config: PRReviewConfig
+  repoRoot: string
+} {
+  // Default to cwd if no path provided
+  if (!configPath) {
+    const repoRoot = process.cwd()
+    return { config: loadConfig(repoRoot), repoRoot }
+  }
+
+  const resolved = resolve(configPath)
+
+  // Check if it's a file or directory
+  if (existsSync(resolved)) {
+    const stat = statSync(resolved)
+
+    if (stat.isFile()) {
+      // Direct config file path
+      try {
+        const content = readFileSync(resolved, "utf-8")
+        const parsed = JSON.parse(content)
+        const config = PRReviewConfigSchema.parse(parsed)
+        // repoRoot is the directory containing the config file's parent
+        // e.g., /foo/bar/.github/pr-review.json -> /foo/bar
+        const repoRoot = dirname(dirname(resolved))
+        console.log(`[pr-review] Loaded config from: ${resolved}`)
+        return { config, repoRoot }
+      } catch (err) {
+        console.warn(`[pr-review] Failed to load config from ${resolved}:`, err)
+        console.warn("[pr-review] Falling back to default configuration")
+        return { config: loadConfig(process.cwd()), repoRoot: process.cwd() }
+      }
+    }
+
+    if (stat.isDirectory()) {
+      // Directory path - look for .github/pr-review.json
+      console.log(`[pr-review] Looking for config in: ${resolved}`)
+      return { config: loadConfig(resolved), repoRoot: resolved }
+    }
+  }
+
+  // Path doesn't exist - try treating it as a directory anyway
+  console.warn(`[pr-review] Config path not found: ${resolved}`)
+  console.warn("[pr-review] Falling back to default configuration")
+  return { config: loadConfig(process.cwd()), repoRoot: process.cwd() }
 }

@@ -4,7 +4,7 @@ import { submitReview } from "./github/review"
 import { createAIClient, closeAIClient, type AIClient } from "./ai/client"
 import { mapCommentsToPositions, formatUnmappedComments } from "./diff/position"
 import type { PRData, Review } from "./github/types"
-import { loadConfig } from "./config"
+import { loadConfigFromPath } from "./config"
 import type { ReviewerOutput, SynthesizedReview } from "./config/types"
 import { runAllReviewers } from "./reviewers"
 import { verifyAndSynthesize } from "./verifier"
@@ -18,11 +18,13 @@ export type ReviewOptions = {
   repo: string
   /** PR number */
   prNumber: number
+  /** Path to config file or directory containing .github/pr-review.json */
+  configPath?: string
   /** Model to use (e.g., "anthropic/claude-sonnet-4-20250514") */
   model?: string
   /** Dry run - don't post review */
   dryRun?: boolean
-  /** Repository root path (for loading config) */
+  /** Repository root path (for loading config) - deprecated, use configPath */
   repoRoot?: string
   /** Use legacy single-reviewer mode */
   legacyMode?: boolean
@@ -61,8 +63,8 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
     console.log(`[pr-review] Files: ${pr.files.length}`)
 
     // Load configuration
-    const repoRoot = options.repoRoot || process.cwd()
-    const config = loadConfig(repoRoot)
+    // configPath can be a file path or directory path
+    const { config, repoRoot } = loadConfigFromPath(options.configPath || options.repoRoot)
 
     // Start AI client
     console.log("[pr-review] Starting AI client...")

@@ -147,13 +147,20 @@ The verifier synthesizes findings and produces the final formatted review:
 
 ```bash
 # Install
-bun add @owo/pr-review
+# bun add @owo/pr-review
+# clone the repo, install with bun i
 
 # Review a PR
 GITHUB_TOKEN=ghp_xxx owo-review --pr 123 --owner myorg --repo myrepo
 
-# Dry run
-owo-review --pr 123 --owner myorg --repo myrepo --dry-run
+# Dry run with output to file
+owo-review --pr 123 --owner myorg --repo myrepo --dry-run --output review.md
+
+# Use config from another directory (picks up .github/pr-review.json)
+owo-review --pr 123 --owner myorg --repo myrepo --config ../myrepo
+
+# Use a specific config file
+owo-review --pr 123 --owner myorg --repo myrepo --config ./custom-review.json
 
 # Legacy single-reviewer mode
 owo-review --pr 123 --owner myorg --repo myrepo --legacy

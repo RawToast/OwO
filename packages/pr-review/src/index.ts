@@ -32,6 +32,7 @@ Options:
   --pr <number>      PR number to review
   --owner <owner>    Repository owner
   --repo <repo>      Repository name
+  --config <path>    Path to config file or directory containing .github/pr-review.json
   --model <model>    Model to use (e.g., anthropic/claude-sonnet-4-20250514)
   --dry-run          Don't post review, just print it
   --output <file>    Save review to markdown file (implies --dry-run)
@@ -56,6 +57,12 @@ Examples:
   # Save to markdown file
   owo-review --pr 123 --owner myorg --repo myrepo --output review.md
 
+  # Use config from another directory
+  owo-review --pr 123 --owner myorg --repo myrepo --config ../myrepo
+
+  # Use specific config file
+  owo-review --pr 123 --owner myorg --repo myrepo --config ./custom-review.json
+
   # Legacy single-reviewer mode
   owo-review --pr 123 --owner myorg --repo myrepo --legacy
 `)
@@ -71,6 +78,7 @@ Examples:
   const prNumber = getArg("pr")
   const owner = getArg("owner")
   const repo = getArg("repo")
+  const configPath = getArg("config")
   const model = getArg("model")
   const outputFile = getArg("output")
   const dryRun = args.includes("--dry-run") || !!outputFile // --output implies dry-run
@@ -86,6 +94,7 @@ Examples:
       owner,
       repo,
       prNumber: parseInt(prNumber, 10),
+      configPath,
       model,
       dryRun,
       legacyMode,
@@ -104,6 +113,7 @@ Examples:
       owner: ctx.owner,
       repo: ctx.repo,
       prNumber: ctx.number,
+      configPath,
       model,
       dryRun,
       legacyMode,
