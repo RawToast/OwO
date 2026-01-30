@@ -8,6 +8,7 @@ import { loadConfigFromPath } from "./config"
 import type { ReviewerOutput, SynthesizedReview } from "./config/types"
 import { runAllReviewers } from "./reviewers"
 import { verifyAndSynthesize } from "./verifier"
+import { runResolutionCheck } from "./resolution"
 
 export type ReviewOptions = {
   /** GitHub token */
@@ -69,6 +70,22 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
     // Start AI client
     console.log("[pr-review] Starting AI client...")
     ai = await createAIClient()
+
+    // Run resolution check if enabled (resolve old issues before new review)
+    if (config.resolution?.enabled !== false) {
+      const resolutionResult = await runResolutionCheck(
+        github,
+        ai,
+        pr,
+        diff,
+        config.resolution || { enabled: true, trigger: "first-push" },
+        repoRoot,
+      )
+
+      console.log(
+        `[pr-review] Resolution check: ${resolutionResult.fixed} fixed, ${resolutionResult.partiallyFixed} partial, ${resolutionResult.notFixed} not fixed, ${resolutionResult.deletedFiles} deleted files`,
+      )
+    }
 
     if (options.legacyMode || config.reviewers.length === 0) {
       return runLegacyReview(ai, github, pr, diff, options)
