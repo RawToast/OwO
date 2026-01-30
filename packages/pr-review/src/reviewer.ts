@@ -2,7 +2,7 @@ import { createGitHubClient, type GitHubClient } from "./github/client"
 import { fetchPR, fetchPRDiff } from "./github/pr"
 import { submitReview } from "./github/review"
 import { createAIClient, closeAIClient, type AIClient } from "./ai/client"
-import { mapCommentsToPositions, formatUnmappedComments } from "./diff/position"
+import { mapCommentsToLines, formatUnmappedComments } from "./diff/position"
 import type { PRData, Review } from "./github/types"
 import { loadConfigFromPath } from "./config"
 import type { ReviewerOutput, SynthesizedReview } from "./config/types"
@@ -123,7 +123,7 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
     }
 
     // Map comments to diff positions
-    const { mapped, unmapped } = mapCommentsToPositions(diff, review.comments)
+    const { mapped, unmapped } = mapCommentsToLines(diff, review.comments)
 
     if (unmapped.length > 0) {
       console.log(`[pr-review] ${unmapped.length} comments moved to overview (not in diff)`)
@@ -147,7 +147,14 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
       options.prNumber,
       pr.headSha,
       review,
-      mapped.map((c) => ({ path: c.path, position: c.position, body: c.body })),
+      mapped.map((c) => ({
+        path: c.path,
+        line: c.line,
+        body: c.body,
+        side: c.side,
+        start_line: c.start_line,
+        start_side: c.start_side,
+      })),
     )
 
     console.log(
@@ -276,7 +283,7 @@ async function runLegacyReview(
   }
 
   // Map comments to diff positions
-  const { mapped, unmapped } = mapCommentsToPositions(diff, review.comments)
+  const { mapped, unmapped } = mapCommentsToLines(diff, review.comments)
 
   if (unmapped.length > 0) {
     console.log(`[pr-review] ${unmapped.length} comments moved to overview (not in diff)`)
@@ -300,7 +307,14 @@ async function runLegacyReview(
     options.prNumber,
     pr.headSha,
     review,
-    mapped.map((c) => ({ path: c.path, position: c.position, body: c.body })),
+    mapped.map((c) => ({
+      path: c.path,
+      line: c.line,
+      body: c.body,
+      side: c.side,
+      start_line: c.start_line,
+      start_side: c.start_side,
+    })),
   )
 
   console.log(

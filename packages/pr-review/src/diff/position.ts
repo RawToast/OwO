@@ -1,18 +1,25 @@
 import parseDiff from "parse-diff"
 import type { InlineComment } from "../github/types"
 
+type ValidationResult = {
+  valid: boolean
+  reason?: string
+}
+
 /**
- * Map a file line number to a diff position
+ * Check if a line (or line range) exists in the diff for a given file
  *
- * GitHub API requires "position" which is the line number within the diff hunk,
- * NOT the actual file line number.
+ * With modern GitHub API, we use actual line numbers (not diff positions).
+ * This function validates that the lines exist in the diff.
  */
-export function mapLineToPosition(
+export function validateCommentLines(
   diffContent: string,
   filePath: string,
-  lineNumber: number,
-  side: "LEFT" | "RIGHT" = "RIGHT",
-): number | null {
+  line: number,
+  side: "LEFT" | "RIGHT",
+  startLine?: number,
+  startSide?: "LEFT" | "RIGHT",
+): ValidationResult {
   const files = parseDiff(diffContent)
 
   const file = files.find((f) => {
@@ -21,31 +28,86 @@ export function mapLineToPosition(
     return toPath === filePath || fromPath === filePath
   })
 
-  if (!file) return null
+  if (!file) {
+    return { valid: false, reason: `File ${filePath} not found in diff` }
+  }
 
-  let position = 0
+  // Collect all line numbers present in the diff
+  // parse-diff uses:
+  // - ln1/ln2 for "normal" changes (context lines)
+  // - ln for "add" changes (RIGHT side new line number)
+  // - ln for "del" changes (LEFT side old line number)
+  const rightLines = new Set<number>()
+  const leftLines = new Set<number>()
 
   for (const chunk of file.chunks) {
     for (const change of chunk.changes) {
-      position++
-
-      if (side === "RIGHT") {
-        if ((change.type === "add" || change.type === "normal") && "ln2" in change) {
-          if (change.ln2 === lineNumber) return position
-        }
-      } else {
-        if ((change.type === "del" || change.type === "normal") && "ln1" in change) {
-          if (change.ln1 === lineNumber) return position
-        }
+      if (change.type === "add" && "ln" in change) {
+        rightLines.add(change.ln)
+      } else if (change.type === "del" && "ln" in change) {
+        leftLines.add(change.ln)
+      } else if (change.type === "normal") {
+        if ("ln1" in change) leftLines.add(change.ln1)
+        if ("ln2" in change) rightLines.add(change.ln2)
       }
     }
   }
 
-  return null
+  // Validate end line
+  const endLineSet = side === "RIGHT" ? rightLines : leftLines
+  if (!endLineSet.has(line)) {
+    return { valid: false, reason: `Line ${line} not found in diff (${side} side)` }
+  }
+
+  // Validate start line if multi-line
+  if (startLine !== undefined) {
+    const startLineSet = (startSide || side) === "RIGHT" ? rightLines : leftLines
+    if (!startLineSet.has(startLine)) {
+      return { valid: false, reason: `Start line ${startLine} not found in diff` }
+    }
+  }
+
+  return { valid: true }
 }
 
 /**
- * Map multiple comments to their diff positions
+ * Validate and map comments - returns comments with line numbers (no position conversion needed)
+ *
+ * Unlike the old position-based approach, we just validate lines exist in the diff.
+ * The GitHub API now accepts actual line numbers directly.
+ */
+export function mapCommentsToLines(
+  diffContent: string,
+  comments: InlineComment[],
+): {
+  mapped: InlineComment[]
+  unmapped: InlineComment[]
+} {
+  const mapped: InlineComment[] = []
+  const unmapped: InlineComment[] = []
+
+  for (const comment of comments) {
+    const result = validateCommentLines(
+      diffContent,
+      comment.path,
+      comment.line,
+      comment.side,
+      comment.start_line,
+      comment.start_side,
+    )
+
+    if (result.valid) {
+      mapped.push(comment)
+    } else {
+      unmapped.push(comment)
+    }
+  }
+
+  return { mapped, unmapped }
+}
+
+/**
+ * @deprecated Use mapCommentsToLines instead. Kept for backward compatibility.
  */
 export function mapCommentsToPositions(
   diffContent: string,
@@ -54,20 +116,13 @@ export function mapCommentsToPositions(
   mapped: Array<InlineComment & { position: number }>
   unmapped: InlineComment[]
 } {
-  const mapped: Array<InlineComment & { position: number }> = []
-  const unmapped: InlineComment[] = []
+  const { mapped, unmapped } = mapCommentsToLines(diffContent, comments)
 
-  for (const comment of comments) {
-    const position = mapLineToPosition(diffContent, comment.path, comment.line, comment.side)
-
-    if (position !== null) {
-      mapped.push({ ...comment, position })
-    } else {
-      unmapped.push(comment)
-    }
+  // For backward compatibility, add a dummy position (not used by modern API)
+  return {
+    mapped: mapped.map((c, i) => ({ ...c, position: i + 1 })),
+    unmapped,
   }
-
-  return { mapped, unmapped }
 }
 
 /**
@@ -79,7 +134,10 @@ export function formatUnmappedComments(unmapped: InlineComment[]): string {
   const commentLines: string[] = []
 
   for (const comment of unmapped) {
-    commentLines.push(`### \`${comment.path}:${comment.line}\``)
+    const lineRange = comment.start_line
+      ? `${comment.start_line}-${comment.line}`
+      : `${comment.line}`
+    commentLines.push(`### \`${comment.path}:${lineRange}\``)
     commentLines.push("")
     commentLines.push(comment.body)
     commentLines.push("")

@@ -84,7 +84,14 @@ export async function addReviewComments(
   client: GitHubClient,
   prNumber: number,
   commitId: string,
-  comments: Array<{ path: string; position: number; body: string }>,
+  comments: Array<{
+    path: string
+    line: number
+    body: string
+    side: "LEFT" | "RIGHT"
+    start_line?: number
+    start_side?: "LEFT" | "RIGHT"
+  }>,
 ): Promise<void> {
   for (const comment of comments) {
     try {
@@ -94,12 +101,20 @@ export async function addReviewComments(
         pull_number: prNumber,
         commit_id: commitId,
         path: comment.path,
-        position: comment.position,
+        line: comment.line,
+        side: comment.side,
+        ...(comment.start_line && {
+          start_line: comment.start_line,
+          start_side: comment.start_side || comment.side,
+        }),
         body: `${COMMENT_MARKER}\n${comment.body}`,
       })
     } catch (err: any) {
+      const lineRange = comment.start_line
+        ? `${comment.start_line}-${comment.line}`
+        : `${comment.line}`
       console.warn(
-        `[pr-review] Failed to add comment on ${comment.path}:${comment.position}:`,
+        `[pr-review] Failed to add comment on ${comment.path}:${lineRange}:`,
         err.message,
       )
     }
@@ -111,7 +126,14 @@ export async function submitReview(
   prNumber: number,
   commitId: string,
   review: Review,
-  mappedComments: Array<{ path: string; position: number; body: string }>,
+  mappedComments: Array<{
+    path: string
+    line: number
+    body: string
+    side: "LEFT" | "RIGHT"
+    start_line?: number
+    start_side?: "LEFT" | "RIGHT"
+  }>,
 ): Promise<{ reviewId: number; reviewUrl: string; isUpdate: boolean }> {
   const body = `${review.overview}\n\n${REVIEW_MARKER}\n---\n*Reviewed by [owo-pr-review](https://github.com/RawToast/owo) | ${mappedComments.length} inline comments*`
 
@@ -143,7 +165,13 @@ export async function submitReview(
     body,
     event: review.event,
     comments: mappedComments.map((c) => ({
-      ...c,
+      path: c.path,
+      line: c.line,
+      side: c.side,
+      ...(c.start_line && {
+        start_line: c.start_line,
+        start_side: c.start_side || c.side,
+      }),
       body: `${COMMENT_MARKER}\n${c.body}`,
     })),
   })

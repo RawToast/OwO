@@ -71,6 +71,8 @@ export function synthesizeReview(outputs: ReviewerOutput[]): SynthesizedReview {
         side: comment.side || "RIGHT",
         severity: comment.severity || "warning",
         reviewer: output.name,
+        start_line: comment.start_line,
+        start_side: comment.start_side,
       })
     }
   }

@@ -88,6 +88,8 @@ export type ReviewerOutput = {
       body: string
       side: "LEFT" | "RIGHT"
       severity?: "critical" | "warning" | "info"
+      start_line?: number
+      start_side?: "LEFT" | "RIGHT"
     }>
   }
   error?: string
@@ -106,6 +108,8 @@ export type SynthesizedReview = {
     side: "LEFT" | "RIGHT"
     severity: "critical" | "warning" | "info"
     reviewer: string
+    start_line?: number
+    start_side?: "LEFT" | "RIGHT"
   }>
   summary: {
     totalReviewers: number

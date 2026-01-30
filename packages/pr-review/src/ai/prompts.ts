@@ -49,6 +49,13 @@ Respond with valid JSON in this exact format:
       "line": 42,
       "body": "Your comment here",
       "side": "RIGHT"
+    },
+    {
+      "path": "path/to/file.ts",
+      "start_line": 10,
+      "line": 15,
+      "body": "This entire block needs refactoring because...",
+      "side": "RIGHT"
     }
   ],
   "event": "COMMENT"
@@ -56,8 +63,10 @@ Respond with valid JSON in this exact format:
 \`\`\`
 
 **Important:**
-- \`line\` must be a line number in the NEW version of the file (shown with + in diff)
-- \`side\` should be "RIGHT" for new code, "LEFT" for deleted code
+- \`line\` is the line number (or end line for multi-line comments)
+- \`start_line\` (optional) marks the beginning of a multi-line range
+- \`side\` should be "RIGHT" for new/modified code, "LEFT" for deleted code
+- Use multi-line comments when feedback applies to a block of code (e.g., a function, loop, or related lines)
 - Only comment on lines that appear in the diff
 - Be constructive and specific
 - Focus on: bugs, security, performance, readability, best practices`
@@ -119,8 +128,13 @@ Respond with JSON:
 \`\`\`json
 {
   "overview": "Brief summary...",
-  "comments": [],
+  "comments": [
+    {"path": "file.ts", "line": 10, "body": "Issue here", "side": "RIGHT"},
+    {"path": "file.ts", "start_line": 20, "line": 25, "body": "This block...", "side": "RIGHT"}
+  ],
   "event": "COMMENT"
 }
-\`\`\``
+\`\`\`
+
+Use \`start_line\` for multi-line comments when feedback applies to a code block.`
 }

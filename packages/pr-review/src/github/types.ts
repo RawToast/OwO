@@ -55,9 +55,14 @@ export type PRData = PRContext & {
  */
 export const InlineCommentSchema = z.object({
   path: z.string().describe("File path relative to repo root"),
-  line: z.number().describe("Line number in the NEW version of the file"),
+  line: z.number().describe("Line number (end line for multi-line ranges)"),
   body: z.string().describe("Comment content (markdown supported)"),
   side: z.enum(["LEFT", "RIGHT"]).default("RIGHT").describe("Which side of diff"),
+  start_line: z.number().optional().describe("Start line for multi-line comment range"),
+  start_side: z
+    .enum(["LEFT", "RIGHT"])
+    .optional()
+    .describe("Side for start line (defaults to same as side)"),
 })
 
 export type InlineComment = z.infer<typeof InlineCommentSchema>

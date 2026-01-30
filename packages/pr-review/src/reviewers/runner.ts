@@ -99,6 +99,10 @@ export function parseReviewerResponse(
         body: comment.body,
         side: comment.side || "RIGHT",
         severity: comment.severity || "warning",
+        ...(comment.start_line && {
+          start_line: comment.start_line,
+          start_side: comment.start_side || comment.side || "RIGHT",
+        }),
       })),
     }
   } catch (error) {

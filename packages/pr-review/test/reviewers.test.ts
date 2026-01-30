@@ -71,6 +71,36 @@ describe("reviewers/engine", () => {
     expect(result.summary.successfulReviewers).toBe(1)
     expect(result.summary.totalReviewers).toBe(2)
   })
+
+  test("synthesizeReview handles multi-line comments", async () => {
+    const { synthesizeReview } = await import("../src/reviewers/engine")
+
+    const outputs: ReviewerOutput[] = [
+      {
+        name: "quality",
+        success: true,
+        review: {
+          overview: "Found a block that needs work",
+          comments: [
+            {
+              path: "src/auth.ts",
+              line: 50,
+              start_line: 42,
+              body: "This entire function needs refactoring",
+              side: "RIGHT",
+              severity: "warning",
+            },
+          ],
+        },
+        durationMs: 1000,
+      },
+    ]
+
+    const result = synthesizeReview(outputs)
+    expect(result.comments).toHaveLength(1)
+    expect(result.comments[0].start_line).toBe(42)
+    expect(result.comments[0].line).toBe(50)
+  })
 })
 
 describe("reviewers/runner", () => {
