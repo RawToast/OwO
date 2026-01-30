@@ -193,8 +193,7 @@ Return JSON ONLY in this format:
 {
   "results": [
     {
-      "path": "src/file.ts",
-      "line": 42,
+      "commentId": 123,
       "status": "FIXED|NOT_FIXED|PARTIALLY_FIXED",
       "reason": "Brief justification based on the current code and commits"
     }
