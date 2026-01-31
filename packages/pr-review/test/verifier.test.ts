@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test"
 import type { ReviewerOutput } from "../src/config/types"
+import { deduplicateComments } from "../src/verifier/comments"
+import { filterCommentsByLevel } from "../src/verifier/comments"
+import { basicSynthesis } from "../src/verifier/synthesizer"
 
 describe("verifier/synthesizer", () => {
   test("deduplicateComments preserves exact line numbers", async () => {
@@ -31,8 +34,6 @@ describe("verifier/synthesizer", () => {
   })
 
   test("deduplicateComments keeps highest severity for same line", async () => {
-    const { deduplicateComments } = await import("../src/verifier/comments")
-
     const comments = [
       {
         path: "src/auth.ts",
@@ -60,8 +61,6 @@ describe("verifier/synthesizer", () => {
   })
 
   test("filterCommentsByLevel filters correctly", async () => {
-    const { filterCommentsByLevel } = await import("../src/verifier/comments")
-
     const comments = [{ severity: "critical" }, { severity: "warning" }, { severity: "info" }]
 
     expect(filterCommentsByLevel(comments, "critical")).toHaveLength(1)
@@ -70,8 +69,6 @@ describe("verifier/synthesizer", () => {
   })
 
   test("basicSynthesis preserves all line numbers from reviewers", async () => {
-    const { basicSynthesis } = await import("../src/verifier/synthesizer")
-
     const outputs: ReviewerOutput[] = [
       {
         name: "quality",
@@ -85,7 +82,6 @@ describe("verifier/synthesizer", () => {
               body: "Issue here",
               side: "RIGHT",
               severity: "warning",
-              reviewer: "quality",
             },
             {
               path: "src/auth.ts",
@@ -93,7 +89,6 @@ describe("verifier/synthesizer", () => {
               body: "Another issue",
               side: "RIGHT",
               severity: "critical",
-              reviewer: "quality",
             },
             {
               path: "src/utils.ts",
@@ -101,7 +96,6 @@ describe("verifier/synthesizer", () => {
               body: "Consider this",
               side: "RIGHT",
               severity: "info",
-              reviewer: "quality",
             },
           ],
         },
@@ -132,7 +126,6 @@ describe("verifier/synthesizer", () => {
               body: "Warning issue",
               side: "RIGHT",
               severity: "warning",
-              reviewer: "quality",
             },
             {
               path: "src/auth.ts",
@@ -140,7 +133,6 @@ describe("verifier/synthesizer", () => {
               body: "Critical issue",
               side: "RIGHT",
               severity: "critical",
-              reviewer: "quality",
             },
             {
               path: "src/utils.ts",
@@ -148,7 +140,6 @@ describe("verifier/synthesizer", () => {
               body: "Info issue",
               side: "RIGHT",
               severity: "info",
-              reviewer: "quality",
             },
           ],
         },
