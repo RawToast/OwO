@@ -26,6 +26,7 @@ Respond with JSON in this structure:
       "path": "src/file.ts",
       "line": 42,
       "body": "Describe the issue and recommended fix",
+      "side": "RIGHT",
       "severity": "critical|warning|info"
     }
   ]

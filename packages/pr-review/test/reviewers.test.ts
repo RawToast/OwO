@@ -105,6 +105,8 @@ describe("reviewers/engine", () => {
 
 describe("reviewers/runner", () => {
   test("parseReviewerResponse extracts JSON from markdown", async () => {
+    const { parseReviewerResponse } = await import("../src/reviewers/runner")
+
     const response = `Here's my review:
 \`\`\`json
 {
@@ -113,6 +115,16 @@ describe("reviewers/runner", () => {
 }
 \`\`\``
 
-    void response
+    const result = parseReviewerResponse(response, "test-reviewer")
+
+    expect(result.overview).toBe("Found issues")
+    expect(result.comments).toHaveLength(1)
+    expect(result.comments[0]).toMatchObject({
+      path: "test.ts",
+      line: 10,
+      body: "Fix this",
+      side: "RIGHT",
+      severity: "warning",
+    })
   })
 })

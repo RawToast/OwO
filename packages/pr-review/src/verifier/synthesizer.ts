@@ -50,7 +50,26 @@ export async function verifyAndSynthesize(
         }
       : undefined
 
-    const { response } = await prompt(ai, overviewPrompt, { model: modelConfig })
+    // Add timeout to prevent hanging on slow AI responses
+    const VERIFIER_TIMEOUT_MS = 60_000 // 60 seconds
+    let timerId: ReturnType<typeof setTimeout>
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timerId = setTimeout(
+        () => reject(new Error("Verifier prompt timed out")),
+        VERIFIER_TIMEOUT_MS,
+      )
+    })
+
+    let response: string
+    try {
+      const result = await Promise.race([
+        prompt(ai, overviewPrompt, { model: modelConfig }),
+        timeoutPromise,
+      ])
+      response = result.response
+    } finally {
+      clearTimeout(timerId!)
+    }
     const { overview, passed } = parseOverviewResponse(response)
 
     const durationMs = Date.now() - startTime
@@ -114,7 +133,7 @@ export function deduplicateComments(
   const byLocation = new Map<string, SynthesizedReview["comments"][0]>()
 
   for (const comment of comments) {
-    const key = `${comment.path}:${comment.line}`
+    const key = `${comment.path}:${comment.line}:${comment.side ?? "RIGHT"}`
     const existing = byLocation.get(key)
 
     if (!existing) {

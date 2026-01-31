@@ -8,7 +8,14 @@ export const ReviewerConfigSchema = z.object({
   prompt: z.string().optional().describe("Inline prompt text (alternative to promptFile)"),
   promptFile: z.string().optional().describe("Path to prompt file relative to repo root"),
   focus: z.string().optional().describe("Short focus description"),
-  model: z.string().optional().describe("Model override for this reviewer"),
+  model: z
+    .string()
+    .regex(
+      /^[^/]+\/[^/]+$/,
+      "Model must be in 'provider/model' format (e.g., 'anthropic/claude-sonnet-4-20250514')",
+    )
+    .optional()
+    .describe("Model override for this reviewer"),
   enabled: z.boolean().default(true),
 })
 
@@ -26,7 +33,10 @@ export type SeverityLevel = z.infer<typeof SeverityLevelSchema>
 export const VerifierConfigSchema = z.object({
   prompt: z.string().optional(),
   promptFile: z.string().optional(),
-  model: z.string().optional(),
+  model: z
+    .string()
+    .regex(/^[^/]+\/[^/]+$/, "Model must be in 'provider/model' format")
+    .optional(),
   enabled: z.boolean().default(true),
   level: SeverityLevelSchema.optional()
     .default("info")
@@ -49,6 +59,7 @@ export const ResolutionConfigSchema = z.object({
   trigger: ResolutionTriggerSchema.default("first-push").describe("When to run resolution checks"),
   model: z
     .string()
+    .regex(/^[^/]+\/[^/]+$/, "Model must be in 'provider/model' format")
     .optional()
     .describe("Model for resolution agent (recommend cheap/fast like Haiku)"),
   prompt: z.string().optional().describe("Custom resolution prompt"),
@@ -67,7 +78,10 @@ export const PRReviewConfigSchema = z.object({
   resolution: ResolutionConfigSchema.optional(),
   defaults: z
     .object({
-      model: z.string().optional(),
+      model: z
+        .string()
+        .regex(/^[^/]+\/[^/]+$/, "Model must be in 'provider/model' format")
+        .optional(),
     })
     .optional(),
 })

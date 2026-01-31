@@ -17,7 +17,7 @@ When re-reviewing a PR, automatically check if previously raised issues have bee
 
 ## Flow
 
-```
+```text
 1. Trigger fires (push event or "@owo review" comment)
 2. Fetch existing owo comments from PR (REST API)
 3. Fetch thread IDs for comments (GraphQL)
@@ -248,7 +248,7 @@ const shouldRunResolution = match({ trigger, config })
 
 ### New Files
 
-```
+```text
 packages/pr-review/src/
 ├── resolution/
 │   ├── index.ts           # Re-exports
