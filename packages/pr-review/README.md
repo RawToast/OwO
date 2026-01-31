@@ -143,6 +143,28 @@ The verifier synthesizes findings and produces the final formatted review:
 | `prompt`     | (built-in) | Custom verifier prompt                                      |
 | `promptFile` | -          | Path to custom prompt file                                  |
 
+### File Context Options
+
+Reviewers can access full file content (not just diffs) for better context:
+
+```json
+{
+  "context": {
+    "enabled": true,
+    "maxFileSizeKb": 100,
+    "maxTotalSizeKb": 500
+  }
+}
+```
+
+| Option           | Default | Description                                 |
+| ---------------- | ------- | ------------------------------------------- |
+| `enabled`        | `true`  | Enable/disable full file context            |
+| `maxFileSizeKb`  | `100`   | Skip files larger than this (KB)            |
+| `maxTotalSizeKb` | `500`   | Maximum total context size across all files |
+
+**Note:** File context requires the repository to be checked out locally (automatic in GitHub Actions with `actions/checkout`).
+
 ### CLI
 
 ```bash
@@ -164,6 +186,12 @@ owo-review --pr 123 --owner myorg --repo myrepo --config ./custom-review.json
 
 # Legacy single-reviewer mode
 owo-review --pr 123 --owner myorg --repo myrepo --legacy
+
+# Review a PR with source files from a specific directory
+owo-review --pr 123 --owner myorg --repo myrepo --source-dir /path/to/checkout
+
+# Useful for testing: review a remote PR using local files
+owo-review --pr 456 --owner other-org --repo other-repo --source-dir ~/code/other-repo
 ```
 
 ### Library
@@ -185,7 +213,7 @@ console.log(result.reviewUrl)
 
 ## How It Works
 
-1. **Fetch** PR metadata, commits, and diff hunks
+1. **Fetch** PR metadata, commits, diff hunks, and full file content
 2. **Review** Run multiple reviewers in parallel (fast/cheap models)
 3. **Verify** Strongest model verifies claims and synthesizes findings
 4. **Format** Produces structured markdown with tables, diagrams, collapsible sections
