@@ -50,7 +50,16 @@ export async function verifyAndSynthesize(
         }
       : undefined
 
-    const { response } = await prompt(ai, overviewPrompt, { model: modelConfig })
+    // Add timeout to prevent hanging on slow AI responses
+    const VERIFIER_TIMEOUT_MS = 60_000 // 60 seconds
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Verifier prompt timed out")), VERIFIER_TIMEOUT_MS)
+    })
+
+    const { response } = await Promise.race([
+      prompt(ai, overviewPrompt, { model: modelConfig }),
+      timeoutPromise,
+    ])
     const { overview, passed } = parseOverviewResponse(response)
 
     const durationMs = Date.now() - startTime
