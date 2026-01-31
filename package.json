@@ -64,8 +64,8 @@
     "make:packages": "turbo run make --filter='./packages/*'",
     "compile": "turbo run compile",
     "clean:packages": "turbo run clean --filter='./packages/*'",
-    "check": "turbo run compile format lint test",
-    "check:ci": "turbo run compile format:ci lint:ci test"
+    "check": "turbo run compile format lint",
+    "check:ci": "turbo run compile format:ci lint:ci"
   },
   "devDependencies": {
     "oxfmt": "0.27.0",

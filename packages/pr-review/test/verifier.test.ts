@@ -93,7 +93,7 @@ describe("verifier/synthesizer", () => {
               line: 15,
               body: "Consider this",
               side: "RIGHT",
-              severity: "warning",
+              severity: "info",
             },
           ],
         },
@@ -101,7 +101,7 @@ describe("verifier/synthesizer", () => {
       },
     ]
 
-    const result = basicSynthesis(outputs)
+    const result = basicSynthesis(outputs, undefined, "info")
 
     expect(result.comments.find((c) => c.path === "src/auth.ts" && c.line === 42)).toBeDefined()
     expect(result.comments.find((c) => c.path === "src/auth.ts" && c.line === 99)).toBeDefined()
