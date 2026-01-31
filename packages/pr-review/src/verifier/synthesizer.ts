@@ -25,9 +25,15 @@ export async function verifyAndSynthesize(
   prData?: PRData,
 ): Promise<SynthesizedReview> {
   const startTime = Date.now()
-  const level = verifierConfig?.level ?? "info"
+  const level = verifierConfig?.level ?? "warning"
 
   const mergedComments = mergeAndDeduplicateComments(outputs, level)
+
+  // Assign IDs to comments for verifier tracking
+  const commentsWithIds = mergedComments.map((comment, index) => ({
+    ...comment,
+    id: `C${index + 1}`,
+  }))
 
   if (!verifierConfig?.enabled) {
     console.log("[pr-review] Verifier disabled, using basic synthesis")
@@ -37,7 +43,13 @@ export async function verifyAndSynthesize(
   try {
     console.log("[pr-review] Running verifier to synthesize overview...")
 
-    const overviewPrompt = buildOverviewPrompt(outputs, verifierConfig, repoRoot, prData)
+    const overviewPrompt = buildOverviewPrompt(
+      outputs,
+      commentsWithIds,
+      verifierConfig,
+      repoRoot,
+      prData,
+    )
     const modelConfig = verifierConfig.model
       ? {
           providerID: verifierConfig.model.split("/")[0],
@@ -68,18 +80,32 @@ export async function verifyAndSynthesize(
     } finally {
       clearTimeout(timerId!)
     }
-    const { overview, passed } = parseOverviewResponse(response)
+    const { overview, passed, validCommentIds } = parseOverviewResponse(response)
 
     const durationMs = Date.now() - startTime
     console.log(`[pr-review] Verifier completed in ${durationMs}ms`)
 
-    const criticalIssues = mergedComments.filter((c) => c.severity === "critical").length
-    const warnings = mergedComments.filter((c) => c.severity === "warning").length
-    const infos = mergedComments.filter((c) => c.severity === "info").length
+    // Filter comments to only those validated by verifier
+    const validatedComments = validCommentIds
+      ? commentsWithIds
+          .filter((c) => validCommentIds.includes(c.id))
+          .map(({ id: _, ...comment }) => comment) // Remove the temporary ID
+      : mergedComments // Fallback if verifier didn't return IDs
+
+    if (validCommentIds) {
+      const filtered = mergedComments.length - validatedComments.length
+      if (filtered > 0) {
+        console.log(`[pr-review] Verifier filtered out ${filtered} comments`)
+      }
+    }
+
+    const criticalIssues = validatedComments.filter((c) => c.severity === "critical").length
+    const warnings = validatedComments.filter((c) => c.severity === "warning").length
+    const infos = validatedComments.filter((c) => c.severity === "info").length
 
     return {
       overview,
-      comments: mergedComments,
+      comments: validatedComments,
       summary: {
         totalReviewers: outputs.length,
         successfulReviewers: outputs.filter((o) => o.success).length,
@@ -96,8 +122,11 @@ export async function verifyAndSynthesize(
   }
 }
 
+type CommentWithId = SynthesizedReview["comments"][0] & { id: string }
+
 function buildOverviewPrompt(
   outputs: ReviewerOutput[],
+  commentsWithIds: CommentWithId[],
   config: VerifierConfig,
   repoRoot: string,
   prData?: PRData,
@@ -182,7 +211,22 @@ function buildOverviewPrompt(
 
     parts.push(`### ${output.name}`)
     parts.push(output.review.overview)
-    parts.push(`(${output.review.comments.length} inline comments)`)
+    parts.push("")
+  }
+
+  // Add inline comments with IDs for verification
+  parts.push("## Inline Comments to Verify")
+  parts.push("")
+  parts.push("Review each comment and include its ID in `validCommentIds` if it should be posted:")
+  parts.push("")
+
+  for (const comment of commentsWithIds) {
+    parts.push(
+      `### ${comment.id}: ${comment.path}:${comment.start_line ? `${comment.start_line}-` : ""}${comment.line}`,
+    )
+    parts.push(`**Reviewer:** ${comment.reviewer} | **Severity:** ${comment.severity}`)
+    parts.push("")
+    parts.push(comment.body)
     parts.push("")
   }
 
@@ -199,9 +243,17 @@ Use the PR context to populate the Changes table with accurate file information 
 Do NOT include or modify inline comments - they are handled separately.`
 }
 
-function parseOverviewResponse(response: string): { overview: string; passed?: boolean } {
+interface ParsedOverviewResponse {
+  overview: string
+  passed?: boolean
+  validCommentIds?: string[]
+}
+
+export function parseOverviewResponse(response: string): ParsedOverviewResponse {
   // Try to find JSON in code block first
-  const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/)
+  // Use greedy matching anchored to end-of-string to handle nested code blocks
+  // (e.g., mermaid diagrams inside the overview field)
+  const jsonMatch = response.match(/```json\n([\s\S]*)\n```(?=\s*$)/)
 
   if (jsonMatch) {
     try {
@@ -210,10 +262,17 @@ function parseOverviewResponse(response: string): { overview: string; passed?: b
         return {
           overview: parsed.overview,
           passed: parsed.passed,
+          validCommentIds: Array.isArray(parsed.validCommentIds)
+            ? parsed.validCommentIds
+            : undefined,
         }
       }
     } catch (e) {
       console.warn("[pr-review] Failed to parse JSON from code block:", e)
+      // Add debugging info for troubleshooting
+      const content = jsonMatch[1]
+      console.warn("[pr-review] Content length:", content.length)
+      console.warn("[pr-review] Last 300 chars:", content.slice(-300))
     }
   }
 
@@ -227,6 +286,9 @@ function parseOverviewResponse(response: string): { overview: string; passed?: b
         return {
           overview: parsed.overview,
           passed: parsed.passed,
+          validCommentIds: Array.isArray(parsed.validCommentIds)
+            ? parsed.validCommentIds
+            : undefined,
         }
       }
     } catch (e) {
@@ -234,10 +296,11 @@ function parseOverviewResponse(response: string): { overview: string; passed?: b
     }
   }
 
-  // Try extracting overview field directly with a more lenient approach
+  // Try extracting fields directly with a more lenient approach
   // This handles cases where the JSON has escaped newlines in the string
   const overviewMatch = response.match(/"overview"\s*:\s*"([\s\S]*?)"\s*,\s*"passed"/)
   const passedMatch = response.match(/"passed"\s*:\s*(true|false)/)
+  const validIdsMatch = response.match(/"validCommentIds"\s*:\s*\[([\s\S]*?)\]/)
 
   if (overviewMatch) {
     // Unescape the string content
@@ -246,9 +309,24 @@ function parseOverviewResponse(response: string): { overview: string; passed?: b
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, "\\")
 
+    // Parse validCommentIds array
+    let validCommentIds: string[] | undefined
+    if (validIdsMatch) {
+      try {
+        validCommentIds = JSON.parse(`[${validIdsMatch[1]}]`)
+      } catch {
+        // Fallback: extract quoted strings manually
+        const idMatches = validIdsMatch[1].match(/"([^"]+)"/g)
+        if (idMatches) {
+          validCommentIds = idMatches.map((m) => m.replace(/"/g, ""))
+        }
+      }
+    }
+
     return {
       overview,
       passed: passedMatch ? passedMatch[1] === "true" : undefined,
+      validCommentIds,
     }
   }
 
@@ -263,7 +341,7 @@ function parseOverviewResponse(response: string): { overview: string; passed?: b
 export function basicSynthesis(
   outputs: ReviewerOutput[],
   mergedComments?: SynthesizedReview["comments"],
-  level: SeverityLevel = "info",
+  level: SeverityLevel = "warning",
 ): SynthesizedReview {
   const successfulOutputs = outputs.filter((o) => o.success && o.review)
   const comments = mergedComments ?? mergeAndDeduplicateComments(outputs, level)

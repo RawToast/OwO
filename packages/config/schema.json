@@ -128,7 +128,7 @@
           "default": [{ "agent": "oracle" }],
           "minItems": 1,
           "maxItems": 2,
-            "items": {
+          "items": {
             "type": "object",
             "required": ["agent"],
             "properties": {

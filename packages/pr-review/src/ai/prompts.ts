@@ -106,12 +106,22 @@ Respond with valid JSON in this exact format:
 
 **Important:**
 - \`line\` is the line number shown in the prefix (e.g., R42 means line 42, use 42 for the line field)
-- \`start_line\` (optional) marks the beginning of a multi-line range
+- \`start_line\` marks the beginning of a multi-line range (see below)
 - \`side\` should be "RIGHT" for lines prefixed with R (new/modified code), "LEFT" for lines prefixed with L (deleted code)
-- Use multi-line comments when feedback applies to a block of code (e.g., a function, loop, or related lines)
 - Only comment on lines that appear in the diff
 - Be constructive and specific
-- Focus on: bugs, security, performance, readability, best practices`
+- Focus on: bugs, security, performance, readability, best practices
+
+**Multi-line comments (PREFERRED):**
+- Always prefer multi-line ranges over single-line comments for clarity
+- Use \`start_line\` + \`line\` to highlight the full context of your feedback
+- Include 1-2 extra lines before/after the core issue when it aids understanding
+- Examples of when to use ranges:
+  - Function/method definitions: include the signature through closing brace
+  - Conditionals: include the full if/else block
+  - Related statements: group variable declarations or sequential operations
+  - Any feedback that references multiple lines
+- Single-line comments should be rare (e.g., a typo on one line)`
 }
 
 /**
@@ -192,5 +202,5 @@ Respond with JSON:
 }
 \`\`\`
 
-Use \`start_line\` for multi-line comments when feedback applies to a code block.`
+**Prefer multi-line comments:** Use \`start_line\` + \`line\` to highlight full code blocks. Include 1-2 extra context lines when helpful. Single-line comments should be rare.`
 }

@@ -46,7 +46,7 @@ export function loadConfig(repoRoot: string): PRReviewConfig {
     verifier: {
       prompt: DEFAULT_VERIFIER_PROMPT,
       enabled: true,
-      level: "info",
+      level: "warning",
       diagrams: true,
     },
     resolution: {

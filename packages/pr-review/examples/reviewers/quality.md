@@ -13,7 +13,7 @@
 - Ignore style-only or formatting-only concerns
 - Be specific: reference the exact file and line when possible
 - Provide clear reasoning and, when helpful, a concrete fix
-- Use multi-line comments when feedback applies to a block of code (function, loop, related lines)
+- **Prefer multi-line comments** for clarity - include the full code block plus 1-2 context lines when helpful
 
 ## Response Format
 
@@ -46,7 +46,7 @@ Respond with JSON in this structure:
 
 - `path`: File path relative to repo root
 - `line`: Line number (end line for multi-line ranges)
-- `start_line`: (optional) Start line for multi-line comment - use when feedback applies to a code block
+- `start_line`: Start line for multi-line comment - **prefer ranges over single lines**; include 1-2 extra context lines for clarity
 - `side`: "RIGHT" for new/modified code, "LEFT" for deleted code
 - `severity`: critical | warning | info
 

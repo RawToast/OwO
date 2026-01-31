@@ -134,14 +134,14 @@ The verifier synthesizes findings and produces the final formatted review:
 }
 ```
 
-| Option       | Default    | Description                                                 |
-| ------------ | ---------- | ----------------------------------------------------------- |
-| `enabled`    | `true`     | Enable/disable the verifier step                            |
-| `model`      | (default)  | Model for verification (use strongest for best results)     |
-| `diagrams`   | `true`     | Generate mermaid diagrams in the review                     |
-| `level`      | `"info"`   | Minimum severity to include (`critical`, `warning`, `info`) |
-| `prompt`     | (built-in) | Custom verifier prompt                                      |
-| `promptFile` | -          | Path to custom prompt file                                  |
+| Option       | Default     | Description                                                 |
+| ------------ | ----------- | ----------------------------------------------------------- |
+| `enabled`    | `true`      | Enable/disable the verifier step                            |
+| `model`      | (default)   | Model for verification (use strongest for best results)     |
+| `diagrams`   | `true`      | Generate mermaid diagrams in the review                     |
+| `level`      | `"warning"` | Minimum severity to include (`critical`, `warning`, `info`) |
+| `prompt`     | (built-in)  | Custom verifier prompt                                      |
+| `promptFile` | -           | Path to custom prompt file                                  |
 
 ### File Context Options
 

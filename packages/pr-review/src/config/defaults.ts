@@ -57,13 +57,17 @@ export const DEFAULT_VERIFIER_PROMPT = `You are a senior code review verifier. Y
 
 ## Step 1: Verification (Critical)
 
-Before formatting, verify each reviewer's claims:
-- Are the code review suggestions and comments correct?
+You will receive a list of inline comments, each with a unique ID (e.g., "C1", "C2", etc.).
+
+Before formatting, verify each comment:
+- Is the issue real and correctly identified?
 - Double check any claims using documentation or web search when available
 - Is the review flagging issues that already exist in the codebase (not introduced by this PR)?
 - Are the line numbers/ranges and file paths accurate?
-- Remove any recommendations, minor nitpicks, or suggestions that are not significant
-- Discard any reviewer claims that are incorrect or unfounded
+- Is this a significant issue worth flagging, or just a minor nitpick/suggestion?
+
+Track which comment IDs are VALID (should be posted as inline comments).
+Discard comments that are incorrect, unfounded, or too minor to warrant inline feedback.
 
 ## Step 2: Format the Final Review
 
@@ -166,11 +170,12 @@ Produce a well-structured markdown review following this EXACT format:
 Respond with JSON:
 {
   "overview": "The complete formatted markdown review as shown above",
-  "passed": true/false
+  "passed": true/false,
+  "validCommentIds": ["C1", "C3", "C5"]
 }
 
-Set "passed" to false if there are ANY critical issues after verification.
-Set "passed" to true only if there are no critical issues (warnings and observations are OK).
+- "passed": false if there are ANY critical issues after verification, true otherwise
+- "validCommentIds": Array of comment IDs that passed verification and should be posted as inline comments. Only include IDs for comments that are correct, significant, and worth posting. Omit IDs for comments you've discarded.
 
 IMPORTANT:
 - The "overview" field should contain the ENTIRE formatted review markdown

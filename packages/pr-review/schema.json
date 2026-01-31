@@ -48,10 +48,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "name",
-          "enabled"
-        ],
+        "required": ["name", "enabled"],
         "additionalProperties": false
       }
     },
@@ -82,11 +79,7 @@
           "default": "info",
           "description": "Minimum severity level to include in final review (critical=only critical, warning=critical+warning, info=all)",
           "type": "string",
-          "enum": [
-            "critical",
-            "warning",
-            "info"
-          ]
+          "enum": ["critical", "warning", "info"]
         },
         "diagrams": {
           "default": true,
@@ -94,11 +87,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "enabled",
-        "level",
-        "diagrams"
-      ],
+      "required": ["enabled", "level", "diagrams"],
       "additionalProperties": false
     },
     "resolution": {
@@ -113,11 +102,7 @@
           "default": "first-push",
           "description": "When to run resolution checks",
           "type": "string",
-          "enum": [
-            "first-push",
-            "all-pushes",
-            "on-request"
-          ]
+          "enum": ["first-push", "all-pushes", "on-request"]
         },
         "model": {
           "description": "Model for resolution agent (recommend cheap/fast like Haiku)",
@@ -139,10 +124,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "enabled",
-        "trigger"
-      ],
+      "required": ["enabled", "trigger"],
       "additionalProperties": false
     },
     "context": {
@@ -176,17 +158,11 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "changedFiles"
-          ],
+          "required": ["changedFiles"],
           "additionalProperties": false
         }
       },
-      "required": [
-        "enabled",
-        "maxFileSizeKb",
-        "maxTotalSizeKb"
-      ],
+      "required": ["enabled", "maxFileSizeKb", "maxTotalSizeKb"],
       "additionalProperties": false
     },
     "defaults": {
@@ -200,9 +176,6 @@
       "additionalProperties": false
     }
   },
-  "required": [
-    "version",
-    "reviewers"
-  ],
+  "required": ["version", "reviewers"],
   "additionalProperties": false
 }

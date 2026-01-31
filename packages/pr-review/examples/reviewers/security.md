@@ -14,7 +14,7 @@
 - Consider threat model and existing safeguards
 - Provide clear remediation steps or safer alternatives
 - Avoid style-only comments or speculative concerns
-- Use multi-line comments when a vulnerability spans multiple lines (e.g., an unsafe function)
+- **Prefer multi-line comments** for clarity - include the full vulnerable block plus 1-2 context lines
 
 ## Response Format
 
@@ -47,7 +47,7 @@ Respond with JSON in this structure:
 
 - `path`: File path relative to repo root
 - `line`: Line number (end line for multi-line ranges)
-- `start_line`: (optional) Start line for multi-line comment - use when vulnerability spans multiple lines
+- `start_line`: Start line for multi-line comment - **prefer ranges over single lines**; include 1-2 extra context lines for clarity
 - `side`: "RIGHT" for new/modified code, "LEFT" for deleted code
 - `severity`: critical | warning | info
 
