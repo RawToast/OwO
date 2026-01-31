@@ -42,6 +42,9 @@ jobs:
           # Or for opencode models:
           # model: opencode/glm-4.7
           # opencode_api_key: ${{ secrets.OPENCODE_API_KEY }}
+          # Or for NanoGPT models:
+          # model: nano-gpt/zai-org/glm-4.7
+          # nanogpt_api_key: ${{ secrets.NANOGPT_API_KEY }}
 ```
 
 ### Configuration
@@ -247,6 +250,7 @@ The verifier produces a well-structured review:
 | `GITHUB_EVENT_PATH` | No       | Auto-set in Actions                 |
 | `ANTHROPIC_API_KEY` | No       | Required for Anthropic models       |
 | `OPENCODE_API_KEY`  | No       | Required for opencode hosted models |
+| `NANO_GPT_API_KEY`  | No       | Required for NanoGPT models         |
 
 ## License
 

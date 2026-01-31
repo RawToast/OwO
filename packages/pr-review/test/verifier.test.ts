@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test"
 import type { ReviewerOutput } from "../src/config/types"
+import { deduplicateComments } from "../src/verifier/comments"
+import { filterCommentsByLevel } from "../src/verifier/comments"
+import { basicSynthesis } from "../src/verifier/synthesizer"
 
 describe("verifier/synthesizer", () => {
-  test("deduplicateComments preserves exact line numbers", async () => {
-    const { deduplicateComments } = await import("../src/verifier/comments")
-
+  test("deduplicateComments preserves exact line numbers", () => {
     const comments = [
       {
         path: "src/auth.ts",
@@ -30,9 +31,7 @@ describe("verifier/synthesizer", () => {
     expect(result.find((c) => c.body === "Issue B")?.line).toBe(99)
   })
 
-  test("deduplicateComments keeps highest severity for same line", async () => {
-    const { deduplicateComments } = await import("../src/verifier/comments")
-
+  test("deduplicateComments keeps highest severity for same line", () => {
     const comments = [
       {
         path: "src/auth.ts",
@@ -59,9 +58,7 @@ describe("verifier/synthesizer", () => {
     expect(line42Comments[0].severity).toBe("critical")
   })
 
-  test("filterCommentsByLevel filters correctly", async () => {
-    const { filterCommentsByLevel } = await import("../src/verifier/comments")
-
+  test("filterCommentsByLevel filters correctly", () => {
     const comments = [{ severity: "critical" }, { severity: "warning" }, { severity: "info" }]
 
     expect(filterCommentsByLevel(comments, "critical")).toHaveLength(1)
@@ -69,9 +66,7 @@ describe("verifier/synthesizer", () => {
     expect(filterCommentsByLevel(comments, "info")).toHaveLength(3)
   })
 
-  test("basicSynthesis preserves all line numbers from reviewers", async () => {
-    const { basicSynthesis } = await import("../src/verifier/synthesizer")
-
+  test("basicSynthesis preserves all line numbers from reviewers", () => {
     const outputs: ReviewerOutput[] = [
       {
         name: "quality",
@@ -85,7 +80,6 @@ describe("verifier/synthesizer", () => {
               body: "Issue here",
               side: "RIGHT",
               severity: "warning",
-              reviewer: "quality",
             },
             {
               path: "src/auth.ts",
@@ -93,7 +87,6 @@ describe("verifier/synthesizer", () => {
               body: "Another issue",
               side: "RIGHT",
               severity: "critical",
-              reviewer: "quality",
             },
             {
               path: "src/utils.ts",
@@ -101,7 +94,6 @@ describe("verifier/synthesizer", () => {
               body: "Consider this",
               side: "RIGHT",
               severity: "info",
-              reviewer: "quality",
             },
           ],
         },
@@ -109,16 +101,14 @@ describe("verifier/synthesizer", () => {
       },
     ]
 
-    const result = basicSynthesis(outputs)
+    const result = basicSynthesis(outputs, undefined, "info")
 
     expect(result.comments.find((c) => c.path === "src/auth.ts" && c.line === 42)).toBeDefined()
     expect(result.comments.find((c) => c.path === "src/auth.ts" && c.line === 99)).toBeDefined()
     expect(result.comments.find((c) => c.path === "src/utils.ts" && c.line === 15)).toBeDefined()
   })
 
-  test("basicSynthesis filters inline comments by severity level", async () => {
-    const { basicSynthesis } = await import("../src/verifier/synthesizer")
-
+  test("basicSynthesis filters inline comments by severity level", () => {
     const outputs: ReviewerOutput[] = [
       {
         name: "quality",
@@ -132,7 +122,6 @@ describe("verifier/synthesizer", () => {
               body: "Warning issue",
               side: "RIGHT",
               severity: "warning",
-              reviewer: "quality",
             },
             {
               path: "src/auth.ts",
@@ -140,7 +129,6 @@ describe("verifier/synthesizer", () => {
               body: "Critical issue",
               side: "RIGHT",
               severity: "critical",
-              reviewer: "quality",
             },
             {
               path: "src/utils.ts",
@@ -148,7 +136,6 @@ describe("verifier/synthesizer", () => {
               body: "Info issue",
               side: "RIGHT",
               severity: "info",
-              reviewer: "quality",
             },
           ],
         },

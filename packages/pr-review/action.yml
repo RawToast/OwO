@@ -30,6 +30,10 @@ inputs:
     description: "Context7 API key for library documentation lookup (optional but recommended)"
     required: false
     default: ""
+  nanogpt_api_key:
+    description: "NanoGPT API key (for nano-gpt/* models)"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -64,6 +68,7 @@ runs:
         OPENCODE_API_KEY: ${{ inputs.opencode_api_key }}
         ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        NANO_GPT_API_KEY: ${{ inputs.nanogpt_api_key }}
       run: |
         if [ -n "$MODEL" ]; then
           node ${{ github.action_path }}/dist/index.js --model "$MODEL"
