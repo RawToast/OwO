@@ -2,9 +2,14 @@ import type { GitHubClient } from "./client"
 import type { Review, ExistingReview } from "./types"
 
 const REVIEW_MARKER = "<!-- owo-pr-review -->"
+const COMMENT_MARKER = "<!-- owo-comment -->"
 
 export function getReviewMarker(): string {
   return REVIEW_MARKER
+}
+
+export function getCommentMarker(): string {
+  return COMMENT_MARKER
 }
 
 export async function findExistingReview(
@@ -90,7 +95,7 @@ export async function addReviewComments(
         commit_id: commitId,
         path: comment.path,
         position: comment.position,
-        body: comment.body,
+        body: `${COMMENT_MARKER}\n${comment.body}`,
       })
     } catch (err: any) {
       console.warn(
@@ -137,7 +142,10 @@ export async function submitReview(
     commit_id: commitId,
     body,
     event: review.event,
-    comments: mappedComments,
+    comments: mappedComments.map((c) => ({
+      ...c,
+      body: `${COMMENT_MARKER}\n${c.body}`,
+    })),
   })
 
   return {

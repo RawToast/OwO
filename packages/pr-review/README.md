@@ -1,15 +1,19 @@
 # @owo/pr-review
 
-AI-powered PR code review using opencode SDK + Octokit.
+AI-powered PR review with multi-reviewer support.
 
 ## Features
 
-- Uses opencode SDK for AI-powered code analysis
-- Posts reviews with inline comments on specific lines
-- Updates existing reviews instead of creating duplicates
-- Works as GitHub Action or standalone CLI
+- 🤖 Multi-Reviewer Mode - parallel reviewers with different focuses
+- ✅ Verifier Step - strongest model synthesizes and verifies findings
+- 📊 Rich Formatting - collapsible sections, tables, mermaid diagrams
+- 📝 Inline Comments - with severity levels (critical/warning/info)
+- 🔄 Review Updates - no duplicates on re-review
+- ⚙️ Configurable - custom prompts, per-reviewer models
+- 🎯 Smart Actions - auto REQUEST_CHANGES on critical issues
+- 🚀 Multiple Modes - Action, CLI, library
 
-## Usage
+## Quick Start
 
 ### GitHub Action
 
@@ -40,17 +44,126 @@ jobs:
           # opencode_api_key: ${{ secrets.OPENCODE_API_KEY }}
 ```
 
+### Configuration
+
+Create `.github/pr-review.json` (with optional schema for IDE autocomplete):
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/RawToast/owo/main/packages/pr-review/schema.json",
+  "reviewers": [
+    { "name": "architecture", "prompt": "Focus on structure and boundaries." },
+    { "name": "security", "prompt": "Hunt for auth, secrets, and input risks." },
+    { "name": "performance", "prompt": "Identify hot paths and waste." }
+  ],
+  "verifier": {
+    "enabled": true,
+    "prompt": "Synthesize and de-duplicate findings."
+  }
+}
+```
+
+### Level Options
+
+Use `critical`, `warning`, or `info` to control severity. `critical` triggers `REQUEST_CHANGES` when findings exist, while `warning` and `info` keep the review as `COMMENT`.
+
+### Custom Reviewer Prompt
+
+```json
+{
+  "reviewers": [
+    {
+      "name": "testing",
+      "prompt": "Look for missing tests and flaky patterns."
+    }
+  ]
+}
+```
+
+### Per-Reviewer Models
+
+Each reviewer (and the verifier) can use a different model:
+
+```json
+{
+  "defaults": {
+    "model": "anthropic/claude-sonnet-4-20250514"
+  },
+  "reviewers": [
+    {
+      "name": "quality",
+      "prompt": "Focus on code quality and best practices."
+    },
+    {
+      "name": "security",
+      "prompt": "Hunt for vulnerabilities and secrets.",
+      "model": "anthropic/claude-opus-4-20250514"
+    },
+    {
+      "name": "quick-check",
+      "prompt": "Fast sanity check for obvious issues.",
+      "model": "anthropic/claude-haiku-4-20250514"
+    }
+  ],
+  "verifier": {
+    "enabled": true,
+    "model": "anthropic/claude-sonnet-4-20250514"
+  }
+}
+```
+
+Model resolution order:
+
+1. Reviewer/verifier-specific `model`
+2. `defaults.model` from config
+3. `--model` CLI flag / Action input
+4. Falls back to `anthropic/claude-sonnet-4-20250514`
+
+### Verifier Options
+
+The verifier synthesizes findings and produces the final formatted review:
+
+```json
+{
+  "verifier": {
+    "enabled": true,
+    "model": "anthropic/claude-opus-4-20250514",
+    "diagrams": true,
+    "level": "warning"
+  }
+}
+```
+
+| Option       | Default    | Description                                                 |
+| ------------ | ---------- | ----------------------------------------------------------- |
+| `enabled`    | `true`     | Enable/disable the verifier step                            |
+| `model`      | (default)  | Model for verification (use strongest for best results)     |
+| `diagrams`   | `true`     | Generate mermaid diagrams in the review                     |
+| `level`      | `"info"`   | Minimum severity to include (`critical`, `warning`, `info`) |
+| `prompt`     | (built-in) | Custom verifier prompt                                      |
+| `promptFile` | -          | Path to custom prompt file                                  |
+
 ### CLI
 
 ```bash
 # Install
-bun add @owo/pr-review
+# bun add @owo/pr-review
+# clone the repo, install with bun i
 
 # Review a PR
 GITHUB_TOKEN=ghp_xxx owo-review --pr 123 --owner myorg --repo myrepo
 
-# Dry run
-owo-review --pr 123 --owner myorg --repo myrepo --dry-run
+# Dry run with output to file
+owo-review --pr 123 --owner myorg --repo myrepo --dry-run --output review.md
+
+# Use config from another directory (picks up .github/pr-review.json)
+owo-review --pr 123 --owner myorg --repo myrepo --config ../myrepo
+
+# Use a specific config file
+owo-review --pr 123 --owner myorg --repo myrepo --config ./custom-review.json
+
+# Legacy single-reviewer mode
+owo-review --pr 123 --owner myorg --repo myrepo --legacy
 ```
 
 ### Library
@@ -64,32 +177,48 @@ const result = await reviewPR({
   repo: "myrepo",
   prNumber: 123,
   model: "anthropic/claude-sonnet-4-20250514",
+  configPath: ".github/pr-review.json",
 })
 
 console.log(result.reviewUrl)
 ```
 
+## How It Works
+
+1. **Fetch** PR metadata, commits, and diff hunks
+2. **Review** Run multiple reviewers in parallel (fast/cheap models)
+3. **Verify** Strongest model verifies claims and synthesizes findings
+4. **Format** Produces structured markdown with tables, diagrams, collapsible sections
+5. **Post** Inline comments with severity, updates existing reviews
+
+### Output Format
+
+The verifier produces a well-structured review:
+
+- **Summary** - Overview with key changes bullet points
+- **Changes** - Collapsible table with File, Change, Reason columns
+- **Critical Issues** - Collapsible blocks with location, impact, resolution
+- **Warnings** - Non-critical issues to consider
+- **Observations** - Minor notes and suggestions
+- **Diagrams** - Mermaid diagrams (architecture, flow, ERD)
+- **Verdict** - PASSED or REQUIRES CHANGES
+
+## Default Reviewers
+
+- General code quality
+- Security and secrets
+- Performance and reliability
+- Documentation and tests
+
 ## Environment Variables
 
-| Variable            | Required | Description                     |
-| ------------------- | -------- | ------------------------------- |
-| `GITHUB_TOKEN`      | Yes      | GitHub token with PR read/write |
-| `GITHUB_REPOSITORY` | No       | Auto-set in Actions             |
-| `GITHUB_EVENT_PATH` | No       | Auto-set in Actions             |
-
-## Architecture
-
-```
-Octokit (GitHub API)     opencode SDK (AI)
-        │                       │
-        └───────┬───────────────┘
-                │
-         @owo/pr-review
-                │
-    ┌───────────┼───────────┐
-    │           │           │
- Fetch PR    AI Review   Post Review
-```
+| Variable            | Required | Description                         |
+| ------------------- | -------- | ----------------------------------- |
+| `GITHUB_TOKEN`      | Yes      | GitHub token with PR read/write     |
+| `GITHUB_REPOSITORY` | No       | Auto-set in Actions                 |
+| `GITHUB_EVENT_PATH` | No       | Auto-set in Actions                 |
+| `ANTHROPIC_API_KEY` | No       | Required for Anthropic models       |
+| `OPENCODE_API_KEY`  | No       | Required for opencode hosted models |
 
 ## License
 

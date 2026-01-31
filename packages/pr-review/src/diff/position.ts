@@ -76,20 +76,23 @@ export function mapCommentsToPositions(
 export function formatUnmappedComments(unmapped: InlineComment[]): string {
   if (unmapped.length === 0) return ""
 
-  const lines = [
-    "",
-    "## Additional Notes",
-    "",
-    "*The following comments are for lines not in the current diff:*",
-    "",
-  ]
+  const commentLines: string[] = []
 
   for (const comment of unmapped) {
-    lines.push(`### \`${comment.path}:${comment.line}\``)
-    lines.push("")
-    lines.push(comment.body)
-    lines.push("")
+    commentLines.push(`### \`${comment.path}:${comment.line}\``)
+    commentLines.push("")
+    commentLines.push(comment.body)
+    commentLines.push("")
   }
+
+  const lines = [
+    "",
+    "<details>",
+    `<summary>Additional Notes (${unmapped.length} comments for lines not in diff)</summary>`,
+    "",
+    ...commentLines,
+    "</details>",
+  ]
 
   return lines.join("\n")
 }

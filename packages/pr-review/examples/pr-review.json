@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RawToast/owo/main/packages/pr-review/schema.json",
+  "version": 1,
+  "reviewers": [
+    {
+      "name": "quality",
+      "promptFile": ".github/reviewers/quality.md",
+      "focus": "code quality and best practices",
+      "model": "anthropic/claude-sonnet-4-20250514"
+    },
+    {
+      "name": "security",
+      "promptFile": ".github/reviewers/security.md",
+      "focus": "security vulnerabilities",
+      "model": "anthropic/claude-sonnet-4-20250514"
+    },
+    {
+      "name": "performance",
+      "prompt": "You are a performance reviewer. Focus on:\n- Algorithmic complexity\n- Database query efficiency\n- Memory usage\n- Async/await patterns\n- Caching opportunities\n\nRespond with JSON: {\"overview\": \"...\", \"comments\": [{\"path\": \"...\", \"line\": N, \"body\": \"...\", \"severity\": \"warning\"}]}",
+      "focus": "performance optimization",
+      "enabled": false
+    }
+  ],
+  "verifier": {
+    "model": "anthropic/claude-opus-4-20250514",
+    "enabled": true,
+    "level": "warning",
+    "diagrams": true
+  },
+  "defaults": {
+    "model": "anthropic/claude-sonnet-4-20250514"
+  }
+}
