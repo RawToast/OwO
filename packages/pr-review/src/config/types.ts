@@ -122,6 +122,7 @@ export type ContextConfig = z.infer<typeof ContextConfigSchema>
  * Main PR review configuration
  */
 export const PRReviewConfigSchema = z.object({
+  $schema: z.string().optional(),
   version: z.literal(1).default(1),
   reviewers: z.array(ReviewerConfigSchema).default([]),
   verifier: VerifierConfigSchema.optional(),

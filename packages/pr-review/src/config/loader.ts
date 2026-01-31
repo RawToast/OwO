@@ -1,23 +1,14 @@
 import { readFileSync, existsSync, statSync } from "fs"
 import { join, dirname, resolve } from "path"
 import { PRReviewConfigSchema, type PRReviewConfig, type ReviewerConfig } from "./types"
-import {
-  DEFAULT_QUALITY_PROMPT,
-  DEFAULT_SECURITY_PROMPT,
-  DEFAULT_VERIFIER_PROMPT,
-} from "./defaults"
+import { DEFAULT_COMPREHENSIVE_PROMPT, DEFAULT_VERIFIER_PROMPT } from "./defaults"
 
 const DEFAULT_REVIEWERS: ReviewerConfig[] = [
   {
-    name: "quality",
-    prompt: DEFAULT_QUALITY_PROMPT,
-    focus: "code quality",
-    enabled: true,
-  },
-  {
-    name: "security",
-    prompt: DEFAULT_SECURITY_PROMPT,
-    focus: "security",
+    name: "comprehensive",
+    prompt: DEFAULT_COMPREHENSIVE_PROMPT,
+    focus: "code quality, security, and best practices",
+    temperature: 0.1,
     enabled: true,
   },
 ]

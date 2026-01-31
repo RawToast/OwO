@@ -5,6 +5,10 @@
   "description": "Configuration schema for @owo/pr-review",
   "type": "object",
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
     "version": {
       "default": 1,
       "type": "number",
