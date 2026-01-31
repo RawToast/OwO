@@ -13,6 +13,7 @@
 ## Task 1: Update Type Definitions
 
 **Files:**
+
 - Modify: `packages/pr-review/src/github/types.ts:56-63`
 - Modify: `packages/pr-review/src/config/types.ts:80-95,100-118`
 
@@ -27,7 +28,10 @@ export const InlineCommentSchema = z.object({
   body: z.string().describe("Comment content (markdown supported)"),
   side: z.enum(["LEFT", "RIGHT"]).default("RIGHT").describe("Which side of diff"),
   start_line: z.number().optional().describe("Start line for multi-line comment range"),
-  start_side: z.enum(["LEFT", "RIGHT"]).optional().describe("Side for start line (defaults to same as side)"),
+  start_side: z
+    .enum(["LEFT", "RIGHT"])
+    .optional()
+    .describe("Side for start line (defaults to same as side)"),
 })
 ```
 
@@ -94,6 +98,7 @@ Expected: Type errors in files that use these types (we'll fix in subsequent tas
 ## Task 2: Simplify Position Mapping
 
 **Files:**
+
 - Modify: `packages/pr-review/src/diff/position.ts`
 - Create: `packages/pr-review/test/diff/position.test.ts`
 
@@ -171,7 +176,14 @@ describe("diff/position", () => {
 
     test("maps valid multi-line comments", () => {
       const comments: InlineComment[] = [
-        { path: "src/auth.ts", line: 13, body: "This block", side: "RIGHT", start_line: 11, start_side: "RIGHT" },
+        {
+          path: "src/auth.ts",
+          line: 13,
+          body: "This block",
+          side: "RIGHT",
+          start_line: 11,
+          start_side: "RIGHT",
+        },
       ]
       const { mapped, unmapped } = mapCommentsToLines(SAMPLE_DIFF, comments)
       expect(mapped).toHaveLength(1)
@@ -211,7 +223,7 @@ type ValidationResult = {
 
 /**
  * Check if a line (or line range) exists in the diff for a given file
- * 
+ *
  * With modern GitHub API, we use actual line numbers (not diff positions).
  * This function validates that the lines exist in the diff.
  */
@@ -269,7 +281,7 @@ export function validateCommentLines(
 
 /**
  * Validate and map comments - returns comments with line numbers (no position conversion needed)
- * 
+ *
  * Unlike the old position-based approach, we just validate lines exist in the diff.
  * The GitHub API now accepts actual line numbers directly.
  */
@@ -314,7 +326,7 @@ export function mapCommentsToPositions(
   unmapped: InlineComment[]
 } {
   const { mapped, unmapped } = mapCommentsToLines(diffContent, comments)
-  
+
   // For backward compatibility, add a dummy position (not used by modern API)
   return {
     mapped: mapped.map((c, i) => ({ ...c, position: i + 1 })),
@@ -331,7 +343,7 @@ export function formatUnmappedComments(unmapped: InlineComment[]): string {
   const commentLines: string[] = []
 
   for (const comment of unmapped) {
-    const lineRange = comment.start_line 
+    const lineRange = comment.start_line
       ? `${comment.start_line}-${comment.line}`
       : `${comment.line}`
     commentLines.push(`### \`${comment.path}:${lineRange}\``)
@@ -370,6 +382,7 @@ git commit -m "refactor(pr-review): simplify position mapping for modern GitHub 
 ## Task 3: Update GitHub Review API Calls
 
 **Files:**
+
 - Modify: `packages/pr-review/src/github/review.ts:83-107,138-149`
 
 **Step 1: Update addReviewComments function signature and implementation**
@@ -424,24 +437,24 @@ export async function addReviewComments(
 Update the `comments` parameter in `createReview` call (around line 138-149):
 
 ```typescript
-  const { data } = await client.rest.pulls.createReview({
-    owner: client.owner,
-    repo: client.repo,
-    pull_number: prNumber,
-    commit_id: commitId,
-    body,
-    event: review.event,
-    comments: mappedComments.map((c) => ({
-      path: c.path,
-      line: c.line,
-      side: c.side,
-      ...(c.start_line && {
-        start_line: c.start_line,
-        start_side: c.start_side || c.side,
-      }),
-      body: `${COMMENT_MARKER}\n${c.body}`,
-    })),
-  })
+const { data } = await client.rest.pulls.createReview({
+  owner: client.owner,
+  repo: client.repo,
+  pull_number: prNumber,
+  commit_id: commitId,
+  body,
+  event: review.event,
+  comments: mappedComments.map((c) => ({
+    path: c.path,
+    line: c.line,
+    side: c.side,
+    ...(c.start_line && {
+      start_line: c.start_line,
+      start_side: c.start_side || c.side,
+    }),
+    body: `${COMMENT_MARKER}\n${c.body}`,
+  })),
+})
 ```
 
 **Step 3: Run typecheck**
@@ -454,6 +467,7 @@ Expected: May have errors in reviewer.ts (we'll fix next)
 ## Task 4: Update Reviewer Integration
 
 **Files:**
+
 - Modify: `packages/pr-review/src/reviewer.ts:126,145-151`
 
 **Step 1: Update comment mapping in reviewPR function**
@@ -469,29 +483,29 @@ import { mapCommentsToLines, formatUnmappedComments } from "./diff/position"
 Then update the mapping call (around line 126):
 
 ```typescript
-    // Map comments to validate they exist in diff
-    const { mapped, unmapped } = mapCommentsToLines(diff, review.comments)
+// Map comments to validate they exist in diff
+const { mapped, unmapped } = mapCommentsToLines(diff, review.comments)
 ```
 
 Then update the submitReview call (around line 145-151):
 
 ```typescript
-    // Submit review
-    console.log("[pr-review] Submitting review...")
-    const result = await submitReview(
-      github,
-      options.prNumber,
-      pr.headSha,
-      review,
-      mapped.map((c) => ({
-        path: c.path,
-        line: c.line,
-        body: c.body,
-        side: c.side,
-        start_line: c.start_line,
-        start_side: c.start_side,
-      })),
-    )
+// Submit review
+console.log("[pr-review] Submitting review...")
+const result = await submitReview(
+  github,
+  options.prNumber,
+  pr.headSha,
+  review,
+  mapped.map((c) => ({
+    path: c.path,
+    line: c.line,
+    body: c.body,
+    side: c.side,
+    start_line: c.start_line,
+    start_side: c.start_side,
+  })),
+)
 ```
 
 **Step 2: Update legacy review function similarly**
@@ -499,28 +513,28 @@ Then update the submitReview call (around line 145-151):
 In `runLegacyReview` function (around line 279-304), update the mapping:
 
 ```typescript
-  // Map comments to validate they exist in diff
-  const { mapped, unmapped } = mapCommentsToLines(diff, review.comments)
+// Map comments to validate they exist in diff
+const { mapped, unmapped } = mapCommentsToLines(diff, review.comments)
 
-  // ... unmapped handling stays the same ...
+// ... unmapped handling stays the same ...
 
-  // Submit review
-  console.log("[pr-review] Submitting review...")
-  const { submitReview: submitLegacyReview } = await import("./github/review")
-  const result = await submitLegacyReview(
-    github,
-    options.prNumber,
-    pr.headSha,
-    review,
-    mapped.map((c) => ({
-      path: c.path,
-      line: c.line,
-      body: c.body,
-      side: c.side,
-      start_line: c.start_line,
-      start_side: c.start_side,
-    })),
-  )
+// Submit review
+console.log("[pr-review] Submitting review...")
+const { submitReview: submitLegacyReview } = await import("./github/review")
+const result = await submitLegacyReview(
+  github,
+  options.prNumber,
+  pr.headSha,
+  review,
+  mapped.map((c) => ({
+    path: c.path,
+    line: c.line,
+    body: c.body,
+    side: c.side,
+    start_line: c.start_line,
+    start_side: c.start_side,
+  })),
+)
 ```
 
 **Step 3: Run typecheck**
@@ -540,6 +554,7 @@ git commit -m "feat(pr-review): use modern line/side API instead of deprecated p
 ## Task 5: Update AI Prompts for Multi-Line Support
 
 **Files:**
+
 - Modify: `packages/pr-review/src/ai/prompts.ts:42-56,118-125`
 
 **Step 1: Update JSON format in buildReviewPrompt**
@@ -598,25 +613,26 @@ git commit -m "docs(pr-review): update AI prompts to support multi-line comment 
 ## Task 6: Update Response Parser
 
 **Files:**
+
 - Modify: `packages/pr-review/src/reviewers/runner.ts:94-103`
 
 **Step 1: Update parseReviewerResponse to handle start_line**
 
 ```typescript
-    return {
-      overview: parsed.overview || "",
-      comments: (parsed.comments || []).map((comment: any) => ({
-        path: comment.path,
-        line: comment.line,
-        body: comment.body,
-        side: comment.side || "RIGHT",
-        severity: comment.severity || "warning",
-        ...(comment.start_line && {
-          start_line: comment.start_line,
-          start_side: comment.start_side || comment.side || "RIGHT",
-        }),
-      })),
-    }
+return {
+  overview: parsed.overview || "",
+  comments: (parsed.comments || []).map((comment: any) => ({
+    path: comment.path,
+    line: comment.line,
+    body: comment.body,
+    side: comment.side || "RIGHT",
+    severity: comment.severity || "warning",
+    ...(comment.start_line && {
+      start_line: comment.start_line,
+      start_side: comment.start_side || comment.side || "RIGHT",
+    }),
+  })),
+}
 ```
 
 **Step 2: Commit**
@@ -631,6 +647,7 @@ git commit -m "feat(pr-review): parse multi-line comment ranges from reviewer re
 ## Task 7: Update Existing Tests
 
 **Files:**
+
 - Modify: `packages/pr-review/test/reviewers.test.ts`
 
 **Step 1: Add test for multi-line comments**
@@ -638,35 +655,35 @@ git commit -m "feat(pr-review): parse multi-line comment ranges from reviewer re
 Add a new test case:
 
 ```typescript
-  test("synthesizeReview handles multi-line comments", async () => {
-    const { synthesizeReview } = await import("../src/reviewers/engine")
+test("synthesizeReview handles multi-line comments", async () => {
+  const { synthesizeReview } = await import("../src/reviewers/engine")
 
-    const outputs: ReviewerOutput[] = [
-      {
-        name: "quality",
-        success: true,
-        review: {
-          overview: "Found a block that needs work",
-          comments: [
-            {
-              path: "src/auth.ts",
-              line: 50,
-              start_line: 42,
-              body: "This entire function needs refactoring",
-              side: "RIGHT",
-              severity: "warning",
-            },
-          ],
-        },
-        durationMs: 1000,
+  const outputs: ReviewerOutput[] = [
+    {
+      name: "quality",
+      success: true,
+      review: {
+        overview: "Found a block that needs work",
+        comments: [
+          {
+            path: "src/auth.ts",
+            line: 50,
+            start_line: 42,
+            body: "This entire function needs refactoring",
+            side: "RIGHT",
+            severity: "warning",
+          },
+        ],
       },
-    ]
+      durationMs: 1000,
+    },
+  ]
 
-    const result = synthesizeReview(outputs)
-    expect(result.comments).toHaveLength(1)
-    expect(result.comments[0].start_line).toBe(42)
-    expect(result.comments[0].line).toBe(50)
-  })
+  const result = synthesizeReview(outputs)
+  expect(result.comments).toHaveLength(1)
+  expect(result.comments[0].start_line).toBe(42)
+  expect(result.comments[0].line).toBe(50)
+})
 ```
 
 **Step 2: Run all tests**
@@ -709,17 +726,17 @@ Expected: PASS
 
 ## Summary of Changes
 
-| File | Change |
-|------|--------|
-| `src/github/types.ts` | Add `start_line`, `start_side` to InlineCommentSchema |
-| `src/config/types.ts` | Add range fields to ReviewerOutput and SynthesizedReview |
-| `src/diff/position.ts` | Replace position calculation with line validation |
-| `src/github/review.ts` | Use `line`/`side` API instead of deprecated `position` |
-| `src/reviewer.ts` | Use new mapCommentsToLines function |
-| `src/ai/prompts.ts` | Document multi-line format for AI reviewers |
-| `src/reviewers/runner.ts` | Parse start_line from responses |
-| `test/diff/position.test.ts` | New tests for line validation |
-| `test/reviewers.test.ts` | Add multi-line comment test |
+| File                         | Change                                                   |
+| ---------------------------- | -------------------------------------------------------- |
+| `src/github/types.ts`        | Add `start_line`, `start_side` to InlineCommentSchema    |
+| `src/config/types.ts`        | Add range fields to ReviewerOutput and SynthesizedReview |
+| `src/diff/position.ts`       | Replace position calculation with line validation        |
+| `src/github/review.ts`       | Use `line`/`side` API instead of deprecated `position`   |
+| `src/reviewer.ts`            | Use new mapCommentsToLines function                      |
+| `src/ai/prompts.ts`          | Document multi-line format for AI reviewers              |
+| `src/reviewers/runner.ts`    | Parse start_line from responses                          |
+| `test/diff/position.test.ts` | New tests for line validation                            |
+| `test/reviewers.test.ts`     | Add multi-line comment test                              |
 
 ## Migration Notes
 

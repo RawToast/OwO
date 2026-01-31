@@ -49,20 +49,20 @@ New top-level `resolution` object in `pr-review.json`:
 
 ### Schema
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Enable/disable resolution checking |
-| `trigger` | `"first-push" \| "all-pushes" \| "on-request"` | `"first-push"` | When to run resolution checks |
-| `model` | `string` | (uses `defaults.model`) | Model for resolution agent (recommend cheap/fast) |
-| `prompt` | `string?` | (built-in) | Custom resolution prompt |
-| `promptFile` | `string?` | - | Path to custom prompt file |
+| Field        | Type                                           | Default                 | Description                                       |
+| ------------ | ---------------------------------------------- | ----------------------- | ------------------------------------------------- |
+| `enabled`    | `boolean`                                      | `true`                  | Enable/disable resolution checking                |
+| `trigger`    | `"first-push" \| "all-pushes" \| "on-request"` | `"first-push"`          | When to run resolution checks                     |
+| `model`      | `string`                                       | (uses `defaults.model`) | Model for resolution agent (recommend cheap/fast) |
+| `prompt`     | `string?`                                      | (built-in)              | Custom resolution prompt                          |
+| `promptFile` | `string?`                                      | -                       | Path to custom prompt file                        |
 
 ### Trigger Modes
 
-| Mode | Behavior |
-|------|----------|
-| `"first-push"` | Only on PR open, subsequent pushes need `@owo review` |
-| `"all-pushes"` | Every push triggers full re-review with resolution check |
+| Mode           | Behavior                                                  |
+| -------------- | --------------------------------------------------------- |
+| `"first-push"` | Only on PR open, subsequent pushes need `@owo review`     |
+| `"all-pushes"` | Every push triggers full re-review with resolution check  |
 | `"on-request"` | Never automatic, only when someone comments `@owo review` |
 
 ### Trigger Keywords (Phase 1)
@@ -81,16 +81,16 @@ Single call with all old comments:
   prTitle: string
   prDescription: string
   oldComments: Array<{
-    id: number           // GitHub comment ID
-    threadId: string     // GraphQL thread ID (for resolution)
-    path: string         // File path
-    line: number         // Original line number
-    body: string         // Comment content
-    createdAt: string    // When it was posted
+    id: number // GitHub comment ID
+    threadId: string // GraphQL thread ID (for resolution)
+    path: string // File path
+    line: number // Original line number
+    body: string // Comment content
+    createdAt: string // When it was posted
   }>
   currentCode: Array<{
-    path: string         // File path
-    content: string      // Current file content (or relevant snippet)
+    path: string // File path
+    content: string // Current file content (or relevant snippet)
   }>
   recentCommits: Array<{
     sha: string
@@ -106,19 +106,19 @@ Single call with all old comments:
   results: Array<{
     commentId: number
     status: "FIXED" | "NOT_FIXED" | "PARTIALLY_FIXED"
-    explanation: string  // Brief reason (used in reply for PARTIALLY_FIXED)
+    explanation: string // Brief reason (used in reply for PARTIALLY_FIXED)
   }>
 }
 ```
 
 ### Actions by Status
 
-| Status | Action |
-|--------|--------|
-| `FIXED` | Reply "This issue has been addressed" + resolve thread |
-| `NOT_FIXED` | Leave as-is |
-| `PARTIALLY_FIXED` | Reply with explanation, keep thread open |
-| `FILE_DELETED` | Auto-resolve without LLM (issue is moot) |
+| Status            | Action                                                 |
+| ----------------- | ------------------------------------------------------ |
+| `FIXED`           | Reply "This issue has been addressed" + resolve thread |
+| `NOT_FIXED`       | Leave as-is                                            |
+| `PARTIALLY_FIXED` | Reply with explanation, keep thread open               |
+| `FILE_DELETED`    | Auto-resolve without LLM (issue is moot)               |
 
 ### Edge Case: Deleted Files
 
@@ -127,19 +127,17 @@ If a file with open comments was deleted in the latest push, auto-resolve those 
 ```typescript
 // In checker.ts
 const deletedFiles = new Set(
-  prData.files
-    .filter(f => f.changeType === "DELETED")
-    .map(f => f.path)
+  prData.files.filter((f) => f.changeType === "DELETED").map((f) => f.path),
 )
 
 // Auto-resolve comments on deleted files
-const deletedFileComments = oldComments.filter(c => deletedFiles.has(c.path))
+const deletedFileComments = oldComments.filter((c) => deletedFiles.has(c.path))
 for (const comment of deletedFileComments) {
   await replyAndResolve(client, comment.threadId, "📁 File was deleted — resolving.")
 }
 
 // Only send remaining comments to agent
-const commentsToCheck = oldComments.filter(c => !deletedFiles.has(c.path))
+const commentsToCheck = oldComments.filter((c) => !deletedFiles.has(c.path))
 ```
 
 ## GitHub API Interactions
@@ -148,13 +146,13 @@ const commentsToCheck = oldComments.filter(c => !deletedFiles.has(c.path))
 
 ```typescript
 const { data: allComments } = await client.rest.pulls.listReviewComments({
-  owner, repo, pull_number
+  owner,
+  repo,
+  pull_number,
 })
 
 // Filter to our comments
-const owoComments = allComments.filter(c => 
-  c.body.includes("<!-- owo-comment -->")
-)
+const owoComments = allComments.filter((c) => c.body.includes("<!-- owo-comment -->"))
 ```
 
 ### Get Thread IDs (GraphQL)
@@ -190,20 +188,20 @@ query GetReviewThreads($owner: String!, $repo: String!, $pr: Int!, $cursor: Stri
 async function fetchAllThreads(client: GitHubClient, prNumber: number) {
   const threads: ReviewThread[] = []
   let cursor: string | null = null
-  
+
   do {
-    const result = await client.graphql(GET_REVIEW_THREADS, { 
-      owner: client.owner, 
-      repo: client.repo, 
+    const result = await client.graphql(GET_REVIEW_THREADS, {
+      owner: client.owner,
+      repo: client.repo,
       pr: prNumber,
-      cursor 
+      cursor,
     })
     threads.push(...result.repository.pullRequest.reviewThreads.nodes)
     cursor = result.repository.pullRequest.reviewThreads.pageInfo.hasNextPage
       ? result.repository.pullRequest.reviewThreads.pageInfo.endCursor
       : null
   } while (cursor)
-  
+
   return threads
 }
 ```
@@ -212,17 +210,18 @@ async function fetchAllThreads(client: GitHubClient, prNumber: number) {
 
 ```graphql
 mutation AddReply($threadId: ID!, $body: String!) {
-  addPullRequestReviewThreadReply(input: { 
-    pullRequestReviewThreadId: $threadId, 
-    body: $body 
-  }) {
-    comment { id }
+  addPullRequestReviewThreadReply(input: { pullRequestReviewThreadId: $threadId, body: $body }) {
+    comment {
+      id
+    }
   }
 }
 
 mutation ResolveThread($threadId: ID!) {
   resolveReviewThread(input: { threadId: $threadId }) {
-    thread { isResolved }
+    thread {
+      isResolved
+    }
   }
 }
 ```
@@ -260,13 +259,13 @@ packages/pr-review/src/
 
 ### Modified Files
 
-| File | Changes |
-|------|---------|
-| `config/types.ts` | Add `ResolutionConfigSchema` |
-| `config/loader.ts` | Add resolution defaults |
+| File                 | Changes                         |
+| -------------------- | ------------------------------- |
+| `config/types.ts`    | Add `ResolutionConfigSchema`    |
+| `config/loader.ts`   | Add resolution defaults         |
 | `config/defaults.ts` | Add `DEFAULT_RESOLUTION_PROMPT` |
-| `reviewer.ts` | Call resolution checker |
-| `github/review.ts` | Add reply + resolve functions |
+| `reviewer.ts`        | Call resolution checker         |
+| `github/review.ts`   | Add reply + resolve functions   |
 
 ## Implementation Plan
 
@@ -298,8 +297,7 @@ packages/pr-review/src/
 ```typescript
 const REPLY_MESSAGES = {
   FIXED: "✅ This issue has been addressed in recent commits.",
-  PARTIALLY_FIXED: (explanation: string) => 
-    `⚠️ Partially addressed: ${explanation}`,
+  PARTIALLY_FIXED: (explanation: string) => `⚠️ Partially addressed: ${explanation}`,
   FILE_DELETED: "📁 File was deleted — resolving.",
 }
 ```
@@ -314,9 +312,7 @@ import pLimit from "p-limit"
 const limit = pLimit(5) // Max 5 concurrent mutations
 
 await Promise.all(
-  threadsToResolve.map(thread => 
-    limit(() => replyAndResolve(client, thread.id, message))
-  )
+  threadsToResolve.map((thread) => limit(() => replyAndResolve(client, thread.id, message))),
 )
 ```
 
