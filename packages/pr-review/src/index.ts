@@ -36,6 +36,7 @@ Options:
   --model <model>    Model to use (e.g., anthropic/claude-sonnet-4-20250514)
   --dry-run          Don't post review, just print it
   --output <file>    Save review to markdown file (implies --dry-run)
+  --source-dir <dir> Directory containing source files for context (defaults to --config dir or cwd)
   --legacy           Use single-reviewer mode (original behavior)
   --help, -h         Show this help
 
@@ -81,6 +82,7 @@ Examples:
   const configPath = getArg("config")
   const model = getArg("model")
   const outputFile = getArg("output")
+  const sourceDir = getArg("source-dir")
   const dryRun = args.includes("--dry-run") || !!outputFile // --output implies dry-run
   const legacyMode = args.includes("--legacy")
 
@@ -98,6 +100,7 @@ Examples:
       model,
       dryRun,
       legacyMode,
+      sourceDir,
     }
   } else {
     // Auto-detect from GitHub Actions environment
@@ -117,6 +120,7 @@ Examples:
       model,
       dryRun,
       legacyMode,
+      sourceDir,
     }
   }
 

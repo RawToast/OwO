@@ -29,6 +29,8 @@ export type ReviewOptions = {
   repoRoot?: string
   /** Use legacy single-reviewer mode */
   legacyMode?: boolean
+  /** Source directory for reading file context (defaults to configPath or cwd) */
+  sourceDir?: string
 }
 
 export type ReviewResult = {
@@ -65,7 +67,12 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
 
     // Load configuration
     // configPath can be a file path or directory path
-    const { config, repoRoot } = loadConfigFromPath(options.configPath || options.repoRoot)
+    const { config, repoRoot: configRepoRoot } = loadConfigFromPath(
+      options.configPath || options.repoRoot,
+    )
+
+    // Use explicit sourceDir, or fall back to config directory
+    const sourceDir = options.sourceDir || configRepoRoot
 
     // Start AI client
     console.log("[pr-review] Starting AI client...")
@@ -79,7 +86,7 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
         pr,
         diff,
         config.resolution || { enabled: true, trigger: "first-push" },
-        repoRoot,
+        sourceDir,
       )
 
       console.log(
@@ -95,14 +102,14 @@ export async function reviewPR(options: ReviewOptions): Promise<ReviewResult> {
     console.log("[pr-review] Starting multi-reviewer review...")
 
     // Step 1: Run all reviewers in parallel
-    const reviewerOutputs = await runAllReviewers(ai, pr, diff, config, repoRoot)
+    const reviewerOutputs = await runAllReviewers(ai, pr, diff, config, sourceDir)
 
     // Step 2: Verify and synthesize findings (pass PR data for context)
     const synthesized = await verifyAndSynthesize(
       ai,
       reviewerOutputs,
       config.verifier,
-      repoRoot,
+      sourceDir,
       pr,
     )
 
