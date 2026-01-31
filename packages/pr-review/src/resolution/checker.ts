@@ -414,13 +414,21 @@ export async function runResolutionCheck(
   // 4. Fetch current code snippets
   const codeSnippets = await fetchCodeSnippets(github, remainingComments, pr.headSha)
 
-  // 5. Convert to OldComment format
+  // 5. Convert to OldComment format (log skipped comments)
   const oldComments: OldComment[] = []
+  let skippedCount = 0
   for (const comment of remainingComments) {
     const threadId = commentThreadMap.get(comment.id)
     if (threadId) {
       oldComments.push(toOldComment(comment, threadId))
+    } else {
+      console.warn(`[pr-review] Skipping comment ${comment.id}: no thread ID found`)
+      skippedCount++
     }
+  }
+
+  if (skippedCount > 0) {
+    console.log(`[pr-review] Skipped ${skippedCount} comments without thread IDs`)
   }
 
   // 6. Call resolution agent
@@ -442,7 +450,8 @@ export async function runResolutionCheck(
     semaphore,
   )
 
-  const totalChecked = owoComments.length
+  // Use actual processed count, not original count
+  const totalChecked = oldComments.length + deletedFiles
 
   console.log(
     `[pr-review] Resolution check complete: ${fixed} fixed, ${partiallyFixed} partial, ${notFixed} not fixed, ${deletedFiles} deleted files`,
