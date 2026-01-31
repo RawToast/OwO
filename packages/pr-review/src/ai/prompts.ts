@@ -1,4 +1,5 @@
 import type { PRData } from "../github/types"
+import { annotateDiffWithLineNumbers } from "../diff/annotate"
 
 /**
  * Build the review prompt for the AI
@@ -7,6 +8,8 @@ export function buildReviewPrompt(pr: PRData, diff: string): string {
   const filesTable = pr.files
     .map((f) => `| ${f.path} | +${f.additions}/-${f.deletions} | ${f.changeType} |`)
     .join("\n")
+
+  const annotatedDiff = annotateDiffWithLineNumbers(diff)
 
   return `You are a senior code reviewer. Review this pull request thoroughly.
 
@@ -26,8 +29,11 @@ ${pr.body || "*No description provided*"}
 ${filesTable}
 
 ### Diff
+
+Lines are prefixed with \`R{num}|\` for new file lines (RIGHT side) and \`L{num}|\` for old file lines (LEFT side).
+
 \`\`\`diff
-${diff}
+${annotatedDiff}
 \`\`\`
 
 ## Your Task
@@ -63,9 +69,9 @@ Respond with valid JSON in this exact format:
 \`\`\`
 
 **Important:**
-- \`line\` is the line number (or end line for multi-line comments)
+- \`line\` is the line number shown in the prefix (e.g., R42 means line 42, use 42 for the line field)
 - \`start_line\` (optional) marks the beginning of a multi-line range
-- \`side\` should be "RIGHT" for new/modified code, "LEFT" for deleted code
+- \`side\` should be "RIGHT" for lines prefixed with R (new/modified code), "LEFT" for lines prefixed with L (deleted code)
 - Use multi-line comments when feedback applies to a block of code (e.g., a function, loop, or related lines)
 - Only comment on lines that appear in the diff
 - Be constructive and specific
@@ -85,6 +91,8 @@ export function buildMultiReviewerPrompt(
     .map((f) => `| ${f.path} | +${f.additions}/-${f.deletions} | ${f.changeType} |`)
     .join("\n")
 
+  const annotatedDiff = annotateDiffWithLineNumbers(diff)
+
   return `${reviewerPrompt}
 
 ## PR Information
@@ -103,8 +111,11 @@ ${pr.body || "*No description provided*"}
 ${filesTable}
 
 ### Diff
+
+Lines are prefixed with \`R{num}|\` for new file lines (RIGHT side) and \`L{num}|\` for old file lines (LEFT side).
+
 \`\`\`diff
-${diff}
+${annotatedDiff}
 \`\`\`
 
 ---
@@ -115,13 +126,17 @@ You are the "${reviewerName}" reviewer. Provide your review in the JSON format s
  * Build a simpler prompt for quick reviews
  */
 export function buildQuickReviewPrompt(pr: PRData, diff: string): string {
+  const annotatedDiff = annotateDiffWithLineNumbers(diff)
+
   return `Review this PR briefly. Focus on critical issues only.
 
 **${pr.title}** by ${pr.author}
 +${pr.additions}/-${pr.deletions} lines
 
+Lines are prefixed with \`R{num}|\` for new file lines (RIGHT side) and \`L{num}|\` for old file lines (LEFT side).
+
 \`\`\`diff
-${diff}
+${annotatedDiff}
 \`\`\`
 
 Respond with JSON:
