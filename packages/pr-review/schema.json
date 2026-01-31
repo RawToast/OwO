@@ -34,14 +34,24 @@
           },
           "model": {
             "description": "Model override for this reviewer",
-            "type": "string"
+            "type": "string",
+            "pattern": "^[^/]+\\/[^/]+$"
+          },
+          "temperature": {
+            "description": "Temperature for sampling (0=deterministic, 2=creative). Recommended: 0.1 for reviews",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
           },
           "enabled": {
             "default": true,
             "type": "boolean"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name",
+          "enabled"
+        ],
         "additionalProperties": false
       }
     },
@@ -55,7 +65,14 @@
           "type": "string"
         },
         "model": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[^/]+\\/[^/]+$"
+        },
+        "temperature": {
+          "description": "Temperature for sampling (0=deterministic, 2=creative). Recommended: 0.1 for reviews",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
         },
         "enabled": {
           "default": true,
@@ -65,7 +82,11 @@
           "default": "info",
           "description": "Minimum severity level to include in final review (critical=only critical, warning=critical+warning, info=all)",
           "type": "string",
-          "enum": ["critical", "warning", "info"]
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ]
         },
         "diagrams": {
           "default": true,
@@ -73,19 +94,115 @@
           "type": "boolean"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "level",
+        "diagrams"
+      ],
+      "additionalProperties": false
+    },
+    "resolution": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable/disable resolution checking",
+          "type": "boolean"
+        },
+        "trigger": {
+          "default": "first-push",
+          "description": "When to run resolution checks",
+          "type": "string",
+          "enum": [
+            "first-push",
+            "all-pushes",
+            "on-request"
+          ]
+        },
+        "model": {
+          "description": "Model for resolution agent (recommend cheap/fast like Haiku)",
+          "type": "string",
+          "pattern": "^[^/]+\\/[^/]+$"
+        },
+        "temperature": {
+          "description": "Temperature for sampling (0=deterministic, 2=creative). Recommended: 0.1 for reviews",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "prompt": {
+          "description": "Custom resolution prompt",
+          "type": "string"
+        },
+        "promptFile": {
+          "description": "Path to custom prompt file",
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "trigger"
+      ],
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable full file context for reviewers",
+          "type": "boolean"
+        },
+        "maxFileSizeKb": {
+          "default": 100,
+          "description": "Maximum file size to include (KB)",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "maxTotalSizeKb": {
+          "default": 500,
+          "description": "Maximum total context size (KB)",
+          "type": "number",
+          "minimum": 10,
+          "maximum": 5000
+        },
+        "include": {
+          "type": "object",
+          "properties": {
+            "changedFiles": {
+              "default": true,
+              "description": "Include full content of changed files",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "changedFiles"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "enabled",
+        "maxFileSizeKb",
+        "maxTotalSizeKb"
+      ],
       "additionalProperties": false
     },
     "defaults": {
       "type": "object",
       "properties": {
         "model": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[^/]+\\/[^/]+$"
         }
       },
       "additionalProperties": false
     }
   },
-  "required": ["version", "reviewers"],
+  "required": [
+    "version",
+    "reviewers"
+  ],
   "additionalProperties": false
 }
