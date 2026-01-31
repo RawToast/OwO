@@ -189,10 +189,10 @@ You will receive:
 - Current code snippets for those locations
 - Recent commit messages for context
 
-For EACH comment, decide one status:
+For EACH comment, decide one status. You may need to look at more of the code in branch to decide.
+
 - FIXED: The issue is clearly resolved
 - NOT_FIXED: The issue is still present or unaddressed
-- PARTIALLY_FIXED: The issue is partially addressed but still incomplete
 
 Return JSON ONLY in this format:
 {

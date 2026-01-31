@@ -93,6 +93,32 @@ export const ResolutionConfigSchema = z.object({
 export type ResolutionConfig = z.infer<typeof ResolutionConfigSchema>
 
 /**
+ * File context configuration
+ */
+export const ContextConfigSchema = z.object({
+  enabled: z.boolean().default(true).describe("Enable full file context for reviewers"),
+  maxFileSizeKb: z
+    .number()
+    .min(1)
+    .max(1000)
+    .default(100)
+    .describe("Maximum file size to include (KB)"),
+  maxTotalSizeKb: z
+    .number()
+    .min(10)
+    .max(5000)
+    .default(500)
+    .describe("Maximum total context size (KB)"),
+  include: z
+    .object({
+      changedFiles: z.boolean().default(true).describe("Include full content of changed files"),
+    })
+    .optional(),
+})
+
+export type ContextConfig = z.infer<typeof ContextConfigSchema>
+
+/**
  * Main PR review configuration
  */
 export const PRReviewConfigSchema = z.object({
@@ -100,6 +126,7 @@ export const PRReviewConfigSchema = z.object({
   reviewers: z.array(ReviewerConfigSchema).default([]),
   verifier: VerifierConfigSchema.optional(),
   resolution: ResolutionConfigSchema.optional(),
+  context: ContextConfigSchema.optional(),
   defaults: z
     .object({
       model: z

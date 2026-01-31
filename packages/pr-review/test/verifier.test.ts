@@ -3,7 +3,7 @@ import type { ReviewerOutput } from "../src/config/types"
 
 describe("verifier/synthesizer", () => {
   test("deduplicateComments preserves exact line numbers", async () => {
-    const { deduplicateComments } = await import("../src/verifier/synthesizer")
+    const { deduplicateComments } = await import("../src/verifier/comments")
 
     const comments = [
       {
@@ -31,7 +31,7 @@ describe("verifier/synthesizer", () => {
   })
 
   test("deduplicateComments keeps highest severity for same line", async () => {
-    const { deduplicateComments } = await import("../src/verifier/synthesizer")
+    const { deduplicateComments } = await import("../src/verifier/comments")
 
     const comments = [
       {
@@ -60,7 +60,7 @@ describe("verifier/synthesizer", () => {
   })
 
   test("filterCommentsByLevel filters correctly", async () => {
-    const { filterCommentsByLevel } = await import("../src/verifier/synthesizer")
+    const { filterCommentsByLevel } = await import("../src/verifier/comments")
 
     const comments = [{ severity: "critical" }, { severity: "warning" }, { severity: "info" }]
 
@@ -85,6 +85,7 @@ describe("verifier/synthesizer", () => {
               body: "Issue here",
               side: "RIGHT",
               severity: "warning",
+              reviewer: "quality",
             },
             {
               path: "src/auth.ts",
@@ -92,6 +93,7 @@ describe("verifier/synthesizer", () => {
               body: "Another issue",
               side: "RIGHT",
               severity: "critical",
+              reviewer: "quality",
             },
             {
               path: "src/utils.ts",
@@ -99,6 +101,7 @@ describe("verifier/synthesizer", () => {
               body: "Consider this",
               side: "RIGHT",
               severity: "info",
+              reviewer: "quality",
             },
           ],
         },
@@ -111,5 +114,60 @@ describe("verifier/synthesizer", () => {
     expect(result.comments.find((c) => c.path === "src/auth.ts" && c.line === 42)).toBeDefined()
     expect(result.comments.find((c) => c.path === "src/auth.ts" && c.line === 99)).toBeDefined()
     expect(result.comments.find((c) => c.path === "src/utils.ts" && c.line === 15)).toBeDefined()
+  })
+
+  test("basicSynthesis filters inline comments by severity level", async () => {
+    const { basicSynthesis } = await import("../src/verifier/synthesizer")
+
+    const outputs: ReviewerOutput[] = [
+      {
+        name: "quality",
+        success: true,
+        review: {
+          overview: "Found issues",
+          comments: [
+            {
+              path: "src/auth.ts",
+              line: 42,
+              body: "Warning issue",
+              side: "RIGHT",
+              severity: "warning",
+              reviewer: "quality",
+            },
+            {
+              path: "src/auth.ts",
+              line: 99,
+              body: "Critical issue",
+              side: "RIGHT",
+              severity: "critical",
+              reviewer: "quality",
+            },
+            {
+              path: "src/utils.ts",
+              line: 15,
+              body: "Info issue",
+              side: "RIGHT",
+              severity: "info",
+              reviewer: "quality",
+            },
+          ],
+        },
+        durationMs: 1000,
+      },
+    ]
+
+    // With level="critical", only critical comments should be included
+    const criticalResult = basicSynthesis(outputs, undefined, "critical")
+    expect(criticalResult.comments).toHaveLength(1)
+    expect(criticalResult.comments[0].severity).toBe("critical")
+
+    // With level="warning", critical and warning comments should be included
+    const warningResult = basicSynthesis(outputs, undefined, "warning")
+    expect(warningResult.comments).toHaveLength(2)
+    expect(warningResult.comments.every((c) => c.severity !== "info")).toBe(true)
+
+    // With level="info" (default), all comments should be included
+    const infoResult = basicSynthesis(outputs, undefined, "info")
+    expect(infoResult.comments).toHaveLength(3)
   })
 })
