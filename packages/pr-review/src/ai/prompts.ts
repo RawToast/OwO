@@ -1,5 +1,41 @@
 import type { PRData } from "../github/types"
+import type { FileContext } from "../context/types"
 import { annotateDiffWithLineNumbers } from "../diff/annotate"
+
+/**
+ * Format file context for inclusion in prompts
+ */
+export function formatFileContext(files: FileContext[], skippedFiles: string[]): string {
+  if (files.length === 0) {
+    return ""
+  }
+
+  const parts: string[] = []
+  parts.push("### Full File Context")
+  parts.push("")
+  parts.push("The following files are included in full for additional context:")
+  parts.push("")
+
+  for (const file of files) {
+    const ext = file.path.split(".").pop() || ""
+    parts.push("<details>")
+    parts.push(`<summary>${file.path} (${Math.round(file.sizeBytes / 1024)}KB)</summary>`)
+    parts.push("")
+    parts.push("```" + ext)
+    parts.push(file.content)
+    parts.push("```")
+    parts.push("")
+    parts.push("</details>")
+    parts.push("")
+  }
+
+  if (skippedFiles.length > 0) {
+    parts.push(`*${skippedFiles.length} files skipped (too large or not found)*`)
+    parts.push("")
+  }
+
+  return parts.join("\n")
+}
 
 /**
  * Build the review prompt for the AI
@@ -86,12 +122,16 @@ export function buildMultiReviewerPrompt(
   diff: string,
   reviewerPrompt: string,
   reviewerName: string,
+  fileContext?: { files: FileContext[]; skippedFiles: string[] },
 ): string {
   const filesTable = pr.files
     .map((f) => `| ${f.path} | +${f.additions}/-${f.deletions} | ${f.changeType} |`)
     .join("\n")
 
   const annotatedDiff = annotateDiffWithLineNumbers(diff)
+  const contextSection = fileContext
+    ? formatFileContext(fileContext.files, fileContext.skippedFiles)
+    : ""
 
   return `${reviewerPrompt}
 
@@ -110,6 +150,7 @@ ${pr.body || "*No description provided*"}
 |------|---------|------|
 ${filesTable}
 
+${contextSection}
 ### Diff
 
 Lines are prefixed with \`R{num}|\` for new file lines (RIGHT side) and \`L{num}|\` for old file lines (LEFT side).
