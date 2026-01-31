@@ -3,7 +3,7 @@ import type { GitHubClient } from "../github/client"
 export type ReviewThread = {
   id: string
   isResolved: boolean
-  commentDatabaseId: number
+  commentDatabaseId: number | null
 }
 
 type ReviewThreadsResponse = {
@@ -89,11 +89,11 @@ export async function fetchAllThreads(
 
     const reviewThreads = response.repository.pullRequest.reviewThreads
     for (const node of reviewThreads.nodes ?? []) {
-      const commentDatabaseId = node.comments?.nodes?.[0]?.databaseId
+      const commentDatabaseId = node.comments?.nodes?.[0]?.databaseId ?? null
       threads.push({
         id: node.id,
         isResolved: node.isResolved,
-        commentDatabaseId: commentDatabaseId as number,
+        commentDatabaseId,
       })
     }
 
