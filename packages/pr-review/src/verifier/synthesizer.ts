@@ -114,7 +114,7 @@ export function deduplicateComments(
   const byLocation = new Map<string, SynthesizedReview["comments"][0]>()
 
   for (const comment of comments) {
-    const key = `${comment.path}:${comment.line}`
+    const key = `${comment.path}:${comment.line}:${comment.side ?? "RIGHT"}`
     const existing = byLocation.get(key)
 
     if (!existing) {
