@@ -84,6 +84,39 @@ async function runReviewerInternal(
 }
 
 /**
+ * Parse a line value that may be a number, string number, or range string.
+ * Returns { line, start_line? } where start_line is only set for ranges.
+ */
+export function parseLineValue(lineValue: unknown): { line: number; start_line?: number } | null {
+  if (typeof lineValue === "number") {
+    return { line: lineValue }
+  }
+
+  if (typeof lineValue === "string") {
+    const trimmed = lineValue.trim()
+
+    // Check for range format: "start-end"
+    if (trimmed.includes("-")) {
+      const [startStr, endStr] = trimmed.split("-")
+      const start = parseInt(startStr, 10)
+      const end = parseInt(endStr, 10)
+
+      if (!isNaN(start) && !isNaN(end)) {
+        return { line: end, start_line: start }
+      }
+    }
+
+    // Single number as string
+    const num = parseInt(trimmed, 10)
+    if (!isNaN(num)) {
+      return { line: num }
+    }
+  }
+
+  return null
+}
+
+/**
  * Parse reviewer response (expects JSON format)
  */
 export function parseReviewerResponse(
@@ -98,17 +131,27 @@ export function parseReviewerResponse(
 
     return {
       overview: parsed.overview || "",
-      comments: (parsed.comments || []).map((comment: any) => ({
-        path: comment.path,
-        line: comment.line,
-        body: comment.body,
-        side: comment.side || "RIGHT",
-        severity: comment.severity || "warning",
-        ...(comment.start_line && {
-          start_line: comment.start_line,
-          start_side: comment.start_side || comment.side || "RIGHT",
-        }),
-      })),
+      comments: (parsed.comments || []).map((comment: any) => {
+        // Parse line value which may be number, string, or range
+        const lineParsed = parseLineValue(comment.line)
+        const line = lineParsed?.line ?? comment.line
+        const startLineFromRange = lineParsed?.start_line
+
+        // Prefer explicit start_line if provided, otherwise use parsed range
+        const startLine = comment.start_line ?? startLineFromRange
+
+        return {
+          path: comment.path,
+          line,
+          body: comment.body,
+          side: comment.side || "RIGHT",
+          severity: comment.severity || "warning",
+          ...(startLine && {
+            start_line: startLine,
+            start_side: comment.start_side || comment.side || "RIGHT",
+          }),
+        }
+      }),
     }
   } catch (error) {
     console.warn(

@@ -127,4 +127,91 @@ describe("reviewers/runner", () => {
       severity: "warning",
     })
   })
+
+  test("parseReviewerResponse handles line as range string", async () => {
+    const { parseReviewerResponse } = await import("../src/reviewers/runner")
+
+    const response = `\`\`\`json
+{
+  "overview": "Range test",
+  "comments": [{"path": "foo.ts", "line": "118-119", "body": "Multi-line issue"}]
+}
+\`\`\``
+
+    const result = parseReviewerResponse(response, "test-reviewer")
+
+    expect(result.comments).toHaveLength(1)
+    expect(result.comments[0].line).toBe(119)
+    expect(result.comments[0].start_line).toBe(118)
+    expect(result.comments[0].start_side).toBe("RIGHT")
+  })
+
+  test("parseReviewerResponse handles line as string number", async () => {
+    const { parseReviewerResponse } = await import("../src/reviewers/runner")
+
+    const response = `\`\`\`json
+{
+  "overview": "String number test",
+  "comments": [{"path": "bar.ts", "line": "42", "body": "Single line"}]
+}
+\`\`\``
+
+    const result = parseReviewerResponse(response, "test-reviewer")
+
+    expect(result.comments).toHaveLength(1)
+    expect(result.comments[0].line).toBe(42)
+    expect(result.comments[0].start_line).toBeUndefined()
+  })
+
+  test("parseReviewerResponse preserves explicit start_line over range parsing", async () => {
+    const { parseReviewerResponse } = await import("../src/reviewers/runner")
+
+    const response = `\`\`\`json
+{
+  "overview": "Explicit start_line test",
+  "comments": [{"path": "baz.ts", "line": 50, "start_line": 40, "body": "Explicit range"}]
+}
+\`\`\``
+
+    const result = parseReviewerResponse(response, "test-reviewer")
+
+    expect(result.comments).toHaveLength(1)
+    expect(result.comments[0].line).toBe(50)
+    expect(result.comments[0].start_line).toBe(40)
+  })
+})
+
+describe("reviewers/runner parseLineValue", () => {
+  test("handles number input", async () => {
+    const { parseLineValue } = await import("../src/reviewers/runner")
+
+    expect(parseLineValue(42)).toEqual({ line: 42 })
+    expect(parseLineValue(1)).toEqual({ line: 1 })
+    expect(parseLineValue(999)).toEqual({ line: 999 })
+  })
+
+  test("handles string number input", async () => {
+    const { parseLineValue } = await import("../src/reviewers/runner")
+
+    expect(parseLineValue("42")).toEqual({ line: 42 })
+    expect(parseLineValue(" 10 ")).toEqual({ line: 10 })
+  })
+
+  test("handles range string input", async () => {
+    const { parseLineValue } = await import("../src/reviewers/runner")
+
+    expect(parseLineValue("118-119")).toEqual({ line: 119, start_line: 118 })
+    expect(parseLineValue("10-20")).toEqual({ line: 20, start_line: 10 })
+    expect(parseLineValue(" 5-15 ")).toEqual({ line: 15, start_line: 5 })
+  })
+
+  test("returns null for invalid input", async () => {
+    const { parseLineValue } = await import("../src/reviewers/runner")
+
+    expect(parseLineValue(null)).toBeNull()
+    expect(parseLineValue(undefined)).toBeNull()
+    expect(parseLineValue("invalid")).toBeNull()
+    expect(parseLineValue("abc-def")).toBeNull()
+    expect(parseLineValue({})).toBeNull()
+  })
 })
