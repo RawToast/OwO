@@ -35,7 +35,7 @@
           "model": {
             "description": "Model override for this reviewer",
             "type": "string",
-            "pattern": "^[^/]+\\/[^/]+$"
+            "pattern": "^[^/]+\\/[^/]+(?:\\/[^/]+)*$"
           },
           "temperature": {
             "description": "Temperature for sampling (0=deterministic, 2=creative). Recommended: 0.1 for reviews",
@@ -63,7 +63,7 @@
         },
         "model": {
           "type": "string",
-          "pattern": "^[^/]+\\/[^/]+$"
+          "pattern": "^[^/]+\\/[^/]+(?:\\/[^/]+)*$"
         },
         "temperature": {
           "description": "Temperature for sampling (0=deterministic, 2=creative). Recommended: 0.1 for reviews",
@@ -107,7 +107,7 @@
         "model": {
           "description": "Model for resolution agent (recommend cheap/fast like Haiku)",
           "type": "string",
-          "pattern": "^[^/]+\\/[^/]+$"
+          "pattern": "^[^/]+\\/[^/]+(?:\\/[^/]+)*$"
         },
         "temperature": {
           "description": "Temperature for sampling (0=deterministic, 2=creative). Recommended: 0.1 for reviews",
@@ -170,7 +170,7 @@
       "properties": {
         "model": {
           "type": "string",
-          "pattern": "^[^/]+\\/[^/]+$"
+          "pattern": "^[^/]+\\/[^/]+(?:\\/[^/]+)*$"
         }
       },
       "additionalProperties": false

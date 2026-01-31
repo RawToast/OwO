@@ -11,7 +11,7 @@ export const ReviewerConfigSchema = z.object({
   model: z
     .string()
     .regex(
-      /^[^/]+\/[^/]+$/,
+      /^[^/]+\/[^/]+(?:\/[^/]+)*$/,
       "Model must be in 'provider/model' format (e.g., 'anthropic/claude-sonnet-4-20250514')",
     )
     .optional()
@@ -43,7 +43,7 @@ export const VerifierConfigSchema = z.object({
   promptFile: z.string().optional(),
   model: z
     .string()
-    .regex(/^[^/]+\/[^/]+$/, "Model must be in 'provider/model' format")
+    .regex(/^[^/]+\/[^/]+(?:\/[^/]+)*$/, "Model must be in 'provider/model' format")
     .optional(),
   temperature: z
     .number()
@@ -75,7 +75,7 @@ export const ResolutionConfigSchema = z.object({
   trigger: ResolutionTriggerSchema.default("first-push").describe("When to run resolution checks"),
   model: z
     .string()
-    .regex(/^[^/]+\/[^/]+$/, "Model must be in 'provider/model' format")
+    .regex(/^[^/]+\/[^/]+(?:\/[^/]+)*$/, "Model must be in 'provider/model' format")
     .optional()
     .describe("Model for resolution agent (recommend cheap/fast like Haiku)"),
   temperature: z
@@ -131,7 +131,7 @@ export const PRReviewConfigSchema = z.object({
     .object({
       model: z
         .string()
-        .regex(/^[^/]+\/[^/]+$/, "Model must be in 'provider/model' format")
+        .regex(/^[^/]+\/[^/]+(?:\/[^/]+)*$/, "Model must be in 'provider/model' format")
         .optional(),
     })
     .optional(),
