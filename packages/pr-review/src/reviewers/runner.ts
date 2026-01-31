@@ -18,19 +18,20 @@ export async function runReviewer(
   repoRoot: string,
 ): Promise<ReviewerOutput> {
   const startTime = Date.now()
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
 
   try {
     console.log(`[pr-review] Running reviewer: ${reviewer.name} (${reviewer.focus || "general"})`)
 
     const result = await Promise.race([
       runReviewerInternal(ai, pr, diff, reviewer, repoRoot),
-      new Promise<never>((_, reject) =>
-        setTimeout(
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
           () =>
             reject(new Error(`Reviewer ${reviewer.name} timed out after ${REVIEWER_TIMEOUT_MS}ms`)),
           REVIEWER_TIMEOUT_MS,
-        ),
-      ),
+        )
+      }),
     ])
 
     const durationMs = Date.now() - startTime
@@ -52,6 +53,10 @@ export async function runReviewer(
       success: false,
       error: errorMessage,
       durationMs,
+    }
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
     }
   }
 }
