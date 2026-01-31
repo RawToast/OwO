@@ -1,11 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import type { AIClient } from "../../src/ai/client"
-import type {
-  CodeSnippet,
-  OldComment,
-  ResolutionInput,
-  ResolutionOutput,
-} from "../../src/resolution/agent"
+import type { ResolutionInput } from "../../src/resolution/agent"
 
 describe("resolution/agent", () => {
   describe("buildResolutionPrompt", () => {

@@ -134,7 +134,9 @@ export function parseResolutionResponse(response: string): ResolutionOutput {
       const parsed = JSON.parse(jsonBlockMatch[1].trim())
       return validateAndTransformResponse(parsed)
     } catch (e) {
-      // Continue to try other formats
+      console.error(
+        `Failed to parse resolution response: ${e instanceof Error ? e.message : String(e)}. Response: ${response.slice(0, 200)}...`,
+      )
     }
   }
 
@@ -145,7 +147,9 @@ export function parseResolutionResponse(response: string): ResolutionOutput {
       const parsed = JSON.parse(rawJsonMatch[0])
       return validateAndTransformResponse(parsed)
     } catch (e) {
-      // Continue to try other formats
+      console.error(
+        `Failed to parse resolution response: ${e instanceof Error ? e.message : String(e)}. Response: ${response.slice(0, 200)}...`,
+      )
     }
   }
 
@@ -257,10 +261,7 @@ export async function checkResolutions(
 /**
  * Map results to comment IDs when the AI returned path/line instead
  */
-function mapResultsToCommentIds(
-  results: any[],
-  comments: OldComment[],
-): ResolutionResult[] {
+function mapResultsToCommentIds(results: any[], comments: OldComment[]): ResolutionResult[] {
   const mapped: ResolutionResult[] = []
 
   for (const result of results) {
@@ -275,9 +276,7 @@ function mapResultsToCommentIds(
 
     // Try to match by path and line
     if (result.path && result.line) {
-      const match = comments.find(
-        (c) => c.path === result.path && c.line === result.line,
-      )
+      const match = comments.find((c) => c.path === result.path && c.line === result.line)
       if (match) {
         mapped.push({
           commentId: match.id,

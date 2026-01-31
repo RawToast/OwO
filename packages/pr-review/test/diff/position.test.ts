@@ -76,7 +76,7 @@ describe("diff/position", () => {
           start_side: "RIGHT",
         },
       ]
-      const { mapped, unmapped } = mapCommentsToLines(SAMPLE_DIFF, comments)
+      const { mapped, unmapped: _unmappedComments } = mapCommentsToLines(SAMPLE_DIFF, comments)
       expect(mapped).toHaveLength(1)
       expect(mapped[0].start_line).toBe(11)
       expect(mapped[0].line).toBe(13)
