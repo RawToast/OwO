@@ -349,6 +349,18 @@ export async function runResolutionCheck(
 ): Promise<ResolutionCheckResult> {
   console.log(`[pr-review] Starting resolution check for PR #${pr.number}`)
 
+  // Early exit if resolution checking is disabled
+  if (!config.enabled) {
+    console.log("[pr-review] Resolution checking is disabled, skipping")
+    return {
+      checked: 0,
+      fixed: 0,
+      partiallyFixed: 0,
+      notFixed: 0,
+      deletedFiles: 0,
+    }
+  }
+
   // 1. Fetch existing owo comments
   const owoComments = await fetchOwoComments(github, pr.number)
   console.log(`[pr-review] Found ${owoComments.length} owo comments to check`)
