@@ -41,7 +41,7 @@
             "type": "boolean"
           }
         },
-        "required": ["name", "enabled"],
+        "required": ["name"],
         "additionalProperties": false
       }
     },
@@ -73,7 +73,7 @@
           "type": "boolean"
         }
       },
-      "required": ["enabled", "level", "diagrams"],
+      "required": [],
       "additionalProperties": false
     },
     "defaults": {
