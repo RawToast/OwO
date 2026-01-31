@@ -4,6 +4,7 @@ import { buildMultiReviewerPrompt } from "../ai/prompts"
 import type { PRData } from "../github/types"
 import type { ReviewerConfig, ReviewerOutput } from "../config/types"
 import { loadReviewerPrompt } from "../config/loader"
+import type { FileContext } from "../context/types"
 
 export const REVIEWER_TIMEOUT_MS = 180_000
 
@@ -16,6 +17,7 @@ export async function runReviewer(
   diff: string,
   reviewer: ReviewerConfig,
   repoRoot: string,
+  fileContext?: { files: FileContext[]; skippedFiles: string[] },
 ): Promise<ReviewerOutput> {
   const startTime = Date.now()
   let timeoutId: ReturnType<typeof setTimeout> | undefined
@@ -24,7 +26,7 @@ export async function runReviewer(
     console.log(`[pr-review] Running reviewer: ${reviewer.name} (${reviewer.focus || "general"})`)
 
     const result = await Promise.race([
-      runReviewerInternal(ai, pr, diff, reviewer, repoRoot),
+      runReviewerInternal(ai, pr, diff, reviewer, repoRoot, fileContext),
       new Promise<never>((_, reject) => {
         timeoutId = setTimeout(
           () =>
@@ -67,9 +69,10 @@ async function runReviewerInternal(
   diff: string,
   reviewer: ReviewerConfig,
   repoRoot: string,
+  fileContext?: { files: FileContext[]; skippedFiles: string[] },
 ): Promise<NonNullable<ReviewerOutput["review"]>> {
   const reviewerPrompt = loadReviewerPrompt(repoRoot, reviewer)
-  const fullPrompt = buildMultiReviewerPrompt(pr, diff, reviewerPrompt, reviewer.name)
+  const fullPrompt = buildMultiReviewerPrompt(pr, diff, reviewerPrompt, reviewer.name, fileContext)
 
   const modelConfig = reviewer.model
     ? {

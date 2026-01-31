@@ -2,6 +2,8 @@ import type { AIClient } from "../ai/client"
 import type { PRData } from "../github/types"
 import type { PRReviewConfig, ReviewerOutput, SynthesizedReview } from "../config/types"
 import { runReviewer } from "./runner"
+import { fetchLocalContext, canFetchLocalContext } from "../context/fetcher"
+import type { FileContext } from "../context/types"
 
 /**
  * Run all reviewers in parallel
@@ -20,10 +22,29 @@ export async function runAllReviewers(
     return []
   }
 
+  // Fetch file context if enabled
+  let fileContext: { files: FileContext[]; skippedFiles: string[] } | undefined
+  const contextConfig = config.context
+
+  if (contextConfig?.enabled !== false) {
+    const changedPaths = pr.files.filter((f) => f.changeType !== "DELETED").map((f) => f.path)
+
+    if (canFetchLocalContext(repoRoot, changedPaths)) {
+      console.log(`[pr-review] Fetching file context for ${changedPaths.length} files...`)
+      const result = fetchLocalContext(repoRoot, changedPaths, contextConfig)
+      fileContext = { files: result.files, skippedFiles: result.skippedFiles }
+      console.log(
+        `[pr-review] Loaded ${result.files.length} files (${Math.round(result.totalSizeBytes / 1024)}KB), skipped ${result.skippedFiles.length}`,
+      )
+    } else {
+      console.log("[pr-review] Local file context not available, using diff only")
+    }
+  }
+
   console.log(`[pr-review] Running ${enabledReviewers.length} reviewers in parallel...`)
 
   const results = await Promise.allSettled(
-    enabledReviewers.map((reviewer) => runReviewer(ai, pr, diff, reviewer, repoRoot)),
+    enabledReviewers.map((reviewer) => runReviewer(ai, pr, diff, reviewer, repoRoot, fileContext)),
   )
 
   const outputs: ReviewerOutput[] = []
