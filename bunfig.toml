@@ -1,3 +1,5 @@
 [install]
 exact = true
 linker = "isolated"
+[install.security]
+scanner = "bun-scan"
