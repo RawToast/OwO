@@ -68,6 +68,7 @@
     "check:ci": "turbo run compile format:ci lint:ci"
   },
   "devDependencies": {
+    "bun-scan": "1.1.0",
     "oxfmt": "0.27.0",
     "oxlint": "1.42.0",
     "turbo": "2.8.0"
